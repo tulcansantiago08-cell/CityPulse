@@ -12,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import com.citypulse.core.designsystem.theme.BrandGradientHorizontal
+import com.citypulse.core.designsystem.theme.CityPulseTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,7 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            CityPulseTheme {
                 CityPulsePlaceholder()
             }
         }
@@ -34,15 +36,18 @@ private fun CityPulsePlaceholder() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF060509)),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = "CityPulse", color = Color.White)
+        Text(
+            text = "CityPulse",
+            style = MaterialTheme.typography.headlineMedium.merge(TextStyle(brush = BrandGradientHorizontal)),
+        )
     }
 }
 
 @Preview
 @Composable
 private fun CityPulsePlaceholderPreview() {
-    CityPulsePlaceholder()
+    CityPulseTheme { CityPulsePlaceholder() }
 }
