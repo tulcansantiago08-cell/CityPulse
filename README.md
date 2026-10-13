@@ -17,6 +17,17 @@ Proyecto académico.
 - Android SDK 37
 - minSdk 26 (Android 8.0)
 
+## Claves de API
+
+Añade tus claves en `local.properties` (este archivo no se sube al repositorio):
+
+```properties
+TM_API_KEY=tu_clave_de_ticketmaster
+MAPS_API_KEY=tu_clave_de_google_maps
+```
+
+La app compila sin ellas, pero no cargará eventos de Ticketmaster ni el mapa.
+
 ## Ejecutar
 
 ```bash
