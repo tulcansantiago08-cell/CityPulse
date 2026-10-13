@@ -20,6 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import com.citypulse.core.designsystem.component.FloatingNavBar
 import com.citypulse.core.designsystem.component.NavTab
 import com.citypulse.ui.home.HomeRoute
+import com.citypulse.ui.now.NowRoute
 import com.citypulse.ui.onboarding.OnboardingScreen
 
 /** Raíz de la navegación: NavHost y, encima, la barra flotante solo en las pestañas. */
@@ -46,7 +47,7 @@ fun CityPulseNavHost(
                     onChangeCity = { navController.navigate(CityRoute) },
                 )
             }
-            composable<NowRoute> { Placeholder("Ahora") }
+            composable<NowRoute> { NowRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) }) }
             composable<SurpriseRoute> { Placeholder("Sorpresa") }
             composable<MapRoute> { Placeholder("Mapa") }
             composable<SavedRoute> { Placeholder("Guardados") }
