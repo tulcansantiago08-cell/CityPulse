@@ -32,6 +32,7 @@ import com.citypulse.ui.onboarding.OnboardingRoute
 /** Raíz de la navegación: NavHost y, encima, la barra flotante solo en las pestañas. */
 @Composable
 fun CityPulseNavHost(
+    startDestination: Any,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -39,7 +40,7 @@ fun CityPulseNavHost(
     val currentTab = backStackEntry?.destination?.toNavTab()
 
     Box(modifier.fillMaxSize()) {
-        NavHost(navController = navController, startDestination = OnboardingRoute) {
+        NavHost(navController = navController, startDestination = startDestination) {
             composable<OnboardingRoute> {
                 OnboardingRoute(
                     onResult = { navController.handleLocationSetup(it) },

@@ -6,8 +6,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.citypulse.data.city.StaticCityRepository
 import com.citypulse.data.fake.FakeEventRepository
-import com.citypulse.data.fake.InMemoryUserPreferencesRepository
 import com.citypulse.data.local.DataStoreSurpriseRollsRepository
+import com.citypulse.data.local.DataStoreUserPreferencesRepository
 import com.citypulse.data.location.AndroidLocationRepository
 import com.citypulse.data.local.RoomSavedEventsRepository
 import com.citypulse.data.local.db.CityPulseDatabase
@@ -37,7 +37,7 @@ abstract class DataModule {
     abstract fun bindEventRepository(impl: FakeEventRepository): EventRepository
 
     @Binds
-    abstract fun bindUserPreferencesRepository(impl: InMemoryUserPreferencesRepository): UserPreferencesRepository
+    abstract fun bindUserPreferencesRepository(impl: DataStoreUserPreferencesRepository): UserPreferencesRepository
 
     @Binds
     abstract fun bindLocationRepository(impl: AndroidLocationRepository): LocationRepository
