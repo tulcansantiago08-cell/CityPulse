@@ -19,6 +19,8 @@ import androidx.compose.material.icons.rounded.NearMe
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +28,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.citypulse.core.designsystem.component.CityPulseLogo
 import com.citypulse.core.designsystem.component.EventImage
 import com.citypulse.core.designsystem.component.GradientButton
@@ -33,11 +37,28 @@ import com.citypulse.core.designsystem.component.LiveBadge
 import com.citypulse.core.designsystem.component.PlainTextButton
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
+import com.citypulse.ui.common.rememberLocationPermissionRequester
 
 private fun unsplash(id: String) = "https://images.unsplash.com/$id?auto=format&fit=crop&w=720&q=70"
 
 private val CollageShape = RoundedCornerShape(28.dp)
 private val CollageHeight = 440.dp
+
+@Composable
+fun OnboardingRoute(
+    onResult: (LocationSetupResult) -> Unit,
+    onChooseCity: () -> Unit,
+    viewModel: LocationSetupViewModel = hiltViewModel(),
+) {
+    val resolving by viewModel.resolving.collectAsStateWithLifecycle()
+    val requester = rememberLocationPermissionRequester(viewModel::onPermissionResult)
+    LaunchedEffect(viewModel) { viewModel.results.collect(onResult) }
+    OnboardingScreen(
+        onEnableLocation = { requester.request() },
+        onChooseCity = onChooseCity,
+        resolving = resolving,
+    )
+}
 
 /** Pantalla de bienvenida: collage de imágenes, mensaje y acciones de ubicación. */
 @Composable
@@ -45,6 +66,7 @@ fun OnboardingScreen(
     onEnableLocation: () -> Unit,
     onChooseCity: () -> Unit,
     modifier: Modifier = Modifier,
+    resolving: Boolean = false,
 ) {
     Box(modifier.fillMaxSize().background(CpColors.Background)) {
         Box(Modifier.fillMaxWidth().height(CollageHeight)) {
@@ -106,8 +128,9 @@ fun OnboardingScreen(
             )
             Spacer(Modifier.weight(1f))
             GradientButton(
-                text = "Activar ubicación",
+                text = if (resolving) "Buscando tu ciudad…" else "Activar ubicación",
                 onClick = onEnableLocation,
+                enabled = !resolving,
                 icon = Icons.Rounded.NearMe,
                 modifier = Modifier.fillMaxWidth(),
             )

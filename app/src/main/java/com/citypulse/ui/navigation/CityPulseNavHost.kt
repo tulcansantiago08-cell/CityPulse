@@ -21,12 +21,13 @@ import com.citypulse.core.designsystem.component.FloatingNavBar
 import com.citypulse.core.designsystem.component.NavTab
 import com.citypulse.ui.city.CityRoute
 import com.citypulse.ui.detail.DetailRoute
-import com.citypulse.ui.empty.LocationDeniedScreen
+import com.citypulse.ui.empty.LocationDeniedRoute
 import com.citypulse.ui.home.HomeRoute
 import com.citypulse.ui.now.NowRoute
 import com.citypulse.ui.saved.SavedRoute
 import com.citypulse.ui.surprise.SurpriseRoute
-import com.citypulse.ui.onboarding.OnboardingScreen
+import com.citypulse.ui.onboarding.LocationSetupResult
+import com.citypulse.ui.onboarding.OnboardingRoute
 
 /** Raíz de la navegación: NavHost y, encima, la barra flotante solo en las pestañas. */
 @Composable
@@ -40,9 +41,8 @@ fun CityPulseNavHost(
     Box(modifier.fillMaxSize()) {
         NavHost(navController = navController, startDestination = OnboardingRoute) {
             composable<OnboardingRoute> {
-                OnboardingScreen(
-                    // El permiso real se pide en la tarea 3.2; por ahora se entra directamente.
-                    onEnableLocation = { navController.navigateToHomeClearingBackStack() },
+                OnboardingRoute(
+                    onResult = { navController.handleLocationSetup(it) },
                     onChooseCity = { navController.navigate(CityRoute) },
                 )
             }
@@ -69,9 +69,8 @@ fun CityPulseNavHost(
                 )
             }
             composable<LocationDeniedRoute> {
-                LocationDeniedScreen(
-                    // Volver a pedir el permiso llega con la tarea 3.2.
-                    onEnableLocation = { navController.navigateToHomeClearingBackStack() },
+                LocationDeniedRoute(
+                    onResult = { navController.handleLocationSetup(it) },
                     onChooseCity = { navController.navigate(CityRoute) },
                 )
             }
@@ -111,6 +110,17 @@ fun NavHostController.navigateToTab(tab: NavTab) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
         restoreState = true
+    }
+}
+
+private fun NavHostController.handleLocationSetup(result: LocationSetupResult) {
+    when (result) {
+        LocationSetupResult.Home -> navigateToHomeClearingBackStack()
+        LocationSetupResult.ChooseCity -> navigate(CityRoute)
+        LocationSetupResult.Denied -> navigate(LocationDeniedRoute) {
+            popUpTo(0) { inclusive = true }
+            launchSingleTop = true
+        }
     }
 }
 

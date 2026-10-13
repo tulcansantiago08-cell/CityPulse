@@ -5,11 +5,36 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.LocationOff
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.citypulse.core.designsystem.component.EmptyState
 import com.citypulse.core.designsystem.theme.CityPulseTheme
+import com.citypulse.ui.common.hasLocationPermission
+import com.citypulse.ui.common.rememberLocationPermissionRequester
+import com.citypulse.ui.onboarding.LocationSetupResult
+import com.citypulse.ui.onboarding.LocationSetupViewModel
+
+@Composable
+fun LocationDeniedRoute(
+    onResult: (LocationSetupResult) -> Unit,
+    onChooseCity: () -> Unit,
+    viewModel: LocationSetupViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val requester = rememberLocationPermissionRequester(viewModel::onPermissionResult)
+    LaunchedEffect(viewModel) { viewModel.results.collect(onResult) }
+    // Al volver de los ajustes del sistema, si ya se concedió el permiso, se continúa.
+    LifecycleResumeEffect(Unit) {
+        if (context.hasLocationPermission()) viewModel.onPermissionResult(granted = true)
+        onPauseOrDispose { }
+    }
+    LocationDeniedScreen(onEnableLocation = { requester.request(afterDenial = true) }, onChooseCity = onChooseCity)
+}
 
 /** Pantalla tras denegar el permiso de ubicación. */
 @Composable
