@@ -9,6 +9,7 @@ import android.location.Geocoder
 import android.os.Build
 import androidx.core.content.ContextCompat
 import com.citypulse.data.city.normalizedForSearch
+import com.citypulse.domain.geo.distanceMeters
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.repository.CityRepository
@@ -36,10 +37,11 @@ class AndroidLocationRepository @Inject constructor(
 
     private val fused = LocationServices.getFusedLocationProviderClient(context)
 
-    private fun hasPermission(): Boolean = listOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-    ).any { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
+    private fun isGranted(permission: String) =
+        ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+
+    private fun hasPermission(): Boolean =
+        isGranted(Manifest.permission.ACCESS_FINE_LOCATION) || isGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
 
     @SuppressLint("MissingPermission") // Se comprueba en hasPermission().
     override suspend fun currentLocation(): GeoPoint? {
@@ -48,8 +50,14 @@ class AndroidLocationRepository @Inject constructor(
             val location = fused.lastLocation.await()
                 ?: withTimeoutOrNull(LOCATION_TIMEOUT_MS) {
                     val cancellation = CancellationTokenSource()
+                    // Con permiso preciso se usa el GPS: la distancia a pie necesita precisión.
+                    val priority = if (isGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        Priority.PRIORITY_HIGH_ACCURACY
+                    } else {
+                        Priority.PRIORITY_BALANCED_POWER_ACCURACY
+                    }
                     try {
-                        fused.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellation.token).await()
+                        fused.getCurrentLocation(priority, cancellation.token).await()
                     } finally {
                         cancellation.cancel()
                     }
@@ -59,14 +67,19 @@ class AndroidLocationRepository @Inject constructor(
     }
 
     override suspend fun cityAt(point: GeoPoint): City? {
-        if (!Geocoder.isPresent()) return null
-        val address = reverseGeocode(point) ?: return null
-        val name = address.locality ?: address.subAdminArea ?: address.adminArea ?: return null
-        val country = address.countryName.orEmpty()
+        val address = if (Geocoder.isPresent()) reverseGeocode(point) else null
+        val name = address?.let { it.locality ?: it.subAdminArea ?: it.adminArea }
+            ?: return nearestKnownCity(point)
         // Si es una ciudad conocida se usa su centro; si no, el punto del usuario.
         val known = cityRepository.popularCities().firstOrNull { it.name.normalizedForSearch() == name.normalizedForSearch() }
-        return known ?: City(name, country, point)
+        return known ?: City(name, address.countryName.orEmpty(), point)
     }
+
+    /** Sin Geocoder (o sin red) se usa la ciudad conocida más cercana, si está a menos de 50 km. */
+    private fun nearestKnownCity(point: GeoPoint): City? =
+        cityRepository.popularCities()
+            .minByOrNull { distanceMeters(point, it.center) }
+            ?.takeIf { distanceMeters(point, it.center) <= NEAREST_CITY_MAX_METERS }
 
     private suspend fun reverseGeocode(point: GeoPoint): Address? {
         val geocoder = Geocoder(context, Locale.forLanguageTag("es"))
@@ -87,5 +100,6 @@ class AndroidLocationRepository @Inject constructor(
 
     private companion object {
         const val LOCATION_TIMEOUT_MS = 10_000L
+        const val NEAREST_CITY_MAX_METERS = 50_000.0
     }
 }
