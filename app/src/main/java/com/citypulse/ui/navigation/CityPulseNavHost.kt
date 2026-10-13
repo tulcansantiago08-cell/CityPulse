@@ -19,6 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.citypulse.core.designsystem.component.FloatingNavBar
 import com.citypulse.core.designsystem.component.NavTab
+import com.citypulse.ui.onboarding.OnboardingScreen
 
 /** Raíz de la navegación: NavHost y, encima, la barra flotante solo en las pestañas. */
 @Composable
@@ -31,7 +32,13 @@ fun CityPulseNavHost(
 
     Box(modifier.fillMaxSize()) {
         NavHost(navController = navController, startDestination = OnboardingRoute) {
-            composable<OnboardingRoute> { Placeholder("Onboarding") }
+            composable<OnboardingRoute> {
+                OnboardingScreen(
+                    // El permiso real se pide en la tarea 3.2; por ahora se entra directamente.
+                    onEnableLocation = { navController.navigateToHomeClearingBackStack() },
+                    onChooseCity = { navController.navigate(CityRoute) },
+                )
+            }
             composable<HomeRoute> { Placeholder("Inicio") }
             composable<NowRoute> { Placeholder("Ahora") }
             composable<SurpriseRoute> { Placeholder("Sorpresa") }
