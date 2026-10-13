@@ -12,6 +12,8 @@ import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.LocationRepository
 import com.citypulse.domain.repository.SurpriseRollsRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
+import com.citypulse.domain.time.Clock
+import com.citypulse.domain.time.SystemClock
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -37,6 +39,9 @@ abstract class DataModule {
     abstract fun bindSurpriseRollsRepository(impl: DataStoreSurpriseRollsRepository): SurpriseRollsRepository
 
     companion object {
+        @Provides
+        fun provideClock(): Clock = SystemClock()
+
         @Provides
         @Singleton
         fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
