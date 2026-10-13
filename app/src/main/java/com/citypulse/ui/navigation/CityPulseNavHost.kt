@@ -21,6 +21,7 @@ import com.citypulse.core.designsystem.component.FloatingNavBar
 import com.citypulse.core.designsystem.component.NavTab
 import com.citypulse.ui.city.CityRoute
 import com.citypulse.ui.detail.DetailRoute
+import com.citypulse.ui.empty.LocationDeniedScreen
 import com.citypulse.ui.home.HomeRoute
 import com.citypulse.ui.now.NowRoute
 import com.citypulse.ui.saved.SavedRoute
@@ -67,7 +68,13 @@ fun CityPulseNavHost(
                     onDone = { navController.navigateToHomeClearingBackStack() },
                 )
             }
-            composable<LocationDeniedRoute> { Placeholder("Sin permiso") }
+            composable<LocationDeniedRoute> {
+                LocationDeniedScreen(
+                    // Volver a pedir el permiso llega con la tarea 3.2.
+                    onEnableLocation = { navController.navigateToHomeClearingBackStack() },
+                    onChooseCity = { navController.navigate(CityRoute) },
+                )
+            }
             composable<DetailRoute> { DetailRoute(onBack = { navController.popBackStack() }) }
         }
 
