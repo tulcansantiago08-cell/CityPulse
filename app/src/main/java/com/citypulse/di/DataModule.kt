@@ -3,15 +3,20 @@ package com.citypulse.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.room.Room
 import com.citypulse.data.city.StaticCityRepository
 import com.citypulse.data.fake.FakeEventRepository
 import com.citypulse.data.fake.FakeLocationRepository
 import com.citypulse.data.fake.InMemoryUserPreferencesRepository
 import com.citypulse.data.local.DataStoreSurpriseRollsRepository
+import com.citypulse.data.local.RoomSavedEventsRepository
+import com.citypulse.data.local.db.CityPulseDatabase
+import com.citypulse.data.local.db.SavedEventDao
 import com.citypulse.data.local.cityPulseDataStore
 import com.citypulse.domain.repository.CityRepository
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.LocationRepository
+import com.citypulse.domain.repository.SavedEventsRepository
 import com.citypulse.domain.repository.SurpriseRollsRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
 import com.citypulse.domain.time.Clock
@@ -41,11 +46,22 @@ abstract class DataModule {
     abstract fun bindCityRepository(impl: StaticCityRepository): CityRepository
 
     @Binds
+    abstract fun bindSavedEventsRepository(impl: RoomSavedEventsRepository): SavedEventsRepository
+
+    @Binds
     abstract fun bindSurpriseRollsRepository(impl: DataStoreSurpriseRollsRepository): SurpriseRollsRepository
 
     companion object {
         @Provides
         fun provideClock(): Clock = SystemClock()
+
+        @Provides
+        @Singleton
+        fun provideDatabase(@ApplicationContext context: Context): CityPulseDatabase =
+            Room.databaseBuilder(context, CityPulseDatabase::class.java, "citypulse.db").build()
+
+        @Provides
+        fun provideSavedEventDao(db: CityPulseDatabase): SavedEventDao = db.savedEventDao()
 
         @Provides
         @Singleton

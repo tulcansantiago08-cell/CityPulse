@@ -3,11 +3,13 @@ package com.citypulse.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.Category
+import com.citypulse.domain.repository.SavedEventsRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
 import com.citypulse.domain.time.Clock
 import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.time.greetingFor
 import com.citypulse.domain.usecase.ObserveCityEvents
+import com.citypulse.domain.usecase.ToggleSavedEvent
 import com.citypulse.domain.usecase.happeningNow
 import com.citypulse.domain.usecase.matches
 import com.citypulse.domain.usecase.upcomingThisWeek
@@ -32,12 +34,15 @@ data class HomeUiState(
     val freeOnly: Boolean = false,
     val happeningNow: List<EventUi> = emptyList(),
     val thisWeek: List<EventUi> = emptyList(),
+    val savedIds: Set<String> = emptySet(),
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     observeCityEvents: ObserveCityEvents,
     private val preferences: UserPreferencesRepository,
+    savedEvents: SavedEventsRepository,
+    private val toggleSavedEvent: ToggleSavedEvent,
     clock: Clock,
 ) : ViewModel() {
 
@@ -47,8 +52,9 @@ class HomeViewModel @Inject constructor(
         observeCityEvents(),
         preferences.preferences,
         selectedCategory,
+        savedEvents.observeSavedIds(),
         clock.ticks(),
-    ) { cityEvents, prefs, category, now ->
+    ) { cityEvents, prefs, category, savedIds, now ->
         val filtered = cityEvents?.events.orEmpty().filter { it.event.matches(prefs.freeOnly, category) }
         HomeUiState(
             loading = cityEvents == null,
@@ -59,11 +65,16 @@ class HomeViewModel @Inject constructor(
             freeOnly = prefs.freeOnly,
             happeningNow = filtered.happeningNow(now).map { it.toUi(now) },
             thisWeek = filtered.upcomingThisWeek(now).map { it.toUi(now) },
+            savedIds = savedIds,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     fun selectCategory(category: Category?) {
         selectedCategory.value = category
+    }
+
+    fun toggleSaved(eventId: String) {
+        viewModelScope.launch { toggleSavedEvent(eventId) }
     }
 
     fun toggleFreeOnly() {

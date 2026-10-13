@@ -78,6 +78,7 @@ fun HomeRoute(
         onChangeCity = onChangeCity,
         onSelectCategory = viewModel::selectCategory,
         onToggleFreeOnly = viewModel::toggleFreeOnly,
+        onToggleSave = viewModel::toggleSaved,
     )
 }
 
@@ -88,6 +89,7 @@ fun HomeScreen(
     onChangeCity: () -> Unit,
     onSelectCategory: (Category?) -> Unit,
     onToggleFreeOnly: () -> Unit,
+    onToggleSave: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -122,7 +124,7 @@ fun HomeScreen(
                 FreeOnlyToggle(state.freeOnly, onToggleFreeOnly)
             }
         }
-        item { HappeningNowRow(state.happeningNow, onOpenEvent) }
+        item { HappeningNowRow(state.happeningNow, state.savedIds, onOpenEvent, onToggleSave) }
         item {
             Text(
                 "Esta semana",
@@ -183,7 +185,12 @@ private fun Header(state: HomeUiState, onChangeCity: () -> Unit) {
 }
 
 @Composable
-private fun HappeningNowRow(events: List<EventUi>, onOpenEvent: (String) -> Unit) {
+private fun HappeningNowRow(
+    events: List<EventUi>,
+    savedIds: Set<String>,
+    onOpenEvent: (String) -> Unit,
+    onToggleSave: (String) -> Unit,
+) {
     if (events.isEmpty()) {
         DashedMessage(
             "Nada en curso con estos filtros.",
@@ -208,8 +215,8 @@ private fun HappeningNowRow(events: List<EventUi>, onOpenEvent: (String) -> Unit
                 fallback = event.fallback,
                 live = event.live,
                 free = event.free,
-                saved = false,
-                onToggleSave = {},
+                saved = event.id in savedIds,
+                onToggleSave = { onToggleSave(event.id) },
                 onClick = { onOpenEvent(event.id) },
             )
         }
@@ -269,7 +276,7 @@ private fun HomePreview() {
                 happeningNow = events.take(4).map { it.toUi(now) },
                 thisWeek = events.drop(6).map { it.toUi(now) },
             ),
-            onOpenEvent = {}, onChangeCity = {}, onSelectCategory = {}, onToggleFreeOnly = {},
+            onOpenEvent = {}, onChangeCity = {}, onSelectCategory = {}, onToggleFreeOnly = {}, onToggleSave = {},
         )
     }
 }

@@ -23,6 +23,7 @@ import com.citypulse.ui.city.CityRoute
 import com.citypulse.ui.detail.DetailRoute
 import com.citypulse.ui.home.HomeRoute
 import com.citypulse.ui.now.NowRoute
+import com.citypulse.ui.saved.SavedRoute
 import com.citypulse.ui.surprise.SurpriseRoute
 import com.citypulse.ui.onboarding.OnboardingScreen
 
@@ -59,7 +60,7 @@ fun CityPulseNavHost(
                 )
             }
             composable<MapRoute> { Placeholder("Mapa") }
-            composable<SavedRoute> { Placeholder("Guardados") }
+            composable<SavedRoute> { SavedRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) }) }
             composable<CityRoute> {
                 CityRoute(
                     onBack = { navController.popBackStack() },

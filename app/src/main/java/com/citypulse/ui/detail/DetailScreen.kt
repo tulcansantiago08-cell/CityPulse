@@ -89,9 +89,9 @@ fun DetailRoute(onBack: () -> Unit, viewModel: DetailViewModel = hiltViewModel()
     val context = LocalContext.current
     DetailScreen(
         state = state,
-        saved = false,
+        saved = state.saved,
         onBack = onBack,
-        onToggleSave = {},
+        onToggleSave = viewModel::toggleSaved,
         onShare = { state.event?.let { context.shareText(it.shareMessage()) } },
         onDirections = { state.event?.let { context.openWalkingDirections(it.latitude, it.longitude) } },
     )
