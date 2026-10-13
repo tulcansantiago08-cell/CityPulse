@@ -22,6 +22,7 @@ import com.citypulse.core.designsystem.component.NavTab
 import com.citypulse.ui.city.CityRoute
 import com.citypulse.ui.detail.DetailRoute
 import com.citypulse.ui.empty.LocationDeniedRoute
+import com.citypulse.ui.empty.OfflineScreen
 import com.citypulse.ui.home.HomeRoute
 import com.citypulse.ui.now.NowRoute
 import com.citypulse.ui.saved.SavedRoute
@@ -33,6 +34,7 @@ import com.citypulse.ui.onboarding.OnboardingRoute
 @Composable
 fun CityPulseNavHost(
     startDestination: Any,
+    isOnline: Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -48,20 +50,28 @@ fun CityPulseNavHost(
                 )
             }
             composable<HomeRoute> {
+                if (!isOnline) return@composable Offline(navController)
                 HomeRoute(
                     onOpenEvent = { navController.navigate(DetailRoute(it)) },
                     onChangeCity = { navController.navigate(CityRoute) },
                 )
             }
-            composable<NowRoute> { NowRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) }) }
+            composable<NowRoute> {
+                if (!isOnline) return@composable Offline(navController)
+                NowRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) })
+            }
             composable<SurpriseRoute> {
+                if (!isOnline) return@composable Offline(navController)
                 SurpriseRoute(
                     onOpenEvent = { navController.navigate(DetailRoute(it)) },
                     onSeeNearby = { navController.navigateToTab(NavTab.Now) },
                     onGoHome = { navController.navigateToTab(NavTab.Home) },
                 )
             }
-            composable<MapRoute> { Placeholder("Mapa") }
+            composable<MapRoute> {
+                if (!isOnline) return@composable Offline(navController)
+                Placeholder("Mapa")
+            }
             composable<SavedRoute> { SavedRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) }) }
             composable<CityRoute> {
                 CityRoute(
@@ -131,6 +141,16 @@ fun NavHostController.navigateToHomeClearingBackStack() {
         popUpTo(0) { inclusive = true }
         launchSingleTop = true
     }
+}
+
+/** Pestañas que dependen de la red: sin conexión se ofrece ir a Guardados, que funciona offline. */
+@Composable
+private fun Offline(navController: NavHostController) {
+    // "Reintentar" vuelve a Inicio; si la red ya volvió, se muestra el contenido.
+    OfflineScreen(
+        onRetry = { navController.navigateToTab(NavTab.Home) },
+        onOpenSaved = { navController.navigateToTab(NavTab.Saved) },
+    )
 }
 
 @Composable

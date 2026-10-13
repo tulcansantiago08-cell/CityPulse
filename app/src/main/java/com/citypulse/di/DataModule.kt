@@ -12,8 +12,10 @@ import com.citypulse.data.location.AndroidLocationRepository
 import com.citypulse.data.local.RoomSavedEventsRepository
 import com.citypulse.data.local.db.CityPulseDatabase
 import com.citypulse.data.local.db.SavedEventDao
+import com.citypulse.data.network.AndroidConnectivityRepository
 import com.citypulse.data.local.cityPulseDataStore
 import com.citypulse.domain.repository.CityRepository
+import com.citypulse.domain.repository.ConnectivityRepository
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.LocationRepository
 import com.citypulse.domain.repository.SavedEventsRepository
@@ -47,6 +49,9 @@ abstract class DataModule {
 
     @Binds
     abstract fun bindSavedEventsRepository(impl: RoomSavedEventsRepository): SavedEventsRepository
+
+    @Binds
+    abstract fun bindConnectivityRepository(impl: AndroidConnectivityRepository): ConnectivityRepository
 
     @Binds
     abstract fun bindSurpriseRollsRepository(impl: DataStoreSurpriseRollsRepository): SurpriseRollsRepository

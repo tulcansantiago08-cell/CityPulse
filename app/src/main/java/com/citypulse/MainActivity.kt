@@ -32,9 +32,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             CityPulseTheme {
                 val startDestination by viewModel.startDestination.collectAsStateWithLifecycle()
+                val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
                 val background = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
                 // Hasta leer las preferencias solo se pinta el fondo (dura unos milisegundos).
-                startDestination?.let { CityPulseNavHost(startDestination = it, modifier = background) }
+                startDestination?.let { CityPulseNavHost(startDestination = it, isOnline = isOnline, modifier = background) }
                     ?: Box(background)
             }
         }
