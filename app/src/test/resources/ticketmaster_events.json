@@ -1,0 +1,44 @@
+{
+  "_embedded": {
+    "events": [
+      {
+        "id": "Z698xZ",
+        "name": "Concierto de prueba",
+        "url": "https://www.ticketmaster.es/event/Z698xZ",
+        "images": [
+          { "ratio": "4_3", "url": "https://img/small.jpg", "width": 305, "height": 225 },
+          { "ratio": "16_9", "url": "https://img/large.jpg", "width": 2048, "height": 1152 },
+          { "ratio": "16_9", "url": "https://img/medium.jpg", "width": 640, "height": 360 }
+        ],
+        "dates": { "start": { "localDate": "2026-10-13", "localTime": "21:00:00", "noSpecificTime": false } },
+        "classifications": [ { "segment": { "name": "Music" }, "genre": { "name": "Jazz" } } ],
+        "priceRanges": [ { "type": "standard", "currency": "EUR", "min": 15.0, "max": 30.0 } ],
+        "info": "Puertas a las 20:30.",
+        "_embedded": {
+          "venues": [
+            {
+              "name": "Sala Ejemplo",
+              "city": { "name": "Madrid" },
+              "address": { "line1": "Calle Mayor 1" },
+              "location": { "longitude": "-3.7035", "latitude": "40.4169" }
+            }
+          ]
+        }
+      },
+      {
+        "id": "FAIR1",
+        "name": "Feria sin hora",
+        "dates": { "start": { "localDate": "2026-10-14", "noSpecificTime": true } },
+        "classifications": [ { "segment": { "name": "Miscellaneous" }, "genre": { "name": "Fairs & Festivals" } } ],
+        "priceRanges": [ { "currency": "EUR", "min": 0.0, "max": 0.0 } ],
+        "_embedded": { "venues": [ { "name": "Recinto", "location": { "longitude": "-3.69", "latitude": "40.42" } } ] }
+      },
+      {
+        "id": "NOVENUE",
+        "name": "Sin recinto",
+        "dates": { "start": { "localDate": "2026-10-14", "localTime": "18:00:00" } }
+      }
+    ]
+  },
+  "page": { "size": 100, "totalElements": 3, "totalPages": 1, "number": 0 }
+}
