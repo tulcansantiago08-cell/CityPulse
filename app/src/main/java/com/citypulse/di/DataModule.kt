@@ -3,11 +3,13 @@ package com.citypulse.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.citypulse.data.city.StaticCityRepository
 import com.citypulse.data.fake.FakeEventRepository
 import com.citypulse.data.fake.FakeLocationRepository
 import com.citypulse.data.fake.InMemoryUserPreferencesRepository
 import com.citypulse.data.local.DataStoreSurpriseRollsRepository
 import com.citypulse.data.local.cityPulseDataStore
+import com.citypulse.domain.repository.CityRepository
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.LocationRepository
 import com.citypulse.domain.repository.SurpriseRollsRepository
@@ -34,6 +36,9 @@ abstract class DataModule {
 
     @Binds
     abstract fun bindLocationRepository(impl: FakeLocationRepository): LocationRepository
+
+    @Binds
+    abstract fun bindCityRepository(impl: StaticCityRepository): CityRepository
 
     @Binds
     abstract fun bindSurpriseRollsRepository(impl: DataStoreSurpriseRollsRepository): SurpriseRollsRepository
