@@ -71,7 +71,7 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
         fallback = event.category.fallbackColors(),
         live = live,
         free = event.isFree,
-        priceLabel = event.price ?: "Gratis",
+        priceLabel = if (event.isFree) "Gratis" else event.price ?: "Consultar precio",
         walkMinutes = walkMinutes,
         overline = "${event.category.label} · $overline",
         whenLabel = "${event.start.toLocalDate().dayLabel(now.toLocalDate())} · ${event.start.hourLabel()}",

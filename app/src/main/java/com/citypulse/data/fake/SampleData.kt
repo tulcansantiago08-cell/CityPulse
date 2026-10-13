@@ -48,6 +48,7 @@ object SampleData {
                 start = at(day, from),
                 end = at(day, to),
                 price = price,
+                isFree = price == null,
                 description = description,
                 imageUrl = unsplash(image),
                 source = EventSource.CityPulse,

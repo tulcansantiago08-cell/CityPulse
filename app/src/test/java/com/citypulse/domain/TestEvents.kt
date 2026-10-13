@@ -25,6 +25,7 @@ fun testEvent(
     start = start,
     end = end,
     price = price,
+    isFree = price == null,
     description = "",
     imageUrl = null,
     source = EventSource.CityPulse,

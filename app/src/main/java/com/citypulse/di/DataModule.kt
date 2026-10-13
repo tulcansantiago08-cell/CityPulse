@@ -58,7 +58,9 @@ abstract class DataModule {
         @Provides
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): CityPulseDatabase =
-            Room.databaseBuilder(context, CityPulseDatabase::class.java, "citypulse.db").build()
+            Room.databaseBuilder(context, CityPulseDatabase::class.java, "citypulse.db")
+                .addMigrations(CityPulseDatabase.MIGRATION_1_2)
+                .build()
 
         @Provides
         fun provideSavedEventDao(db: CityPulseDatabase): SavedEventDao = db.savedEventDao()
