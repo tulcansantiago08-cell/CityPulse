@@ -4,12 +4,17 @@ import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.citypulse.core.designsystem.theme.BrandGradient
 import com.citypulse.core.designsystem.theme.CpColors
 
 /**
@@ -48,3 +53,13 @@ fun scrimBrush(vararg stops: Pair<Float, Float>): Brush =
         colorStops = stops.map { (offset, alpha) -> offset to CpColors.Background.copy(alpha = alpha) }
             .toTypedArray(),
     )
+
+/** Pinta el contenido (p. ej. un icono blanco) con el gradiente de marca. */
+fun Modifier.gradientTint(brush: Brush = BrandGradient): Modifier = this
+    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+    .drawWithCache {
+        onDrawWithContent {
+            drawContent()
+            drawRect(brush, blendMode = BlendMode.SrcAtop)
+        }
+    }
