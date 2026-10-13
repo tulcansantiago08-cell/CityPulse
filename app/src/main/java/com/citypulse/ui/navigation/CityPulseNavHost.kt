@@ -21,6 +21,7 @@ import com.citypulse.core.designsystem.component.FloatingNavBar
 import com.citypulse.core.designsystem.component.NavTab
 import com.citypulse.ui.home.HomeRoute
 import com.citypulse.ui.now.NowRoute
+import com.citypulse.ui.surprise.SurpriseRoute
 import com.citypulse.ui.onboarding.OnboardingScreen
 
 /** Raíz de la navegación: NavHost y, encima, la barra flotante solo en las pestañas. */
@@ -48,7 +49,13 @@ fun CityPulseNavHost(
                 )
             }
             composable<NowRoute> { NowRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) }) }
-            composable<SurpriseRoute> { Placeholder("Sorpresa") }
+            composable<SurpriseRoute> {
+                SurpriseRoute(
+                    onOpenEvent = { navController.navigate(DetailRoute(it)) },
+                    onSeeNearby = { navController.navigateToTab(NavTab.Now) },
+                    onGoHome = { navController.navigateToTab(NavTab.Home) },
+                )
+            }
             composable<MapRoute> { Placeholder("Mapa") }
             composable<SavedRoute> { Placeholder("Guardados") }
             composable<CityRoute> { Placeholder("Ciudad") }
