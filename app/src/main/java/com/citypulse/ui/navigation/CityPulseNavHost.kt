@@ -19,6 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.citypulse.core.designsystem.component.FloatingNavBar
 import com.citypulse.core.designsystem.component.NavTab
+import com.citypulse.ui.detail.DetailRoute
 import com.citypulse.ui.home.HomeRoute
 import com.citypulse.ui.now.NowRoute
 import com.citypulse.ui.surprise.SurpriseRoute
@@ -60,7 +61,7 @@ fun CityPulseNavHost(
             composable<SavedRoute> { Placeholder("Guardados") }
             composable<CityRoute> { Placeholder("Ciudad") }
             composable<LocationDeniedRoute> { Placeholder("Sin permiso") }
-            composable<DetailRoute> { Placeholder("Ficha") }
+            composable<DetailRoute> { DetailRoute(onBack = { navController.popBackStack() }) }
         }
 
         if (currentTab != null) {
