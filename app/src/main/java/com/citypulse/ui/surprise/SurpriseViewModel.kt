@@ -11,6 +11,7 @@ import com.citypulse.domain.time.now
 import com.citypulse.domain.usecase.ObserveCityEvents
 import com.citypulse.domain.usecase.pickSurprise
 import com.citypulse.domain.usecase.surpriseCandidates
+import com.citypulse.domain.usecase.surpriseCandidatesLaterToday
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -84,7 +85,12 @@ class SurpriseViewModel @Inject constructor(
             val current = rolls.value
             if (!current.canRoll(maxRolls)) return
             val now = clock.now(events.city.zone)
-            val pick = pickSurprise(events.events.surpriseCandidates(now), current.seenEventIds, current.currentEventId) ?: return
+            val pick = pickSurprise(
+                events.events.surpriseCandidates(now),
+                current.seenEventIds,
+                current.currentEventId,
+                fallback = events.events.surpriseCandidatesLaterToday(now),
+            ) ?: return
             rollsRepository.save(current.afterPicking(pick.event.id))
         }
     }

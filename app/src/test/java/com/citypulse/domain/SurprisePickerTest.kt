@@ -49,6 +49,14 @@ class SurprisePickerTest {
     }
 
     @Test
+    fun `agotados los cercanos amplia al resto del dia antes de repetir`() {
+        val soon = listOf("a", "b").map { testEvent(it, start = now.plusHours(1)) }.withDistanceFrom(PuertaDelSol)
+        val later = listOf(testEvent("tarde", start = now.plusHours(5))).withDistanceFrom(PuertaDelSol)
+        val pick = pickSurprise(soon, seenIds = setOf("a", "b"), currentId = "b", fallback = soon + later)
+        assertEquals("tarde", pick?.event?.id)
+    }
+
+    @Test
     fun `las tiradas se agotan y se reinician al cambiar de dia`() {
         val today = LocalDate.of(2026, 10, 13)
         var rolls = SurpriseRolls(today)
