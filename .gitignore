@@ -17,3 +17,6 @@ local.properties
 # Claves locales
 secrets.properties
 .kotlin/
+
+# Configuración de Firebase del proyecto (cada desarrollador descarga la suya)
+app/google-services.json
