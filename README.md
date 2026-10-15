@@ -116,7 +116,7 @@ El mapa usa las teselas estándar de OpenStreetMap con osmdroid, oscurecidas con
 ## Decisiones y limitaciones
 
 - **OpenStreetMap en lugar de Google Maps**: Google Maps exige una cuenta de facturación incluso dentro de su capa gratuita.
-- **Zona horaria**: las horas de los eventos son las locales de la ciudad y se comparan con la hora del dispositivo. Si se consulta una ciudad con otra zona horaria, "en curso" se calcula con la hora del dispositivo.
+- **Zona horaria**: cada ciudad tiene la suya; "en curso", las franjas y el saludo se calculan con la hora local de la ciudad consultada, no con la del teléfono.
 - **Idioma**: la interfaz está en español. Los textos de las pantallas están en `strings.xml`; el formato de fechas y precios de las tarjetas (`ui/common/EventUi.kt`) también está en español.
 - **Catálogo de ejemplo**: los eventos de Firestore son datos de demostración basados en lugares reales; sus horarios pueden no coincidir con la realidad.
 

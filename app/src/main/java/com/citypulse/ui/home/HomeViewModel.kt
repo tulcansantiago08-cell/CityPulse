@@ -12,6 +12,7 @@ import com.citypulse.domain.repository.UserPreferencesRepository
 import com.citypulse.domain.time.Clock
 import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.time.greetingFor
+import com.citypulse.domain.time.localIn
 import com.citypulse.domain.usecase.ObserveCityEvents
 import com.citypulse.domain.usecase.ToggleSavedEvent
 import com.citypulse.domain.usecase.happeningNow
@@ -21,6 +22,8 @@ import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.dateLine
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.ZoneId
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +31,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class HomeUiState(
     val loading: Boolean = true,
@@ -72,7 +74,9 @@ class HomeViewModel @Inject constructor(
         events.refreshState,
     ) { cityEvents, prefs, category, savedIds, refresh -> HomeInputs(cityEvents, prefs, category, savedIds, refresh) }
 
-    val uiState: StateFlow<HomeUiState> = combine(inputs, clock.ticks()) { (cityEvents, prefs, category, savedIds, refresh), now ->
+    val uiState: StateFlow<HomeUiState> = combine(inputs, clock.ticks()) { (cityEvents, prefs, category, savedIds, refresh), instant ->
+        // "Ahora" en la hora local de la ciudad elegida, no en la del teléfono.
+        val now = instant.localIn(cityEvents?.city?.zone ?: prefs.city?.zone ?: ZoneId.systemDefault())
         val nothingCached = cityEvents?.events.isNullOrEmpty()
         val filtered = cityEvents?.events.orEmpty().filter { it.event.matches(prefs.freeOnly, category) }
         HomeUiState(

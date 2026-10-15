@@ -4,17 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.time.Clock
+import com.citypulse.domain.time.localIn
 import com.citypulse.domain.usecase.ObserveCityEvents
 import com.citypulse.domain.usecase.nextOccurrences
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.ZoneId
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 
 data class MapUiState(
     val loading: Boolean = true,
@@ -35,7 +37,8 @@ class MapViewModel @Inject constructor(
 
     private val selectedId = MutableStateFlow<String?>(null)
 
-    val uiState: StateFlow<MapUiState> = combine(observeCityEvents(), selectedId, clock.ticks()) { cityEvents, selected, now ->
+    val uiState: StateFlow<MapUiState> = combine(observeCityEvents(), selectedId, clock.ticks()) { cityEvents, selected, instant ->
+        val now = instant.localIn(cityEvents?.city?.zone ?: ZoneId.systemDefault())
         val limit = now.toLocalDate().plusDays(7).atStartOfDay()
         // En el mapa: lo que no ha terminado y empieza esta semana; primero lo que está en curso.
         val events = cityEvents?.events.orEmpty()

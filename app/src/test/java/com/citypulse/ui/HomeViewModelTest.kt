@@ -14,6 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDate
+import java.time.ZoneId
 
 class HomeViewModelTest {
 
@@ -39,6 +40,21 @@ class HomeViewModelTest {
             assertTrue("jazz" in state.happeningNow.map { it.id })
             assertTrue("flamenco" in state.happeningNow.map { it.id }) // empieza en menos de 1 h
             assertTrue(state.thisWeek.none { it.id in state.happeningNow.map { e -> e.id } })
+        }
+    }
+
+    @Test
+    fun `en curso se calcula con la hora de la ciudad y no con la del telefono`() = runTest {
+        // 14:30 en Bogotá son las 21:30 en Madrid (octubre: UTC-5 frente a UTC+2).
+        val fromBogota = FixedClock(now.toLocalDate().atTime(14, 30), ZoneId.of("America/Bogota"))
+        val vm = HomeViewModel(
+            ObserveCityEvents(prefs, events, FakeLocation()),
+            events, prefs, saved, ToggleSavedEvent(events, saved), fromBogota,
+        )
+        vm.uiState.test {
+            val state = expectMostRecentItem()
+            assertEquals(Greeting.Evening, state.greeting)
+            assertTrue(state.happeningNow.first { it.id == "jazz" }.live)
         }
     }
 

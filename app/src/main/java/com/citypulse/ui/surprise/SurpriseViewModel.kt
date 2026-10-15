@@ -6,12 +6,16 @@ import com.citypulse.domain.model.CityEvents
 import com.citypulse.domain.model.SurpriseRolls
 import com.citypulse.domain.repository.SurpriseRollsRepository
 import com.citypulse.domain.time.Clock
+import com.citypulse.domain.time.localIn
+import com.citypulse.domain.time.now
 import com.citypulse.domain.usecase.ObserveCityEvents
 import com.citypulse.domain.usecase.pickSurprise
 import com.citypulse.domain.usecase.surpriseCandidates
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.ZoneId
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -20,7 +24,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import javax.inject.Inject
 
 data class SurpriseUiState(
     val loading: Boolean = true,
@@ -48,7 +51,8 @@ class SurpriseViewModel @Inject constructor(
         rollsRepository.observe(clock.now().toLocalDate())
             .stateIn(viewModelScope, SharingStarted.Eagerly, SurpriseRolls(clock.now().toLocalDate()))
 
-    val uiState: StateFlow<SurpriseUiState> = combine(cityEvents, rolls, clock.ticks()) { events, rolls, now ->
+    val uiState: StateFlow<SurpriseUiState> = combine(cityEvents, rolls, clock.ticks()) { events, rolls, instant ->
+        val now = instant.localIn(events?.city?.zone ?: ZoneId.systemDefault())
         val current = events?.events?.firstOrNull { it.event.id == rolls.currentEventId && !it.event.hasEnded(now) }
         SurpriseUiState(
             loading = events == null,
@@ -62,7 +66,7 @@ class SurpriseViewModel @Inject constructor(
         // Si no hay sorpresa vigente (primera vez hoy o la anterior ya terminó), se tira una.
         viewModelScope.launch {
             combine(cityEvents.filterNotNull(), rolls) { events, rolls -> events to rolls }.collect { (events, rolls) ->
-                val now = clock.now()
+                val now = clock.now(events.city.zone)
                 val currentValid = events.events.any { it.event.id == rolls.currentEventId && !it.event.hasEnded(now) }
                 if (!currentValid && rolls.canRoll(maxRolls)) roll()
             }
@@ -79,7 +83,7 @@ class SurpriseViewModel @Inject constructor(
             val events = cityEvents.value ?: return
             val current = rolls.value
             if (!current.canRoll(maxRolls)) return
-            val now = clock.now()
+            val now = clock.now(events.city.zone)
             val pick = pickSurprise(events.events.surpriseCandidates(now), current.seenEventIds, current.currentEventId) ?: return
             rollsRepository.save(current.afterPicking(pick.event.id))
         }

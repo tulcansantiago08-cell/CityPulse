@@ -8,12 +8,14 @@ import com.citypulse.domain.model.UserPreferences
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
 import com.citypulse.domain.time.Clock
+import com.citypulse.domain.time.localIn
 import com.citypulse.domain.time.timeSlotFor
 import com.citypulse.domain.usecase.ObserveCityEvents
 import com.citypulse.domain.usecase.nearbyInSlot
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,8 +43,8 @@ class NowViewModel @Inject constructor(
     clock: Clock,
 ) : ViewModel() {
 
-    /** Al abrir la pantalla se preselecciona la franja actual. */
-    private val selectedSlot = MutableStateFlow(timeSlotFor(clock.now().toLocalTime()))
+    /** `null` hasta que el usuario elige: entonces se usa la franja actual de la ciudad. */
+    private val selectedSlot = MutableStateFlow<TimeSlot?>(null)
 
     val uiState: StateFlow<NowUiState> = combine(
         observeCityEvents(),
@@ -50,7 +52,9 @@ class NowViewModel @Inject constructor(
         selectedSlot,
         events.refreshState,
         clock.ticks(),
-    ) { cityEvents, prefs, slot, refresh, now ->
+    ) { cityEvents, prefs, selected, refresh, instant ->
+        val now = instant.localIn(cityEvents?.city?.zone ?: prefs.city?.zone ?: ZoneId.systemDefault())
+        val slot = selected ?: timeSlotFor(now.toLocalTime())
         val radius = prefs.radiusMinutes
         NowUiState(
             loading = cityEvents == null || (cityEvents.events.isEmpty() && refresh == RefreshState.Loading),
@@ -60,7 +64,7 @@ class NowViewModel @Inject constructor(
             radiusMinutes = radius,
             events = cityEvents?.events.orEmpty().nearbyInSlot(now, slot, radius).map { it.toUi(now) },
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), NowUiState(slot = selectedSlot.value))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), NowUiState())
 
     fun selectSlot(slot: TimeSlot) {
         selectedSlot.value = slot

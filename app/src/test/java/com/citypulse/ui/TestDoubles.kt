@@ -25,7 +25,9 @@ import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import java.time.LocalDate
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 /** Usa un dispatcher de test como Dispatchers.Main (viewModelScope lo necesita). */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,10 +36,11 @@ class MainDispatcherRule(val dispatcher: TestDispatcher = UnconfinedTestDispatch
     override fun finished(description: Description) = Dispatchers.resetMain()
 }
 
-/** Hora fija: los tests no dependen de cuándo se ejecutan. */
-class FixedClock(private val time: LocalDateTime) : Clock {
-    override fun now(): LocalDateTime = time
-    override fun ticks(periodMillis: Long): Flow<LocalDateTime> = flowOf(time)
+/** Hora fija, expresada en la hora local de [zone] (Madrid, como los datos de ejemplo). */
+class FixedClock(time: LocalDateTime, zone: ZoneId = SampleData.Madrid.zone) : Clock {
+    private val instant: Instant = time.atZone(zone).toInstant()
+    override fun instant(): Instant = instant
+    override fun ticks(periodMillis: Long): Flow<Instant> = flowOf(instant)
 }
 
 class FakePreferences(initial: UserPreferences = UserPreferences(city = SampleData.Madrid, onboardingDone = true)) : UserPreferencesRepository {

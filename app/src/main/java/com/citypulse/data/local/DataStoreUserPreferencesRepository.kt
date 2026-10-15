@@ -10,15 +10,18 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.model.UserPreferences
+import com.citypulse.domain.repository.CityRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DataStoreUserPreferencesRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
+    private val cities: CityRepository,
 ) : UserPreferencesRepository {
 
     override val preferences: Flow<UserPreferences> = dataStore.data.map { prefs ->
@@ -27,7 +30,7 @@ class DataStoreUserPreferencesRepository @Inject constructor(
         val lng = prefs[Keys.cityLng]
         UserPreferences(
             city = if (name != null && lat != null && lng != null) {
-                City(name, prefs[Keys.cityCountry].orEmpty(), GeoPoint(lat, lng))
+                City(name, prefs[Keys.cityCountry].orEmpty(), GeoPoint(lat, lng), zoneFor(name, prefs[Keys.cityZone]))
             } else {
                 null
             },
@@ -43,6 +46,7 @@ class DataStoreUserPreferencesRepository @Inject constructor(
             it[Keys.cityCountry] = city.country
             it[Keys.cityLat] = city.center.latitude
             it[Keys.cityLng] = city.center.longitude
+            it[Keys.cityZone] = city.zone.id
         }
     }
 
@@ -58,11 +62,18 @@ class DataStoreUserPreferencesRepository @Inject constructor(
         dataStore.edit { it[Keys.onboardingDone] = true }
     }
 
+    /** Zona guardada; si no hay (versiones anteriores), la de la ciudad conocida o la del teléfono. */
+    private fun zoneFor(name: String, stored: String?): ZoneId =
+        stored?.let { runCatching { ZoneId.of(it) }.getOrNull() }
+            ?: cities.popularCities().firstOrNull { it.name == name }?.zone
+            ?: ZoneId.systemDefault()
+
     private object Keys {
         val cityName = stringPreferencesKey("city_name")
         val cityCountry = stringPreferencesKey("city_country")
         val cityLat = doublePreferencesKey("city_lat")
         val cityLng = doublePreferencesKey("city_lng")
+        val cityZone = stringPreferencesKey("city_zone")
         val freeOnly = booleanPreferencesKey("free_only")
         val radius = intPreferencesKey("radius_minutes")
         val onboardingDone = booleanPreferencesKey("onboarding_done")

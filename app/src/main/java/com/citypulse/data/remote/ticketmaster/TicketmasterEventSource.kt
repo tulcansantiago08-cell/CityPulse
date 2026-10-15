@@ -16,9 +16,9 @@ class TicketmasterEventSource @Inject constructor(
 ) {
     val isConfigured: Boolean get() = BuildConfig.TM_API_KEY.isNotBlank()
 
-    suspend fun events(center: GeoPoint, from: LocalDateTime, to: LocalDateTime, radiusKm: Int = 15): List<Event> {
+    /** [from] y [to] están en la hora local de la ciudad ([zone]). */
+    suspend fun events(center: GeoPoint, from: LocalDateTime, to: LocalDateTime, zone: ZoneId, radiusKm: Int = 15): List<Event> {
         if (!isConfigured) return emptyList()
-        val zone = ZoneId.systemDefault()
         val response = api.searchEvents(
             latLong = String.format(Locale.US, "%.5f,%.5f", center.latitude, center.longitude),
             radiusKm = radiusKm,

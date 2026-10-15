@@ -8,11 +8,12 @@ import com.citypulse.domain.model.GeoPoint
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 
 /** Datos de ejemplo de Madrid, los mismos del prototipo, anclados al día actual. */
 object SampleData {
 
-    val Madrid = City("Madrid", "España", GeoPoint(40.4168, -3.7038))
+    val Madrid = City("Madrid", "España", GeoPoint(40.4168, -3.7038), ZoneId.of("Europe/Madrid"))
 
     /** Punto de referencia del usuario en los datos de ejemplo. */
     val PuertaDelSol = GeoPoint(40.4169, -3.7035)

@@ -11,6 +11,7 @@ import com.citypulse.domain.model.EventSource
 import com.citypulse.domain.model.RefreshState
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.time.Clock
+import com.citypulse.domain.time.now
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -52,9 +53,9 @@ class DefaultEventRepository @Inject constructor(
 
     override suspend fun refresh(city: City): Result<Unit> = refreshMutex.withLock {
         _refreshState.value = RefreshState.Loading
-        val now = clock.now()
+        val now = clock.now(city.zone)
         val (fromTicketmaster, fromCatalog) = coroutineScope {
-            val tm = async { runCatching { ticketmaster.events(city.center, now, now.plusDays(7)) } }
+            val tm = async { runCatching { ticketmaster.events(city.center, now, now.plusDays(7), city.zone) } }
             val fs = async { runCatching { catalog.events(city, now.toLocalDate()) } }
             tm.await() to fs.await()
         }
