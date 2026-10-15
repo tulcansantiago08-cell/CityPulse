@@ -74,12 +74,14 @@ class SurpriseViewModel @Inject constructor(
         viewModelScope.launch { roll() }
     }
 
-    private suspend fun roll() = rollMutex.withLock {
-        val events = cityEvents.value ?: return
-        val current = rolls.value
-        if (!current.canRoll(maxRolls)) return
-        val now = clock.now()
-        val pick = pickSurprise(events.events.surpriseCandidates(now), current.seenEventIds, current.currentEventId) ?: return
-        rollsRepository.save(current.afterPicking(pick.event.id))
+    private suspend fun roll() {
+        rollMutex.withLock {
+            val events = cityEvents.value ?: return
+            val current = rolls.value
+            if (!current.canRoll(maxRolls)) return
+            val now = clock.now()
+            val pick = pickSurprise(events.events.surpriseCandidates(now), current.seenEventIds, current.currentEventId) ?: return
+            rollsRepository.save(current.afterPicking(pick.event.id))
+        }
     }
 }
