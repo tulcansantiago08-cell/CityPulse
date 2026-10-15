@@ -57,6 +57,17 @@ class EventFiltersTest {
     }
 
     @Test
+    fun `esta semana muestra cada evento recurrente una sola vez y no repite lo que esta pasando`() {
+        val daily = (0..6L).map { testEvent("daily$it", start = now.plusDays(it).withHour(12)).copy(title = "Mercado") }
+        val liveNow = listOf(
+            testEvent("bar0", start = now.minusHours(1)).copy(title = "Bar"),
+            testEvent("bar1", start = now.plusDays(1).minusHours(1)).copy(title = "Bar"),
+        )
+        val result = (daily + liveNow).withDistanceFrom(PuertaDelSol).upcomingThisWeek(now)
+        assertEquals(listOf("daily1"), result.map { it.event.id })
+    }
+
+    @Test
     fun `filtro gratis y categoria`() {
         val free = testEvent("a", start = now, category = Category.Markets)
         val paid = testEvent("b", start = now, price = "10 €")

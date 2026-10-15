@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.time.Clock
 import com.citypulse.domain.usecase.ObserveCityEvents
+import com.citypulse.domain.usecase.nextOccurrences
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,7 @@ class MapViewModel @Inject constructor(
         // En el mapa: lo que no ha terminado y empieza esta semana; primero lo que está en curso.
         val events = cityEvents?.events.orEmpty()
             .filter { !it.event.hasEnded(now) && it.event.start.isBefore(limit) }
+            .nextOccurrences()
             .sortedWith(compareByDescending<com.citypulse.domain.model.NearbyEvent> { it.event.isLive(now) }.thenBy { it.walkMinutes })
             .map { it.toUi(now) }
         MapUiState(

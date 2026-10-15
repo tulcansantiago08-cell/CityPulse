@@ -5,14 +5,15 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.citypulse.data.city.StaticCityRepository
-import com.citypulse.data.fake.FakeEventRepository
 import com.citypulse.data.local.DataStoreSurpriseRollsRepository
 import com.citypulse.data.local.DataStoreUserPreferencesRepository
 import com.citypulse.data.location.AndroidLocationRepository
 import com.citypulse.data.local.RoomSavedEventsRepository
+import com.citypulse.data.local.db.CachedEventDao
 import com.citypulse.data.local.db.CityPulseDatabase
 import com.citypulse.data.local.db.SavedEventDao
 import com.citypulse.data.network.AndroidConnectivityRepository
+import com.citypulse.data.repository.DefaultEventRepository
 import com.citypulse.data.local.cityPulseDataStore
 import com.citypulse.domain.repository.CityRepository
 import com.citypulse.domain.repository.ConnectivityRepository
@@ -36,7 +37,7 @@ import javax.inject.Singleton
 abstract class DataModule {
 
     @Binds
-    abstract fun bindEventRepository(impl: FakeEventRepository): EventRepository
+    abstract fun bindEventRepository(impl: DefaultEventRepository): EventRepository
 
     @Binds
     abstract fun bindUserPreferencesRepository(impl: DataStoreUserPreferencesRepository): UserPreferencesRepository
@@ -64,11 +65,14 @@ abstract class DataModule {
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): CityPulseDatabase =
             Room.databaseBuilder(context, CityPulseDatabase::class.java, "citypulse.db")
-                .addMigrations(CityPulseDatabase.MIGRATION_1_2)
+                .addMigrations(CityPulseDatabase.MIGRATION_1_2, CityPulseDatabase.MIGRATION_2_3)
                 .build()
 
         @Provides
         fun provideSavedEventDao(db: CityPulseDatabase): SavedEventDao = db.savedEventDao()
+
+        @Provides
+        fun provideCachedEventDao(db: CityPulseDatabase): CachedEventDao = db.cachedEventDao()
 
         @Provides
         @Singleton

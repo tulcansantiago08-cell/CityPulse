@@ -30,12 +30,24 @@ fun List<NearbyEvent>.happeningNow(now: LocalDateTime): List<NearbyEvent> {
         .sortedBy { it.event.start }
 }
 
-/** Próximos eventos de los siguientes 7 días que no están ya en "Pasando ahora". */
+/**
+ * De un evento recurrente (mismo título en el mismo lugar) deja solo su ocurrencia más
+ * próxima, para no repetir "Mercado de San Miguel" cada día de la semana.
+ */
+fun List<NearbyEvent>.nextOccurrences(): List<NearbyEvent> =
+    sortedBy { it.event.start }.distinctBy { it.event.title.lowercase().trim() to it.event.venue.lowercase().trim() }
+
+/**
+ * Próximos eventos de los siguientes 7 días, una vez cada uno, sin repetir los que ya
+ * aparecen en "Pasando ahora".
+ */
 fun List<NearbyEvent>.upcomingThisWeek(now: LocalDateTime): List<NearbyEvent> {
     val soon = now.plusMinutes(STARTING_SOON_MINUTES)
     val limit = now.toLocalDate().plusDays(7).atStartOfDay()
+    val happening = happeningNow(now).map { it.event.title.lowercase().trim() to it.event.venue.lowercase().trim() }.toSet()
     return filter { it.event.start.isAfter(soon) && it.event.start.isBefore(limit) }
-        .sortedBy { it.event.start }
+        .nextOccurrences()
+        .filter { (it.event.title.lowercase().trim() to it.event.venue.lowercase().trim()) !in happening }
 }
 
 /**
