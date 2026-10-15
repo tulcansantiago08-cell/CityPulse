@@ -2,7 +2,9 @@ package com.citypulse.domain.repository
 
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.Event
+import com.citypulse.domain.model.RefreshState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface EventRepository {
     /** Eventos conocidos de la ciudad (de la caché local mientras se actualizan). */
@@ -12,4 +14,7 @@ interface EventRepository {
     suspend fun refresh(city: City): Result<Unit>
 
     suspend fun getEvent(id: String): Event?
+
+    /** Si se está descargando o si la última descarga falló (para mostrar carga o error). */
+    val refreshState: StateFlow<RefreshState>
 }

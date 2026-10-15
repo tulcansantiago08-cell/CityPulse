@@ -2,8 +2,10 @@ package com.citypulse.ui.now
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.citypulse.domain.model.RefreshState
 import com.citypulse.domain.model.TimeSlot
 import com.citypulse.domain.model.UserPreferences
+import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
 import com.citypulse.domain.time.Clock
 import com.citypulse.domain.time.timeSlotFor
@@ -36,6 +38,7 @@ data class NowUiState(
 @HiltViewModel
 class NowViewModel @Inject constructor(
     observeCityEvents: ObserveCityEvents,
+    events: EventRepository,
     private val preferences: UserPreferencesRepository,
     clock: Clock,
 ) : ViewModel() {
@@ -47,11 +50,12 @@ class NowViewModel @Inject constructor(
         observeCityEvents(),
         preferences.preferences,
         selectedSlot,
+        events.refreshState,
         clock.ticks(),
-    ) { cityEvents, prefs, slot, now ->
+    ) { cityEvents, prefs, slot, refresh, now ->
         val radius = prefs.radiusMinutes
         NowUiState(
-            loading = cityEvents == null,
+            loading = cityEvents == null || (cityEvents.events.isEmpty() && refresh == RefreshState.Loading),
             locationLabel = when {
                 cityEvents == null -> ""
                 cityEvents.usingUserLocation -> "Tu ubicación, ${cityEvents.city.name}"

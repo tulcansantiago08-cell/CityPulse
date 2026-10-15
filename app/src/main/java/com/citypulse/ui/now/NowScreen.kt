@@ -56,6 +56,7 @@ import com.citypulse.core.designsystem.component.GlassSurface
 import com.citypulse.core.designsystem.component.GradientButton
 import com.citypulse.core.designsystem.component.NearbyEventCard
 import com.citypulse.core.designsystem.component.PulseDot
+import com.citypulse.core.designsystem.component.SkeletonBlock
 import com.citypulse.core.designsystem.component.dashedBorder
 import com.citypulse.core.designsystem.component.glass
 import com.citypulse.core.designsystem.theme.BrandGradientHorizontal
@@ -122,6 +123,9 @@ fun NowScreen(
                     modifier = Modifier.padding(top = 20.dp),
                 )
             }
+        }
+        if (state.loading) {
+            items(3) { SkeletonBlock(RoundedCornerShape(24.dp), Modifier.fillMaxWidth().height(112.dp)) }
         }
         if (state.events.isEmpty() && !state.loading) {
             item { NothingNearby(state.radiusMinutes, state.canWiden, onWiden) }

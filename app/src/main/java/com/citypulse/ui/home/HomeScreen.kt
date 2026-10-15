@@ -53,6 +53,9 @@ import com.citypulse.core.designsystem.component.DashedMessage
 import com.citypulse.core.designsystem.component.EventCardLarge
 import com.citypulse.core.designsystem.component.EventRowCard
 import com.citypulse.core.designsystem.component.GlassIconButton
+import com.citypulse.core.designsystem.component.GradientButton
+import com.citypulse.core.designsystem.component.SkeletonBlock
+import com.citypulse.core.designsystem.component.dashedBorder
 import com.citypulse.core.designsystem.theme.BrandGradientHorizontal
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
@@ -79,6 +82,7 @@ fun HomeRoute(
         onSelectCategory = viewModel::selectCategory,
         onToggleFreeOnly = viewModel::toggleFreeOnly,
         onToggleSave = viewModel::toggleSaved,
+        onRetry = viewModel::retry,
     )
 }
 
@@ -91,6 +95,7 @@ fun HomeScreen(
     onToggleFreeOnly: () -> Unit,
     onToggleSave: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onRetry: () -> Unit = {},
 ) {
     LazyColumn(
         modifier.fillMaxSize(),
@@ -124,7 +129,13 @@ fun HomeScreen(
                 FreeOnlyToggle(state.freeOnly, onToggleFreeOnly)
             }
         }
-        item { HappeningNowRow(state.happeningNow, state.savedIds, onOpenEvent, onToggleSave) }
+        item {
+            when {
+                state.loading -> CarouselSkeleton()
+                state.error -> LoadError(onRetry)
+                else -> HappeningNowRow(state.happeningNow, state.savedIds, onOpenEvent, onToggleSave)
+            }
+        }
         item {
             Text(
                 "Esta semana",
@@ -133,7 +144,10 @@ fun HomeScreen(
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 12.dp),
             )
         }
-        if (state.thisWeek.isEmpty() && !state.loading) {
+        if (state.loading) {
+            items(3) { SkeletonBlock(RoundedCornerShape(24.dp), Modifier.padding(horizontal = 20.dp, vertical = 5.dp).fillMaxWidth().height(88.dp)) }
+        }
+        if (state.thisWeek.isEmpty() && !state.loading && !state.error) {
             item {
                 DashedMessage(
                     "No hay más eventos esta semana con estos filtros.",
@@ -220,6 +234,30 @@ private fun HappeningNowRow(
                 onClick = { onOpenEvent(event.id) },
             )
         }
+    }
+}
+
+@Composable
+private fun CarouselSkeleton() {
+    Row(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        repeat(2) { SkeletonBlock(RoundedCornerShape(28.dp), Modifier.width(252.dp).height(330.dp)) }
+    }
+}
+
+@Composable
+private fun LoadError(onRetry: () -> Unit) {
+    Column(
+        Modifier.padding(horizontal = 20.dp).fillMaxWidth().dashedBorder(28.dp).padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("No pudimos cargar los eventos", fontSize = 15.sp, color = Color.White)
+        Text(
+            "Puede ser un problema temporal del servicio.",
+            style = MaterialTheme.typography.bodySmall,
+            color = CpColors.TextTertiary,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+        GradientButton("Reintentar", onClick = onRetry, height = 40.dp, modifier = Modifier.padding(top = 14.dp))
     }
 }
 

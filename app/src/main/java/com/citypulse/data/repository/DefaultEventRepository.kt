@@ -8,11 +8,15 @@ import com.citypulse.data.remote.ticketmaster.TicketmasterEventSource
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.EventSource
+import com.citypulse.domain.model.RefreshState
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.time.Clock
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -38,12 +42,16 @@ class DefaultEventRepository @Inject constructor(
 
     private val refreshMutex = Mutex()
 
+    private val _refreshState = MutableStateFlow(RefreshState.Idle)
+    override val refreshState: StateFlow<RefreshState> = _refreshState.asStateFlow()
+
     override fun observeEvents(city: City): Flow<List<Event>> = channelFlow {
         launch { refreshIfStale(city) }
         cache.observeByCity(city.name).collectLatest { rows -> send(rows.map { it.toEvent() }) }
     }
 
     override suspend fun refresh(city: City): Result<Unit> = refreshMutex.withLock {
+        _refreshState.value = RefreshState.Loading
         val now = clock.now()
         val (fromTicketmaster, fromCatalog) = coroutineScope {
             val tm = async { runCatching { ticketmaster.events(city.center, now, now.plusDays(7)) } }
@@ -51,6 +59,7 @@ class DefaultEventRepository @Inject constructor(
             tm.await() to fs.await()
         }
         if (fromTicketmaster.isFailure && fromCatalog.isFailure) {
+            _refreshState.value = RefreshState.Error
             return Result.failure(fromCatalog.exceptionOrNull() ?: fromTicketmaster.exceptionOrNull()!!)
         }
         // Si una fuente falla, se conservan sus eventos de la caché anterior.
@@ -65,6 +74,7 @@ class DefaultEventRepository @Inject constructor(
         )
         val fetchedAt = System.currentTimeMillis()
         cache.replaceCity(city.name, merged.map { it.toCachedEntity(city.name, fetchedAt) })
+        _refreshState.value = RefreshState.Idle
         Result.success(Unit)
     }
 

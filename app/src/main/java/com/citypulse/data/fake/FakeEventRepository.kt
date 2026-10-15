@@ -2,9 +2,11 @@ package com.citypulse.data.fake
 
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.Event
+import com.citypulse.domain.model.RefreshState
 import com.citypulse.domain.repository.EventRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
@@ -25,4 +27,6 @@ class FakeEventRepository @Inject constructor() : EventRepository {
     }
 
     override suspend fun getEvent(id: String): Event? = events.value.firstOrNull { it.id == id }
+
+    override val refreshState: StateFlow<RefreshState> = MutableStateFlow(RefreshState.Idle)
 }

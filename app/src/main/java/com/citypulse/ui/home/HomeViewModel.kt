@@ -3,6 +3,10 @@ package com.citypulse.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.Category
+import com.citypulse.domain.model.CityEvents
+import com.citypulse.domain.model.RefreshState
+import com.citypulse.domain.model.UserPreferences
+import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.SavedEventsRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
 import com.citypulse.domain.time.Clock
@@ -21,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,11 +40,22 @@ data class HomeUiState(
     val happeningNow: List<EventUi> = emptyList(),
     val thisWeek: List<EventUi> = emptyList(),
     val savedIds: Set<String> = emptySet(),
+    /** No hay eventos que mostrar porque fallaron las descargas. */
+    val error: Boolean = false,
+)
+
+private data class HomeInputs(
+    val cityEvents: CityEvents?,
+    val prefs: UserPreferences,
+    val category: Category?,
+    val savedIds: Set<String>,
+    val refresh: RefreshState,
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     observeCityEvents: ObserveCityEvents,
+    private val events: EventRepository,
     private val preferences: UserPreferencesRepository,
     savedEvents: SavedEventsRepository,
     private val toggleSavedEvent: ToggleSavedEvent,
@@ -48,16 +64,21 @@ class HomeViewModel @Inject constructor(
 
     private val selectedCategory = MutableStateFlow<Category?>(null)
 
-    val uiState: StateFlow<HomeUiState> = combine(
+    private val inputs = combine(
         observeCityEvents(),
         preferences.preferences,
         selectedCategory,
         savedEvents.observeSavedIds(),
-        clock.ticks(),
-    ) { cityEvents, prefs, category, savedIds, now ->
+        events.refreshState,
+    ) { cityEvents, prefs, category, savedIds, refresh -> HomeInputs(cityEvents, prefs, category, savedIds, refresh) }
+
+    val uiState: StateFlow<HomeUiState> = combine(inputs, clock.ticks()) { (cityEvents, prefs, category, savedIds, refresh), now ->
+        val nothingCached = cityEvents?.events.isNullOrEmpty()
         val filtered = cityEvents?.events.orEmpty().filter { it.event.matches(prefs.freeOnly, category) }
         HomeUiState(
-            loading = cityEvents == null,
+            // Sin nada en caché, mientras se descarga se muestran esqueletos en vez de "no hay eventos".
+            loading = cityEvents == null || (nothingCached && refresh == RefreshState.Loading),
+            error = nothingCached && refresh == RefreshState.Error,
             cityName = cityEvents?.city?.name ?: prefs.city?.name.orEmpty(),
             dateLine = now.dateLine(),
             greeting = greetingFor(now.toLocalTime()),
@@ -71,6 +92,10 @@ class HomeViewModel @Inject constructor(
 
     fun selectCategory(category: Category?) {
         selectedCategory.value = category
+    }
+
+    fun retry() {
+        viewModelScope.launch { preferences.preferences.first().city?.let { events.refresh(it) } }
     }
 
     fun toggleSaved(eventId: String) {
