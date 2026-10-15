@@ -14,6 +14,7 @@ import com.citypulse.domain.model.City
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.repository.CityRepository
 import com.citypulse.domain.repository.LocationRepository
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -48,29 +49,37 @@ class AndroidLocationRepository @Inject constructor(
         if (!hasPermission()) return null
         // Límite total: si Play Services no responde (p. ej. mientras se actualiza), la app sigue
         // con el centro de la ciudad en vez de quedarse esperando para siempre.
-        return withTimeoutOrNull(LOCATION_TIMEOUT_MS) { lastOrCurrentLocation() }
+        return withTimeoutOrNull(LOCATION_TIMEOUT_MS) { freshOrLastLocation() }
     }
 
+    /**
+     * Primero una posición reciente (de menos de 2 min) o nueva: quien viaja acaba de cambiar de
+     * ciudad y la "última conocida" puede ser de otra. Si no llega a tiempo, se usa la última.
+     */
     @SuppressLint("MissingPermission") // Se comprueba en currentLocation().
-    private suspend fun lastOrCurrentLocation(): GeoPoint? {
-        return runCatching {
-            val location = fused.lastLocation.await()
-                ?: run {
-                    val cancellation = CancellationTokenSource()
-                    // Con permiso preciso se usa el GPS: la distancia a pie necesita precisión.
-                    val priority = if (isGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        Priority.PRIORITY_HIGH_ACCURACY
-                    } else {
-                        Priority.PRIORITY_BALANCED_POWER_ACCURACY
-                    }
-                    try {
-                        fused.getCurrentLocation(priority, cancellation.token).await()
-                    } finally {
-                        cancellation.cancel()
-                    }
+    private suspend fun freshOrLastLocation(): GeoPoint? {
+        val fresh = withTimeoutOrNull(FRESH_LOCATION_TIMEOUT_MS) {
+            runCatching {
+                val cancellation = CancellationTokenSource()
+                // Con permiso preciso se usa el GPS: la distancia a pie necesita precisión.
+                val priority = if (isGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    Priority.PRIORITY_HIGH_ACCURACY
+                } else {
+                    Priority.PRIORITY_BALANCED_POWER_ACCURACY
                 }
-            location?.let { GeoPoint(it.latitude, it.longitude) }
-        }.getOrNull()
+                val request = CurrentLocationRequest.Builder()
+                    .setPriority(priority)
+                    .setMaxUpdateAgeMillis(MAX_LOCATION_AGE_MS)
+                    .build()
+                try {
+                    fused.getCurrentLocation(request, cancellation.token).await()
+                } finally {
+                    cancellation.cancel()
+                }
+            }.getOrNull()
+        }
+        val location = fresh ?: runCatching { fused.lastLocation.await() }.getOrNull()
+        return location?.let { GeoPoint(it.latitude, it.longitude) }
     }
 
     override suspend fun cityAt(point: GeoPoint): City? {
@@ -107,6 +116,8 @@ class AndroidLocationRepository @Inject constructor(
 
     private companion object {
         const val LOCATION_TIMEOUT_MS = 10_000L
+        const val FRESH_LOCATION_TIMEOUT_MS = 7_000L
+        const val MAX_LOCATION_AGE_MS = 2 * 60 * 1000L
         const val NEAREST_CITY_MAX_METERS = 50_000.0
     }
 }
