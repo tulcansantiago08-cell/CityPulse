@@ -29,6 +29,21 @@ La app compila sin ella, pero no cargará eventos de Ticketmaster.
 
 El mapa usa las teselas estándar de OpenStreetMap (osmdroid), que no necesitan clave.
 
+## Firebase (catálogo propio)
+
+1. Crea un proyecto en [Firebase](https://console.firebase.google.com) y registra una app Android con el paquete `com.citypulse`.
+2. Descarga `google-services.json` y colócalo en `app/` (no se sube al repositorio).
+3. Crea una base de datos Firestore en modo de prueba.
+4. Carga el catálogo de ejemplo (Madrid y Bogotá):
+
+   ```bash
+   python3 scripts/seed_firestore.py
+   ```
+
+5. Publica las reglas de `firestore.rules` (solo lectura) en Firestore → Reglas.
+
+Cada evento del catálogo es recurrente (días de la semana + horario) o de una fecha concreta; la app genera sus fechas para los próximos 7 días.
+
 ## Ejecutar
 
 ```bash

@@ -1,0 +1,11 @@
+rules_version = '2';
+// Reglas de producción: la app solo lee el catálogo; nadie puede escribir desde fuera.
+// Publicar en Firebase console → Firestore Database → Reglas después de cargar los datos.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

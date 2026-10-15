@@ -2,6 +2,7 @@ package com.citypulse.di
 
 import com.citypulse.BuildConfig
 import com.citypulse.data.remote.ticketmaster.TicketmasterApi
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,6 +36,10 @@ object NetworkModule {
             }
         }
         .build()
+
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
     @Provides
     @Singleton
