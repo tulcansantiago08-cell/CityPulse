@@ -46,9 +46,16 @@ class AndroidLocationRepository @Inject constructor(
     @SuppressLint("MissingPermission") // Se comprueba en hasPermission().
     override suspend fun currentLocation(): GeoPoint? {
         if (!hasPermission()) return null
+        // Límite total: si Play Services no responde (p. ej. mientras se actualiza), la app sigue
+        // con el centro de la ciudad en vez de quedarse esperando para siempre.
+        return withTimeoutOrNull(LOCATION_TIMEOUT_MS) { lastOrCurrentLocation() }
+    }
+
+    @SuppressLint("MissingPermission") // Se comprueba en currentLocation().
+    private suspend fun lastOrCurrentLocation(): GeoPoint? {
         return runCatching {
             val location = fused.lastLocation.await()
-                ?: withTimeoutOrNull(LOCATION_TIMEOUT_MS) {
+                ?: run {
                     val cancellation = CancellationTokenSource()
                     // Con permiso preciso se usa el GPS: la distancia a pie necesita precisión.
                     val priority = if (isGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -67,7 +74,7 @@ class AndroidLocationRepository @Inject constructor(
     }
 
     override suspend fun cityAt(point: GeoPoint): City? {
-        val address = if (Geocoder.isPresent()) reverseGeocode(point) else null
+        val address = if (Geocoder.isPresent()) withTimeoutOrNull(LOCATION_TIMEOUT_MS) { reverseGeocode(point) } else null
         val name = address?.let { it.locality ?: it.subAdminArea ?: it.adminArea }
             ?: return nearestKnownCity(point)
         // Si es una ciudad conocida se usa su centro; si no, el punto del usuario.
