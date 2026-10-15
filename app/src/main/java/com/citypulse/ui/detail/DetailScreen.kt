@@ -73,12 +73,14 @@ import com.citypulse.core.designsystem.component.SaveButton
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.data.fake.SampleData
+import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.openWalkingDirections
 import com.citypulse.ui.common.shareMessage
 import com.citypulse.ui.common.shareText
 import com.citypulse.ui.common.toUi
+import com.citypulse.ui.map.OsmMiniMap
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import kotlin.math.roundToInt
@@ -140,7 +142,7 @@ fun DetailScreen(
                 ),
             ),
         )
-        DetailSheet(event, onDirections)
+        DetailSheet(event, state, onDirections)
         Row(
             Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -156,7 +158,7 @@ fun DetailScreen(
 
 /** Hoja glass que se arrastra entre dos alturas; tocar el asa también la alterna. */
 @Composable
-private fun DetailSheet(event: EventUi, onDirections: () -> Unit) {
+private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val density = LocalDensity.current
         val maxHeightPx = constraints.maxHeight
@@ -219,7 +221,7 @@ private fun DetailSheet(event: EventUi, onDirections: () -> Unit) {
                 (maxHeightPx - (sheetState.offset.takeUnless { it.isNaN() } ?: collapsedPx)).toDp()
             }
             Box(Modifier.fillMaxWidth().height(visibleHeight - 20.dp)) {
-                SheetContent(event, Modifier.fillMaxSize())
+                SheetContent(event, state, onDirections, Modifier.fillMaxSize())
                 GradientButton(
                     text = "Cómo llegar",
                     onClick = onDirections,
@@ -236,7 +238,7 @@ private fun DetailSheet(event: EventUi, onDirections: () -> Unit) {
 }
 
 @Composable
-private fun SheetContent(event: EventUi, modifier: Modifier = Modifier) {
+private fun SheetContent(event: EventUi, state: DetailUiState, onDirections: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier
             .verticalScroll(rememberScrollState())
@@ -270,7 +272,15 @@ private fun SheetContent(event: EventUi, modifier: Modifier = Modifier) {
             color = Color.White.copy(alpha = 0.82f),
             modifier = Modifier.padding(top = 16.dp),
         )
-        StylizedMiniMap(event.distanceLabel, Modifier.padding(top = 16.dp))
+        OsmMiniMap(
+            eventLocation = GeoPoint(event.latitude, event.longitude),
+            origin = state.origin,
+            showUser = state.usingUserLocation,
+            fallback = event.fallback,
+            distanceLabel = event.distanceLabel,
+            onClick = onDirections,
+            modifier = Modifier.padding(top = 16.dp),
+        )
     }
 }
 

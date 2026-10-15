@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.SavedEventsRepository
 import com.citypulse.domain.time.Clock
@@ -27,6 +28,9 @@ data class DetailUiState(
     val loading: Boolean = true,
     val event: EventUi? = null,
     val saved: Boolean = false,
+    /** Punto desde el que se mide la distancia (usuario o centro de la ciudad). */
+    val origin: GeoPoint? = null,
+    val usingUserLocation: Boolean = false,
 )
 
 @HiltViewModel
@@ -54,7 +58,13 @@ class DetailViewModel @Inject constructor(
     ) { cityEvents, stored, savedIds, now ->
         val nearby = cityEvents?.events?.firstOrNull { it.event.id == eventId }
             ?: stored?.let { listOf(it).withDistanceFrom(cityEvents?.origin ?: it.location).first() }
-        DetailUiState(loading = false, event = nearby?.toUi(now), saved = eventId in savedIds)
+        DetailUiState(
+            loading = false,
+            event = nearby?.toUi(now),
+            saved = eventId in savedIds,
+            origin = cityEvents?.origin,
+            usingUserLocation = cityEvents?.usingUserLocation == true,
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DetailUiState())
 
     fun toggleSaved() {

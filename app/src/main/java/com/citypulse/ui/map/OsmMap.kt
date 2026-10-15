@@ -39,7 +39,7 @@ import java.io.File
  * las invierte y las oscurece para que el mapa encaje con el tema oscuro de la app.
  * Fila = factor·(255 − gris) + desplazamiento, con un toque azulado en el canal B.
  */
-private fun darkMapFilter(): ColorMatrixColorFilter {
+internal fun darkMapFilter(): ColorMatrixColorFilter {
     fun row(factor: Float, offset: Float) =
         floatArrayOf(-0.299f * factor, -0.587f * factor, -0.114f * factor, 0f, 255f * factor + offset)
     val r = row(0.42f, 6f)
@@ -50,7 +50,7 @@ private fun darkMapFilter(): ColorMatrixColorFilter {
 
 private const val DEFAULT_ZOOM = 15.0
 
-private fun configureOsmdroid(context: Context) {
+internal fun configureOsmdroid(context: Context) {
     Configuration.getInstance().apply {
         // Los servidores de teselas exigen identificar la app.
         userAgentValue = context.packageName
