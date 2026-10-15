@@ -26,6 +26,7 @@ class StaticCityRepository @Inject constructor() : CityRepository {
         city("Ciudad de México", "México", 19.4326, -99.1332, "America/Mexico_City"),
         city("Buenos Aires", "Argentina", -34.6037, -58.3816, "America/Argentina/Buenos_Aires"),
         city("Bogotá", "Colombia", 4.7110, -74.0721, "America/Bogota"),
+        city("Pasto", "Colombia", 1.2136, -77.2811, "America/Bogota"),
     )
 
     private fun city(name: String, country: String, lat: Double, lng: Double, zone: String) =

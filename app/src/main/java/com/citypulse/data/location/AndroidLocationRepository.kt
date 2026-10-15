@@ -86,8 +86,13 @@ class AndroidLocationRepository @Inject constructor(
         val address = if (Geocoder.isPresent()) withTimeoutOrNull(LOCATION_TIMEOUT_MS) { reverseGeocode(point) } else null
         val name = address?.let { it.locality ?: it.subAdminArea ?: it.adminArea }
             ?: return nearestKnownCity(point)
-        // Si es una ciudad conocida se usa su centro; si no, el punto del usuario.
-        val known = cityRepository.popularCities().firstOrNull { it.name.normalizedForSearch() == name.normalizedForSearch() }
+        // Si es una ciudad conocida se usa su centro; si no, el punto del usuario. Se admite que el
+        // nombre oficial sea más largo ("San Juan de Pasto" es "Pasto").
+        val geocoded = name.normalizedForSearch()
+        val known = cityRepository.popularCities().firstOrNull {
+            val candidate = it.name.normalizedForSearch()
+            geocoded == candidate || geocoded.endsWith(" $candidate")
+        }
         return known ?: City(name, address.countryName.orEmpty(), point)
     }
 

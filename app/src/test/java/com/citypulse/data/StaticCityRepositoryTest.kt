@@ -12,12 +12,14 @@ class StaticCityRepositoryTest {
     @Test
     fun `busqueda ignora tildes y mayusculas`() {
         assertEquals(listOf("Bogotá"), repository.search("BOGOTA").map { it.name })
+        assertEquals(listOf("Pasto"), repository.search("pasto").map { it.name })
         assertEquals(listOf("París"), repository.search("paris").map { it.name })
     }
 
     @Test
     fun `busca tambien por pais`() {
         assertEquals(listOf("Lisboa", "Oporto"), repository.search("portugal").map { it.name })
+        assertEquals(listOf("Bogotá", "Pasto"), repository.search("colombia").map { it.name })
     }
 
     @Test

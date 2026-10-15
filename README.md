@@ -72,7 +72,7 @@ Kotlin · Jetpack Compose + Material 3 · Navigation Compose (rutas tipadas) · 
 ## Fuentes de datos
 
 - **Ticketmaster Discovery API**: conciertos y espectáculos alrededor del centro de la ciudad (15 km, próximos 7 días).
-- **Catálogo propio en Firestore**: eventos gratuitos, mercados y ferias que no aparecen en Ticketmaster. Cada entrada es **recurrente** (días de la semana + horario, como "domingos de 9 a 15 h") o de una fecha concreta, y la app genera sus fechas para los próximos 7 días. Incluye datos de ejemplo de **Madrid** y **Bogotá**.
+- **Catálogo propio en Firestore**: eventos gratuitos, mercados y ferias que no aparecen en Ticketmaster. Cada entrada es **recurrente** (días de la semana + horario, como "domingos de 9 a 15 h") o de una fecha concreta, y la app genera sus fechas para los próximos 7 días. Incluye datos de ejemplo de **Madrid**, **Bogotá** y **Pasto**. Ticketmaster no tiene eventos en Colombia, así que allí la app depende del catálogo propio.
 
 ## Configuración
 

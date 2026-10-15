@@ -653,6 +653,327 @@
       "free": false,
       "description": "Vista de toda la ciudad desde 3.152 m. Se sube a pie, en funicular o en teleférico.",
       "imageUrl": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-narino",
+      "city": "Pasto",
+      "title": "Tarde en la Plaza de Nariño",
+      "category": "Culture",
+      "venue": "Plaza de Nariño",
+      "area": "Centro",
+      "lat": 1.2142,
+      "lng": -77.2783,
+      "startTime": "16:00",
+      "endTime": "19:00",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "price": null,
+      "free": true,
+      "description": "El corazón de la ciudad: palomas, lustrabotas y el ir y venir del centro histórico. Buen punto de partida para recorrer a pie.",
+      "imageUrl": "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-sanjuan",
+      "city": "Pasto",
+      "title": "Iglesia de San Juan Bautista",
+      "category": "Culture",
+      "venue": "Iglesia de San Juan Bautista",
+      "area": "Centro",
+      "lat": 1.2146,
+      "lng": -77.278,
+      "startTime": "08:00",
+      "endTime": "18:00",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "price": null,
+      "free": true,
+      "description": "Templo colonial junto a la Plaza de Nariño, con retablos y tallas de la escuela quiteña. Entrada libre fuera de las misas.",
+      "imageUrl": "https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-oro",
+      "city": "Pasto",
+      "title": "Museo del Oro Nariño",
+      "category": "Art",
+      "venue": "Banco de la República",
+      "area": "Centro",
+      "lat": 1.2133,
+      "lng": -77.2804,
+      "startTime": "09:00",
+      "endTime": "17:00",
+      "weekdays": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "price": null,
+      "free": true,
+      "description": "Orfebrería y cerámica de los pueblos prehispánicos de Nariño. Entrada libre.",
+      "imageUrl": "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-cineclub",
+      "city": "Pasto",
+      "title": "Cine club del Banco de la República",
+      "category": "Culture",
+      "venue": "Centro Cultural Banco de la República",
+      "area": "Centro",
+      "lat": 1.2133,
+      "lng": -77.2806,
+      "startTime": "17:00",
+      "endTime": "19:00",
+      "weekdays": [
+        3
+      ],
+      "price": null,
+      "free": true,
+      "description": "Ciclos de cine de autor con conversatorio al final de la función.",
+      "imageUrl": "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-taminango",
+      "city": "Pasto",
+      "title": "Museo Taminango de Artes y Tradiciones",
+      "category": "Art",
+      "venue": "Casona Taminango",
+      "area": "Centro",
+      "lat": 1.2114,
+      "lng": -77.2799,
+      "startTime": "08:00",
+      "endTime": "18:00",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "price": null,
+      "free": false,
+      "description": "Casona del siglo XVII con objetos, oficios y tradiciones populares de Nariño.",
+      "imageUrl": "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-potrerillo",
+      "city": "Pasto",
+      "title": "Plaza de mercado El Potrerillo",
+      "category": "Markets",
+      "venue": "Plaza de mercado El Potrerillo",
+      "area": "El Potrerillo",
+      "lat": 1.201,
+      "lng": -77.269,
+      "startTime": "05:00",
+      "endTime": "15:00",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "price": null,
+      "free": true,
+      "description": "El mercado más grande de la ciudad: frutas, papas de mil variedades y desayunos típicos. Ve temprano.",
+      "imageUrl": "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-hervidos",
+      "city": "Pasto",
+      "title": "Hervidos en el centro",
+      "category": "Food",
+      "venue": "Centro histórico",
+      "area": "Centro",
+      "lat": 1.2128,
+      "lng": -77.279,
+      "startTime": "19:00",
+      "endTime": "23:00",
+      "weekdays": [
+        4,
+        5,
+        6
+      ],
+      "price": "Desde 3.000 COP",
+      "free": false,
+      "description": "La bebida caliente típica de Pasto, de frutas con o sin aguardiente, ideal para las noches frías.",
+      "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-cuy",
+      "city": "Pasto",
+      "title": "Cuy asado en Catambuco",
+      "category": "Food",
+      "venue": "Asaderos de Catambuco",
+      "area": "Catambuco",
+      "lat": 1.161,
+      "lng": -77.297,
+      "startTime": "11:00",
+      "endTime": "17:00",
+      "weekdays": [
+        6,
+        7
+      ],
+      "price": null,
+      "free": false,
+      "description": "El plato tradicional de la región en los asaderos del corregimiento de Catambuco, al sur de la ciudad.",
+      "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-barniz",
+      "city": "Pasto",
+      "title": "Taller de barniz de Pasto",
+      "category": "Art",
+      "venue": "Taller artesanal del centro",
+      "area": "Centro",
+      "lat": 1.215,
+      "lng": -77.28,
+      "startTime": "09:00",
+      "endTime": "12:00",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "price": null,
+      "free": false,
+      "description": "Artesanos del barniz de Pasto (mopa-mopa), técnica precolombina declarada patrimonio de la humanidad.",
+      "imageUrl": "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-catedral",
+      "city": "Pasto",
+      "title": "Ruta de iglesias del centro",
+      "category": "Culture",
+      "venue": "Catedral de Pasto",
+      "area": "Centro",
+      "lat": 1.2133,
+      "lng": -77.2795,
+      "startTime": "09:00",
+      "endTime": "12:00",
+      "weekdays": [
+        7
+      ],
+      "price": null,
+      "free": true,
+      "description": "Recorrido a pie por la catedral y los templos coloniales del centro histórico.",
+      "imageUrl": "https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-andina",
+      "city": "Pasto",
+      "title": "Música andina en la Plaza del Carnaval",
+      "category": "Music",
+      "venue": "Plaza del Carnaval",
+      "area": "Centro",
+      "lat": 1.2106,
+      "lng": -77.2771,
+      "startTime": "18:00",
+      "endTime": "21:00",
+      "weekdays": [
+        5,
+        6
+      ],
+      "price": null,
+      "free": true,
+      "description": "Grupos de música andina y bandas locales en la plaza donde desfila el Carnaval de Negros y Blancos.",
+      "imageUrl": "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-feria",
+      "city": "Pasto",
+      "title": "Feria artesanal en la Plaza del Carnaval",
+      "category": "Fairs",
+      "venue": "Plaza del Carnaval",
+      "area": "Centro",
+      "lat": 1.2106,
+      "lng": -77.2771,
+      "startTime": "10:00",
+      "endTime": "18:00",
+      "weekdays": [
+        6,
+        7
+      ],
+      "price": null,
+      "free": true,
+      "description": "Artesanías en barniz y tamo, tejidos y dulces típicos de Nariño.",
+      "imageUrl": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-recreovia",
+      "city": "Pasto",
+      "title": "Recreovía en el Parque Infantil",
+      "category": "Culture",
+      "venue": "Parque Infantil",
+      "area": "Centro",
+      "lat": 1.2187,
+      "lng": -77.2846,
+      "startTime": "07:00",
+      "endTime": "12:00",
+      "weekdays": [
+        7
+      ],
+      "price": null,
+      "free": true,
+      "description": "Aeróbicos y actividades al aire libre para todas las edades.",
+      "imageUrl": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-imperial",
+      "city": "Pasto",
+      "title": "Función en el Teatro Imperial",
+      "category": "Culture",
+      "venue": "Teatro Imperial",
+      "area": "Centro",
+      "lat": 1.2131,
+      "lng": -77.279,
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "weekdays": [
+        5
+      ],
+      "price": null,
+      "free": false,
+      "description": "Teatro, danza y conciertos en el teatro histórico de la ciudad.",
+      "imageUrl": "https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=720&q=70"
+    },
+    {
+      "id": "pas-udenar",
+      "city": "Pasto",
+      "title": "Concierto en la Universidad de Nariño",
+      "category": "Music",
+      "venue": "Universidad de Nariño",
+      "area": "Torobajo",
+      "lat": 1.2304,
+      "lng": -77.2925,
+      "startTime": "18:00",
+      "endTime": "20:00",
+      "weekdays": [
+        4
+      ],
+      "price": null,
+      "free": true,
+      "description": "Ensambles y grupos de la universidad. Entrada libre.",
+      "imageUrl": "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=720&q=70"
     }
   ]
 }
