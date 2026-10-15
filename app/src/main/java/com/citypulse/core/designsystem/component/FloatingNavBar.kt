@@ -1,5 +1,6 @@
 package com.citypulse.core.designsystem.component
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -41,17 +43,18 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.citypulse.R
 import com.citypulse.core.designsystem.theme.BrandGradient
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 
 /** Pestañas de la barra inferior. Sorpresa va en el botón central. */
-enum class NavTab(val label: String, val icon: ImageVector, val selectedIcon: ImageVector) {
-    Home("Inicio", Icons.Outlined.Home, Icons.Rounded.Home),
-    Now("Ahora", Icons.Outlined.NearMe, Icons.Rounded.NearMe),
-    Surprise("Sorpresa", Icons.Rounded.AutoAwesome, Icons.Rounded.AutoAwesome),
-    Map("Mapa", Icons.Outlined.Map, Icons.Rounded.Map),
-    Saved("Guardados", Icons.Outlined.FavoriteBorder, Icons.Rounded.Favorite),
+enum class NavTab(@StringRes val label: Int, val icon: ImageVector, val selectedIcon: ImageVector) {
+    Home(R.string.nav_home, Icons.Outlined.Home, Icons.Rounded.Home),
+    Now(R.string.nav_now, Icons.Outlined.NearMe, Icons.Rounded.NearMe),
+    Surprise(R.string.nav_surprise, Icons.Rounded.AutoAwesome, Icons.Rounded.AutoAwesome),
+    Map(R.string.nav_map, Icons.Outlined.Map, Icons.Rounded.Map),
+    Saved(R.string.nav_saved, Icons.Outlined.FavoriteBorder, Icons.Rounded.Favorite),
 }
 
 /** Barra de navegación flotante tipo píldora glass con el botón Sorpresa elevado en el centro. */
@@ -103,12 +106,13 @@ private fun NavItem(tab: NavTab, selected: NavTab, onSelect: (NavTab) -> Unit) {
             tint = if (active) Color.White else Color.White.copy(alpha = 0.55f),
             modifier = Modifier.size(24.dp).then(if (active) Modifier.gradientTint() else Modifier),
         )
-        Text(tab.label, fontSize = 10.sp, color = if (active) Color.White else Color.White.copy(alpha = 0.55f))
+        Text(stringResource(tab.label), fontSize = 10.sp, color = if (active) Color.White else Color.White.copy(alpha = 0.55f))
     }
 }
 
 @Composable
 private fun SurpriseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val label = stringResource(R.string.nav_surprise)
     Box(
         modifier
             .size(68.dp)
@@ -116,7 +120,7 @@ private fun SurpriseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             .padding(5.dp)
             .glow(CircleShape, elevation = 20.dp)
             .background(BrandGradient, CircleShape)
-            .semantics { contentDescription = "Sorpresa" }
+            .semantics { contentDescription = label }
             .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {

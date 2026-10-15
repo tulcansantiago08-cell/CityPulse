@@ -9,20 +9,17 @@ import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class SavedUiState(
     val loading: Boolean = true,
     val events: List<EventUi> = emptyList(),
-) {
-    val countLabel: String
-        get() = "${events.size} ${if (events.size == 1) "evento disponible" else "eventos disponibles"} sin conexión"
-}
+)
 
 @HiltViewModel
 class SavedViewModel @Inject constructor(

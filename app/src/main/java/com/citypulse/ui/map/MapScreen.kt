@@ -25,12 +25,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.BadgeSize
 import com.citypulse.core.designsystem.component.EventImage
 import com.citypulse.core.designsystem.component.FreeBadge
@@ -74,7 +77,7 @@ fun MapScreen(
             Row(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Rounded.Map, null, tint = CpColors.Cyan, modifier = Modifier.size(20.dp))
                 Text(
-                    "${state.cityName} · ${state.events.size} eventos cerca",
+                    pluralStringResource(R.plurals.map_count, state.events.size, state.cityName, state.events.size),
                     fontSize = 13.sp,
                     color = Color.White,
                     modifier = Modifier.padding(start = 10.dp),
@@ -87,7 +90,7 @@ fun MapScreen(
         ) {
             // Crédito obligatorio de OpenStreetMap.
             Text(
-                "© OpenStreetMap contributors",
+                stringResource(R.string.map_attribution),
                 fontSize = 9.sp,
                 color = Color.White.copy(alpha = 0.5f),
                 modifier = Modifier.padding(start = 6.dp, bottom = 6.dp),
@@ -122,7 +125,7 @@ private fun SelectedEventCard(event: EventUi, onClick: () -> Unit) {
                     modifier = Modifier.padding(top = 4.dp),
                 )
                 Text(
-                    "${event.walkMinutes} min a pie · ${event.venue}",
+                    stringResource(R.string.map_walk_venue, event.walkMinutes, event.venue),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.65f),
                     maxLines = 1,

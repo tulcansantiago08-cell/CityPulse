@@ -27,12 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.citypulse.R
 import com.citypulse.core.designsystem.theme.BrandGradientHorizontal
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
@@ -185,7 +187,7 @@ fun NearbyEventCard(
         ) {
             Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("$walkMinutes", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White, lineHeight = 18.sp)
-                Text("min", fontSize = 9.sp, color = CpColors.TextSecondary, lineHeight = 12.sp)
+                Text(stringResource(R.string.walk_minutes_unit), fontSize = 9.sp, color = CpColors.TextSecondary, lineHeight = 12.sp)
             }
         }
     }

@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.CategoryStory
 import com.citypulse.core.designsystem.component.CountPill
 import com.citypulse.core.designsystem.component.DashedMessage
@@ -123,7 +125,7 @@ fun HomeScreen(
                 Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Pasando ahora", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(stringResource(R.string.home_happening_now), style = MaterialTheme.typography.titleMedium, color = Color.White)
                 CountPill(state.happeningNow.size, Modifier.padding(start = 8.dp))
                 Box(Modifier.weight(1f))
                 FreeOnlyToggle(state.freeOnly, onToggleFreeOnly)
@@ -138,7 +140,7 @@ fun HomeScreen(
         }
         item {
             Text(
-                "Esta semana",
+                stringResource(R.string.home_this_week),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 12.dp),
@@ -150,7 +152,7 @@ fun HomeScreen(
         if (state.thisWeek.isEmpty() && !state.loading && !state.error) {
             item {
                 DashedMessage(
-                    "No hay más eventos esta semana con estos filtros.",
+                    stringResource(R.string.home_nothing_this_week),
                     Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
                 )
             }
@@ -191,10 +193,10 @@ private fun Header(state: HomeUiState, onChangeCity: () -> Unit) {
                     state.cityName,
                     style = MaterialTheme.typography.headlineMedium.merge(TextStyle(brush = BrandGradientHorizontal)),
                 )
-                Icon(Icons.Rounded.ExpandMore, contentDescription = "Cambiar ciudad", tint = CpColors.Cyan, modifier = Modifier.size(24.dp))
+                Icon(Icons.Rounded.ExpandMore, contentDescription = stringResource(R.string.home_change_city), tint = CpColors.Cyan, modifier = Modifier.size(24.dp))
             }
         }
-        GlassIconButton(Icons.Rounded.Search, contentDescription = "Buscar ciudad", onClick = onChangeCity)
+        GlassIconButton(Icons.Rounded.Search, contentDescription = stringResource(R.string.home_search_city), onClick = onChangeCity)
     }
 }
 
@@ -207,7 +209,7 @@ private fun HappeningNowRow(
 ) {
     if (events.isEmpty()) {
         DashedMessage(
-            "Nada en curso con estos filtros.",
+            stringResource(R.string.home_nothing_live),
             Modifier.padding(horizontal = 20.dp).fillMaxWidth().height(160.dp),
         )
         return
@@ -250,14 +252,14 @@ private fun LoadError(onRetry: () -> Unit) {
         Modifier.padding(horizontal = 20.dp).fillMaxWidth().dashedBorder(28.dp).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("No pudimos cargar los eventos", fontSize = 15.sp, color = Color.White)
+        Text(stringResource(R.string.home_load_error_title), fontSize = 15.sp, color = Color.White)
         Text(
-            "Puede ser un problema temporal del servicio.",
+            stringResource(R.string.home_load_error_body),
             style = MaterialTheme.typography.bodySmall,
             color = CpColors.TextTertiary,
             modifier = Modifier.padding(top = 4.dp),
         )
-        GradientButton("Reintentar", onClick = onRetry, height = 40.dp, modifier = Modifier.padding(top = 14.dp))
+        GradientButton(stringResource(R.string.action_retry), onClick = onRetry, height = 40.dp, modifier = Modifier.padding(top = 14.dp))
     }
 }
 
@@ -266,15 +268,16 @@ private fun LoadError(onRetry: () -> Unit) {
 private fun FreeOnlyToggle(checked: Boolean, onToggle: () -> Unit) {
     val knobOffset by animateDpAsState(if (checked) 20.dp else 2.dp, label = "knob")
     val trackColor by animateColorAsState(if (checked) Color.Transparent else Color.White.copy(alpha = 0.16f), label = "track")
+    val stateText = stringResource(if (checked) R.string.state_on else R.string.state_off)
     Row(
         Modifier
             .clip(CircleShape)
-            .semantics { stateDescription = if (checked) "Activado" else "Desactivado" }
+            .semantics { stateDescription = stateText }
             .clickable(role = Role.Switch, onClick = onToggle)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Solo gratis", fontSize = 12.sp, color = Color.White.copy(alpha = 0.75f))
+        Text(stringResource(R.string.home_free_only), fontSize = 12.sp, color = Color.White.copy(alpha = 0.75f))
         Box(
             Modifier
                 .padding(start = 8.dp)
@@ -293,11 +296,13 @@ private fun FreeOnlyToggle(checked: Boolean, onToggle: () -> Unit) {
 }
 
 @Composable
-private fun Greeting.text(): String = when (this) {
-    Greeting.Morning -> "Buenos días"
-    Greeting.Afternoon -> "Buenas tardes"
-    Greeting.Evening -> "Buenas noches"
-}
+private fun Greeting.text(): String = stringResource(
+    when (this) {
+        Greeting.Morning -> R.string.home_greeting_morning
+        Greeting.Afternoon -> R.string.home_greeting_afternoon
+        Greeting.Evening -> R.string.home_greeting_evening
+    },
+)
 
 @Preview(widthDp = 360, heightDp = 800, backgroundColor = 0xFF0B0A10, showBackground = true)
 @Composable

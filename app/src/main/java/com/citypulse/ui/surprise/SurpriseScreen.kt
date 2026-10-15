@@ -29,11 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.EmptyState
 import com.citypulse.core.designsystem.component.EventImage
 import com.citypulse.core.designsystem.component.FreeBadge
@@ -76,15 +78,15 @@ fun SurpriseScreen(
         state.loading -> Box(modifier.fillMaxSize())
         event == null -> EmptyState(
             icon = Icons.Rounded.ExploreOff,
-            title = if (state.rollsLeft == 0) "Sin tiradas por hoy" else "Nada a menos de 30 min",
+            title = stringResource(if (state.rollsLeft == 0) R.string.surprise_empty_no_rolls_title else R.string.surprise_empty_title),
             message = if (state.rollsLeft == 0) {
-                "Ya usaste tus ${state.maxRolls} sorpresas de hoy. Mañana tendrás nuevas."
+                stringResource(R.string.surprise_empty_no_rolls_body, state.maxRolls)
             } else {
-                "Ahora mismo no hay eventos cerca que estén por empezar. Vuelve a intentarlo más tarde."
+                stringResource(R.string.surprise_empty_body)
             },
-            primaryAction = "Ver eventos cerca",
+            primaryAction = stringResource(R.string.surprise_see_nearby),
             onPrimary = onSeeNearby,
-            secondaryAction = "Ir a Inicio",
+            secondaryAction = stringResource(R.string.surprise_go_home),
             onSecondary = onGoHome,
             modifier = modifier.navigationBarsPadding().padding(bottom = 80.dp),
         )
@@ -118,10 +120,10 @@ private fun SurpriseCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            GlassTag("SORPRESA", leading = {
+            GlassTag(stringResource(R.string.surprise_tag), leading = {
                 Icon(Icons.Rounded.AutoAwesome, null, tint = CpColors.Cyan, modifier = Modifier.size(16.dp))
             })
-            GlassTag("Tirada ${state.rollNumber} de ${state.maxRolls}")
+            GlassTag(stringResource(R.string.surprise_roll, state.rollNumber, state.maxRolls))
         }
 
         Column(Modifier.align(Alignment.BottomStart).padding(20.dp)) {
@@ -149,13 +151,13 @@ private fun SurpriseCard(
             Row(Modifier.padding(top = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 val canRoll = state.rollsLeft > 0
                 GlassButton(
-                    text = if (canRoll) "Otra · ${state.rollsLeft}" else "Sin tiradas",
+                    text = if (canRoll) stringResource(R.string.surprise_reroll, state.rollsLeft) else stringResource(R.string.surprise_no_rolls),
                     onClick = onReroll,
                     icon = Icons.Rounded.Refresh,
                     enabled = canRoll,
                     modifier = Modifier.weight(1f),
                 )
-                GradientButton("¡Voy!", onClick = { onOpenEvent(event.id) }, modifier = Modifier.weight(1.2f))
+                GradientButton(stringResource(R.string.surprise_go), onClick = { onOpenEvent(event.id) }, modifier = Modifier.weight(1.2f))
             }
         }
     }

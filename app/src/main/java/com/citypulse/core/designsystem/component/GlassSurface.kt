@@ -12,6 +12,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,10 +20,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.citypulse.R
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 
@@ -58,6 +61,8 @@ fun GlassIconButton(
 ) {
     Box(
         modifier = modifier
+            // Área táctil de al menos 48 dp aunque el círculo visible sea más pequeño.
+            .minimumInteractiveComponentSize()
             .size(size)
             .clip(CircleShape)
             .glass(CircleShape)
@@ -78,7 +83,7 @@ fun SaveButton(
 ) {
     GlassIconButton(
         icon = if (saved) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-        contentDescription = if (saved) "Quitar de guardados" else "Guardar evento",
+        contentDescription = stringResource(if (saved) R.string.action_unsave_event else R.string.action_save_event),
         onClick = onToggle,
         modifier = modifier,
         size = size,

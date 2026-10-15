@@ -1,3 +1,117 @@
 <resources>
     <string name="app_name">CityPulse</string>
+
+    <!-- Comunes -->
+    <string name="action_retry">Reintentar</string>
+    <string name="action_back">Volver</string>
+    <string name="action_enable_location">Activar ubicación</string>
+    <string name="action_choose_city_manually">Elegir ciudad manualmente</string>
+    <string name="action_see_saved">Ver guardados</string>
+    <string name="action_directions">Cómo llegar</string>
+    <string name="action_share">Compartir</string>
+    <string name="action_save_event">Guardar evento</string>
+    <string name="action_unsave_event">Quitar de guardados</string>
+    <string name="badge_live">EN CURSO</string>
+    <string name="badge_free">GRATIS</string>
+    <string name="loading">Cargando</string>
+    <string name="walk_minutes_unit">min</string>
+    <string name="state_on">Activado</string>
+    <string name="state_off">Desactivado</string>
+
+    <!-- Barra de navegación -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_now">Ahora</string>
+    <string name="nav_surprise">Sorpresa</string>
+    <string name="nav_map">Mapa</string>
+    <string name="nav_saved">Guardados</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_badge">EN CURSO · CERCA DE TI</string>
+    <string name="onboarding_title">LO QUE PASA,\nAHORA MISMO</string>
+    <string name="onboarding_body">Conciertos, mercados, ferias y cultura a pocos minutos a pie de donde estás.</string>
+    <string name="onboarding_locating">Buscando tu ciudad…</string>
+
+    <!-- Inicio -->
+    <string name="home_greeting_morning">Buenos días</string>
+    <string name="home_greeting_afternoon">Buenas tardes</string>
+    <string name="home_greeting_evening">Buenas noches</string>
+    <string name="home_change_city">Cambiar ciudad</string>
+    <string name="home_search_city">Buscar ciudad</string>
+    <string name="home_happening_now">Pasando ahora</string>
+    <string name="home_free_only">Solo gratis</string>
+    <string name="home_this_week">Esta semana</string>
+    <string name="home_nothing_live">Nada en curso con estos filtros.</string>
+    <string name="home_nothing_this_week">No hay más eventos esta semana con estos filtros.</string>
+    <string name="home_load_error_title">No pudimos cargar los eventos</string>
+    <string name="home_load_error_body">Puede ser un problema temporal del servicio.</string>
+
+    <!-- Estoy aquí ahora -->
+    <string name="now_overline">ESTOY AQUÍ AHORA</string>
+    <string name="now_title">Cerca de ti</string>
+    <string name="now_location_user">Tu ubicación, %1$s</string>
+    <string name="now_location_center">Centro de %1$s</string>
+    <string name="now_walking_radius">Radio caminando</string>
+    <string name="now_radius_value">%1$d min</string>
+    <plurals name="now_count">
+        <item quantity="one">%1$d evento a menos de %2$d min · ordenados por cercanía</item>
+        <item quantity="other">%1$d eventos a menos de %2$d min · ordenados por cercanía</item>
+    </plurals>
+    <string name="now_empty_title">Nada a menos de %1$d min</string>
+    <string name="now_empty_body">Prueba otra franja o amplía el radio.</string>
+    <string name="now_widen">Ampliar a 30 min</string>
+
+    <!-- Sorpresa -->
+    <string name="surprise_tag">SORPRESA</string>
+    <string name="surprise_roll">Tirada %1$d de %2$d</string>
+    <string name="surprise_reroll">Otra · %1$d</string>
+    <string name="surprise_no_rolls">Sin tiradas</string>
+    <string name="surprise_go">¡Voy!</string>
+    <string name="surprise_empty_no_rolls_title">Sin tiradas por hoy</string>
+    <string name="surprise_empty_no_rolls_body">Ya usaste tus %1$d sorpresas de hoy. Mañana tendrás nuevas.</string>
+    <string name="surprise_empty_title">Nada a menos de 30 min</string>
+    <string name="surprise_empty_body">Ahora mismo no hay eventos cerca que estén por empezar. Vuelve a intentarlo más tarde.</string>
+    <string name="surprise_see_nearby">Ver eventos cerca</string>
+    <string name="surprise_go_home">Ir a Inicio</string>
+
+    <!-- Ficha -->
+    <string name="detail_unavailable_title">Evento no disponible</string>
+    <string name="detail_unavailable_body">Puede que ya haya terminado o que se haya eliminado.</string>
+    <string name="detail_toggle_sheet">Expandir o contraer detalles</string>
+    <string name="detail_schedule">Horario</string>
+    <string name="detail_price">Precio</string>
+    <string name="detail_walk">A pie</string>
+
+    <!-- Ciudad -->
+    <string name="city_title">Elige ciudad</string>
+    <string name="city_search_hint">Buscar ciudad</string>
+    <string name="city_use_location">Usar mi ubicación actual</string>
+    <string name="city_use_location_hint">Detecta la ciudad automáticamente</string>
+    <string name="city_location_error">No pudimos detectar tu ubicación</string>
+    <string name="city_popular">CIUDADES POPULARES</string>
+    <string name="city_results">RESULTADOS</string>
+    <string name="city_not_found">No encontramos “%1$s”. Prueba con otra ciudad.</string>
+    <string name="city_current">Ciudad actual</string>
+
+    <!-- Mapa -->
+    <plurals name="map_count">
+        <item quantity="one">%1$s · %2$d evento cerca</item>
+        <item quantity="other">%1$s · %2$d eventos cerca</item>
+    </plurals>
+    <string name="map_attribution">© OpenStreetMap contributors</string>
+    <string name="map_walk_venue">%1$d min a pie · %2$s</string>
+
+    <!-- Guardados -->
+    <string name="saved_title">Guardados</string>
+    <plurals name="saved_count">
+        <item quantity="one">%d evento disponible sin conexión</item>
+        <item quantity="other">%d eventos disponibles sin conexión</item>
+    </plurals>
+    <string name="saved_empty_title">Aún no guardas nada</string>
+    <string name="saved_empty_body">Toca el corazón en cualquier evento para tenerlo a mano.</string>
+
+    <!-- Estados vacíos -->
+    <string name="empty_location_title">Sin acceso a tu ubicación</string>
+    <string name="empty_location_body">Necesitamos saber dónde estás para mostrarte eventos a pocos minutos a pie.</string>
+    <string name="empty_offline_title">Sin conexión</string>
+    <string name="empty_offline_body">No podemos cargar lo que pasa ahora. Tus eventos guardados siguen disponibles sin conexión.</string>
 </resources>

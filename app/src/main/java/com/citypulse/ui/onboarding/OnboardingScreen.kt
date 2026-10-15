@@ -26,10 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.CityPulseLogo
 import com.citypulse.core.designsystem.component.EventImage
 import com.citypulse.core.designsystem.component.GradientButton
@@ -100,7 +102,7 @@ fun OnboardingScreen(
                     .background(Brush.verticalGradient(0f to Color.Transparent, 0.85f to CpColors.Background)),
             )
             LiveBadge(
-                text = "EN CURSO · CERCA DE TI",
+                text = stringResource(R.string.onboarding_badge),
                 modifier = Modifier.statusBarsPadding().padding(start = 30.dp, top = 36.dp),
             )
         }
@@ -115,27 +117,27 @@ fun OnboardingScreen(
         ) {
             CityPulseLogo()
             Text(
-                "LO QUE PASA,\nAHORA MISMO",
+                stringResource(R.string.onboarding_title),
                 style = MaterialTheme.typography.displayLarge,
                 color = Color.White,
                 modifier = Modifier.padding(top = 16.dp),
             )
             Text(
-                "Conciertos, mercados, ferias y cultura a pocos minutos a pie de donde estás.",
+                stringResource(R.string.onboarding_body),
                 style = MaterialTheme.typography.bodyLarge,
                 color = CpColors.TextSecondary,
                 modifier = Modifier.padding(top = 12.dp),
             )
             Spacer(Modifier.weight(1f))
             GradientButton(
-                text = if (resolving) "Buscando tu ciudad…" else "Activar ubicación",
+                text = stringResource(if (resolving) R.string.onboarding_locating else R.string.action_enable_location),
                 onClick = onEnableLocation,
                 enabled = !resolving,
                 icon = Icons.Rounded.NearMe,
                 modifier = Modifier.fillMaxWidth(),
             )
             PlainTextButton(
-                "Elegir ciudad manualmente",
+                stringResource(R.string.action_choose_city_manually),
                 onClick = onChooseCity,
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp),
             )

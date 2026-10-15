@@ -14,25 +14,23 @@ import com.citypulse.domain.usecase.nearbyInSlot
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class NowUiState(
     val loading: Boolean = true,
-    val locationLabel: String = "",
+    val cityName: String = "",
+    val usingUserLocation: Boolean = false,
     val slot: TimeSlot = TimeSlot.Morning,
     val radiusMinutes: Int = UserPreferences.DEFAULT_RADIUS_MINUTES,
     val events: List<EventUi> = emptyList(),
 ) {
     val canWiden: Boolean get() = radiusMinutes < UserPreferences.MAX_RADIUS_MINUTES
-
-    val countLabel: String
-        get() = "${events.size} ${if (events.size == 1) "evento" else "eventos"} a menos de $radiusMinutes min · ordenados por cercanía"
 }
 
 @HiltViewModel
@@ -56,11 +54,8 @@ class NowViewModel @Inject constructor(
         val radius = prefs.radiusMinutes
         NowUiState(
             loading = cityEvents == null || (cityEvents.events.isEmpty() && refresh == RefreshState.Loading),
-            locationLabel = when {
-                cityEvents == null -> ""
-                cityEvents.usingUserLocation -> "Tu ubicación, ${cityEvents.city.name}"
-                else -> "Centro de ${cityEvents.city.name}"
-            },
+            cityName = cityEvents?.city?.name.orEmpty(),
+            usingUserLocation = cityEvents?.usingUserLocation == true,
             slot = slot,
             radiusMinutes = radius,
             events = cityEvents?.events.orEmpty().nearbyInSlot(now, slot, radius).map { it.toUi(now) },

@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.GlassIconButton
 import com.citypulse.core.designsystem.component.glass
 import com.citypulse.core.designsystem.theme.BrandGradient
@@ -79,15 +81,15 @@ fun CityScreen(
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                GlassIconButton(Icons.AutoMirrored.Rounded.ArrowBack, "Volver", onClick = onBack)
-                Text("Elige ciudad", style = MaterialTheme.typography.titleLarge, color = Color.White, modifier = Modifier.padding(start = 12.dp))
+                GlassIconButton(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.action_back), onClick = onBack)
+                Text(stringResource(R.string.city_title), style = MaterialTheme.typography.titleLarge, color = Color.White, modifier = Modifier.padding(start = 12.dp))
             }
         }
         item { SearchField(state.query, onQueryChange, Modifier.padding(top = 14.dp)) }
         item { UseLocationRow(state.locating, state.locationError, onUseLocation) }
         item {
             Text(
-                if (state.query.isBlank()) "CIUDADES POPULARES" else "RESULTADOS",
+                stringResource(if (state.query.isBlank()) R.string.city_popular else R.string.city_results),
                 style = OverlineStyle,
                 color = CpColors.TextMuted,
                 modifier = Modifier.padding(start = 4.dp, top = 6.dp, bottom = 2.dp),
@@ -96,7 +98,7 @@ fun CityScreen(
         if (state.cities.isEmpty()) {
             item {
                 Text(
-                    "No encontramos “${state.query}”. Prueba con otra ciudad.",
+                    stringResource(R.string.city_not_found, state.query),
                     fontSize = 13.sp,
                     color = CpColors.TextTertiary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 24.dp),
@@ -117,7 +119,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
     ) {
         Icon(Icons.Rounded.Search, null, tint = CpColors.TextTertiary, modifier = Modifier.size(20.dp))
         Box(Modifier.padding(start = 10.dp).weight(1f)) {
-            if (query.isEmpty()) Text("Buscar ciudad", fontSize = 14.sp, color = CpColors.TextMuted)
+            if (query.isEmpty()) Text(stringResource(R.string.city_search_hint), fontSize = 14.sp, color = CpColors.TextMuted)
             BasicTextField(
                 value = query,
                 onValueChange = onQueryChange,
@@ -149,9 +151,9 @@ private fun UseLocationRow(locating: Boolean, error: Boolean, onClick: () -> Uni
             }
         }
         Column(Modifier.padding(start = 12.dp)) {
-            Text("Usar mi ubicación actual", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
+            Text(stringResource(R.string.city_use_location), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
             Text(
-                if (error) "No pudimos detectar tu ubicación" else "Detecta la ciudad automáticamente",
+                stringResource(if (error) R.string.city_location_error else R.string.city_use_location_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (error) CpColors.LiveSoft else Color.White.copy(alpha = 0.55f),
             )
@@ -176,7 +178,7 @@ private fun CityRow(city: City, active: Boolean, onClick: () -> Unit) {
             Text(city.name, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
             Text(city.country, style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.55f))
         }
-        if (active) Icon(Icons.Rounded.CheckCircle, "Ciudad actual", tint = CpColors.Cyan, modifier = Modifier.size(22.dp))
+        if (active) Icon(Icons.Rounded.CheckCircle, stringResource(R.string.city_current), tint = CpColors.Cyan, modifier = Modifier.size(22.dp))
     }
 }
 

@@ -6,12 +6,14 @@ import androidx.compose.material.icons.rounded.LocationOff
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.EmptyState
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.ui.common.hasLocationPermission
@@ -45,11 +47,11 @@ fun LocationDeniedScreen(
 ) {
     EmptyState(
         icon = Icons.Rounded.LocationOff,
-        title = "Sin acceso a tu ubicación",
-        message = "Necesitamos saber dónde estás para mostrarte eventos a pocos minutos a pie.",
-        primaryAction = "Activar ubicación",
+        title = stringResource(R.string.empty_location_title),
+        message = stringResource(R.string.empty_location_body),
+        primaryAction = stringResource(R.string.action_enable_location),
         onPrimary = onEnableLocation,
-        secondaryAction = "Elegir ciudad manualmente",
+        secondaryAction = stringResource(R.string.action_choose_city_manually),
         onSecondary = onChooseCity,
         modifier = modifier,
     )
@@ -67,11 +69,11 @@ fun OfflineScreen(
 ) {
     EmptyState(
         icon = Icons.Rounded.WifiOff,
-        title = "Sin conexión",
-        message = "No podemos cargar lo que pasa ahora. Tus eventos guardados siguen disponibles sin conexión.",
-        primaryAction = "Reintentar",
+        title = stringResource(R.string.empty_offline_title),
+        message = stringResource(R.string.empty_offline_body),
+        primaryAction = stringResource(R.string.action_retry),
         onPrimary = onRetry,
-        secondaryAction = "Ver guardados",
+        secondaryAction = stringResource(R.string.action_see_saved),
         onSecondary = onOpenSaved,
         contentPadding = PaddingValues(start = 32.dp, end = 32.dp, top = 40.dp, bottom = 110.dp),
         modifier = modifier,

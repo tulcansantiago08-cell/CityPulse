@@ -42,6 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -52,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.GlassSurface
 import com.citypulse.core.designsystem.component.GradientButton
 import com.citypulse.core.designsystem.component.NearbyEventCard
@@ -102,13 +105,13 @@ fun NowScreen(
             Column(Modifier.statusBarsPadding().padding(top = 12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     PulseDot(CpColors.Live)
-                    Text("ESTOY AQUÍ AHORA", style = OverlineStyle, color = CpColors.LiveSoft)
+                    Text(stringResource(R.string.now_overline), style = OverlineStyle, color = CpColors.LiveSoft)
                 }
-                Text("Cerca de ti", style = MaterialTheme.typography.headlineLarge, color = Color.White, modifier = Modifier.padding(top = 6.dp))
+                Text(stringResource(R.string.now_title), style = MaterialTheme.typography.headlineLarge, color = Color.White, modifier = Modifier.padding(top = 6.dp))
                 Row(Modifier.padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Rounded.MyLocation, null, tint = CpColors.Cyan, modifier = Modifier.size(16.dp))
                     Text(
-                        state.locationLabel,
+                        stringResource(if (state.usingUserLocation) R.string.now_location_user else R.string.now_location_center, state.cityName),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.65f),
                         modifier = Modifier.padding(start = 4.dp),
@@ -117,7 +120,7 @@ fun NowScreen(
                 SlotSelector(state.slot, onSelectSlot, Modifier.padding(top = 18.dp))
                 RadiusCard(state.radiusMinutes, onRadiusChange, Modifier.padding(top = 14.dp))
                 Text(
-                    state.countLabel,
+                    pluralStringResource(R.plurals.now_count, state.events.size, state.events.size, state.radiusMinutes),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
                     color = CpColors.TextTertiary,
                     modifier = Modifier.padding(top = 20.dp),
@@ -194,8 +197,8 @@ private fun RadiusCard(radiusMinutes: Int, onRadiusChange: (Int) -> Unit, modifi
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.AutoMirrored.Rounded.DirectionsWalk, null, tint = Color.White.copy(alpha = 0.75f), modifier = Modifier.size(18.dp))
-                Text("Radio caminando", fontSize = 13.sp, color = Color.White.copy(alpha = 0.75f), modifier = Modifier.padding(start = 6.dp).weight(1f))
-                Text("${shown.roundToInt()} min", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text(stringResource(R.string.now_walking_radius), fontSize = 13.sp, color = Color.White.copy(alpha = 0.75f), modifier = Modifier.padding(start = 6.dp).weight(1f))
+                Text(stringResource(R.string.now_radius_value, shown.roundToInt()), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
             }
             val colors = SliderDefaults.colors(
                 thumbColor = Color.White,
@@ -240,16 +243,16 @@ private fun NothingNearby(radiusMinutes: Int, canWiden: Boolean, onWiden: () -> 
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(Icons.Rounded.ExploreOff, null, tint = CpColors.Cyan, modifier = Modifier.size(32.dp))
-        Text("Nada a menos de $radiusMinutes min", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = Color.White, modifier = Modifier.padding(top = 8.dp))
+        Text(stringResource(R.string.now_empty_title, radiusMinutes), fontSize = 15.sp, fontWeight = FontWeight.Medium, color = Color.White, modifier = Modifier.padding(top = 8.dp))
         Text(
-            "Prueba otra franja o amplía el radio.",
+            stringResource(R.string.now_empty_body),
             style = MaterialTheme.typography.bodySmall,
             color = CpColors.TextTertiary,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 4.dp),
         )
         if (canWiden) {
-            GradientButton("Ampliar a 30 min", onClick = onWiden, height = 40.dp, modifier = Modifier.padding(top = 14.dp))
+            GradientButton(stringResource(R.string.now_widen), onClick = onWiden, height = 40.dp, modifier = Modifier.padding(top = 14.dp))
         }
     }
 }
@@ -263,7 +266,7 @@ private fun NowPreview() {
     CityPulseTheme {
         Box(Modifier.background(CpColors.Background)) {
             NowScreen(
-                state = NowUiState(loading = false, locationLabel = "Tu ubicación, Madrid", slot = TimeSlot.Night, radiusMinutes = 15, events = events),
+                state = NowUiState(loading = false, cityName = "Madrid", usingUserLocation = true, slot = TimeSlot.Night, radiusMinutes = 15, events = events),
                 onOpenEvent = {}, onSelectSlot = {}, onRadiusChange = {}, onWiden = {},
             )
         }

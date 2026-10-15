@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.citypulse.R
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.core.designsystem.theme.Poppins
@@ -75,7 +77,7 @@ private fun badgeTextStyle(size: BadgeSize) = TextStyle(
 fun LiveBadge(
     modifier: Modifier = Modifier,
     size: BadgeSize = BadgeSize.Regular,
-    text: String = "EN CURSO",
+    text: String = stringResource(R.string.badge_live),
     showDot: Boolean = true,
 ) {
     Row(
@@ -94,7 +96,7 @@ fun LiveBadge(
 @Composable
 fun FreeBadge(modifier: Modifier = Modifier, size: BadgeSize = BadgeSize.Regular) {
     Text(
-        text = "GRATIS",
+        text = stringResource(R.string.badge_free),
         modifier = modifier
             .background(CpColors.Cyan, CircleShape)
             .padding(size.padding),

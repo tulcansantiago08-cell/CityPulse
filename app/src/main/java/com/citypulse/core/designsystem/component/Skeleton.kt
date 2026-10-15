@@ -16,8 +16,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import com.citypulse.R
 
 /** Brillo que recorre un bloque gris mientras carga el contenido. */
 fun Modifier.shimmer(shape: Shape): Modifier = composed {
@@ -41,5 +43,6 @@ fun Modifier.shimmer(shape: Shape): Modifier = composed {
 /** Bloque esqueleto con la forma de la tarjeta que sustituye. */
 @Composable
 fun SkeletonBlock(shape: Shape, modifier: Modifier = Modifier) {
-    Box(modifier.semantics { contentDescription = "Cargando" }.shimmer(shape))
+    val description = stringResource(R.string.loading)
+    Box(modifier.semantics { contentDescription = description }.shimmer(shape))
 }

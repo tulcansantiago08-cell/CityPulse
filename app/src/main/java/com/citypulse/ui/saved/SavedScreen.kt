@@ -22,6 +22,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.SavedEventCard
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
@@ -59,9 +62,9 @@ fun SavedScreen(
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column(Modifier.padding(bottom = 8.dp)) {
-                Text("Guardados", style = MaterialTheme.typography.headlineLarge, color = Color.White)
+                Text(stringResource(R.string.saved_title), style = MaterialTheme.typography.headlineLarge, color = Color.White)
                 Text(
-                    state.countLabel,
+                    pluralStringResource(R.plurals.saved_count, state.events.size, state.events.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = CpColors.TextTertiary,
                     modifier = Modifier.padding(top = 2.dp),
@@ -91,9 +94,9 @@ private fun NothingSaved() {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(Icons.Rounded.Favorite, null, tint = CpColors.Magenta, modifier = Modifier.size(40.dp))
-        Text("Aún no guardas nada", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.White, modifier = Modifier.padding(top = 8.dp))
+        Text(stringResource(R.string.saved_empty_title), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.White, modifier = Modifier.padding(top = 8.dp))
         Text(
-            "Toca el corazón en cualquier evento para tenerlo a mano.",
+            stringResource(R.string.saved_empty_body),
             style = MaterialTheme.typography.bodyMedium,
             color = CpColors.TextTertiary,
             textAlign = TextAlign.Center,

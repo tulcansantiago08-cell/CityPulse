@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.EmptyState
 import com.citypulse.core.designsystem.component.EventImage
 import com.citypulse.core.designsystem.component.FreeBadge
@@ -81,9 +83,9 @@ import com.citypulse.ui.common.shareMessage
 import com.citypulse.ui.common.shareText
 import com.citypulse.ui.common.toUi
 import com.citypulse.ui.map.OsmMiniMap
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 @Composable
 fun DetailRoute(onBack: () -> Unit, viewModel: DetailViewModel = hiltViewModel()) {
@@ -120,9 +122,9 @@ fun DetailScreen(
         if (!state.loading) {
             EmptyState(
                 icon = Icons.Rounded.EventBusy,
-                title = "Evento no disponible",
-                message = "Puede que ya haya terminado o que se haya eliminado.",
-                primaryAction = "Volver",
+                title = stringResource(R.string.detail_unavailable_title),
+                message = stringResource(R.string.detail_unavailable_body),
+                primaryAction = stringResource(R.string.action_back),
                 onPrimary = onBack,
                 modifier = modifier,
             )
@@ -147,9 +149,9 @@ fun DetailScreen(
             Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            GlassIconButton(Icons.AutoMirrored.Rounded.ArrowBack, "Volver", onClick = onBack)
+            GlassIconButton(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.action_back), onClick = onBack)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                GlassIconButton(Icons.Rounded.Share, "Compartir", onClick = onShare, iconSize = 20.dp)
+                GlassIconButton(Icons.Rounded.Share, stringResource(R.string.action_share), onClick = onShare, iconSize = 20.dp)
                 SaveButton(saved, onToggleSave, size = 44.dp)
             }
         }
@@ -184,6 +186,7 @@ private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -
         val scope = rememberCoroutineScope()
         val sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
         val sheetHeight: Dp = maxHeight - SheetExpandedTop
+        val toggleLabel = stringResource(R.string.detail_toggle_sheet)
 
         Column(
             Modifier
@@ -202,7 +205,7 @@ private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -
                         Orientation.Vertical,
                         flingBehavior = AnchoredDraggableDefaults.flingBehavior(sheetState, animationSpec = spring()),
                     )
-                    .semantics { contentDescription = "Expandir o contraer detalles" }
+                    .semantics { contentDescription = toggleLabel }
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, role = Role.Button) {
                         scope.launch {
                             sheetState.animateTo(
@@ -223,7 +226,7 @@ private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -
             Box(Modifier.fillMaxWidth().height(visibleHeight - 20.dp)) {
                 SheetContent(event, state, onDirections, Modifier.fillMaxSize())
                 GradientButton(
-                    text = "Cómo llegar",
+                    text = stringResource(R.string.action_directions),
                     onClick = onDirections,
                     icon = Icons.Rounded.Directions,
                     modifier = Modifier
@@ -262,9 +265,9 @@ private fun SheetContent(event: EventUi, state: DetailUiState, onDirections: () 
             modifier = Modifier.padding(top = 4.dp),
         )
         Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            InfoCell(Icons.Rounded.Schedule, CpColors.Cyan, "Horario", event.timeRange, Modifier.weight(1f))
-            InfoCell(Icons.Rounded.Sell, CpColors.Magenta, "Precio", event.priceLabel, Modifier.weight(1f))
-            InfoCell(Icons.AutoMirrored.Rounded.DirectionsWalk, CpColors.LiveSoft, "A pie", "${event.walkMinutes} min", Modifier.weight(1f))
+            InfoCell(Icons.Rounded.Schedule, CpColors.Cyan, stringResource(R.string.detail_schedule), event.timeRange, Modifier.weight(1f))
+            InfoCell(Icons.Rounded.Sell, CpColors.Magenta, stringResource(R.string.detail_price), event.priceLabel, Modifier.weight(1f))
+            InfoCell(Icons.AutoMirrored.Rounded.DirectionsWalk, CpColors.LiveSoft, stringResource(R.string.detail_walk), stringResource(R.string.now_radius_value, event.walkMinutes), Modifier.weight(1f))
         }
         Text(
             event.description,

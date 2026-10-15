@@ -22,10 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.citypulse.R
 import com.citypulse.core.designsystem.component.glass
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.domain.model.GeoPoint
@@ -56,6 +58,7 @@ fun OsmMiniMap(
     val density = LocalDensity.current
     val shape = RoundedCornerShape(24.dp)
     val paddingPx = with(density) { 36.dp.roundToPx() }
+    val directionsLabel = stringResource(R.string.action_directions)
 
     val mapView = remember {
         configureOsmdroid(context)
@@ -79,7 +82,7 @@ fun OsmMiniMap(
             .height(140.dp)
             .clip(shape)
             .border(1.dp, CpColors.GlassBorder, shape)
-            .clickable(role = Role.Button, onClickLabel = "Cómo llegar", onClick = onClick),
+            .clickable(role = Role.Button, onClickLabel = directionsLabel, onClick = onClick),
     ) {
         AndroidView(
             factory = { mapView },
