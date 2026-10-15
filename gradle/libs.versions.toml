@@ -25,7 +25,7 @@ coil = "3.6.3"
 
 # Google / Firebase
 playServicesLocation = "21.4.0"
-mapsCompose = "9.0.1"
+osmdroid = "6.1.20"
 firebaseBom = "35.0.0"
 
 # Tests
@@ -81,7 +81,7 @@ coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp"
 
 # Ubicación y mapas
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
+osmdroid = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }

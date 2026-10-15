@@ -3,8 +3,6 @@ package com.citypulse.ui.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -24,6 +22,7 @@ import com.citypulse.ui.detail.DetailRoute
 import com.citypulse.ui.empty.LocationDeniedRoute
 import com.citypulse.ui.empty.OfflineScreen
 import com.citypulse.ui.home.HomeRoute
+import com.citypulse.ui.map.MapRoute
 import com.citypulse.ui.now.NowRoute
 import com.citypulse.ui.saved.SavedRoute
 import com.citypulse.ui.surprise.SurpriseRoute
@@ -70,7 +69,7 @@ fun CityPulseNavHost(
             }
             composable<MapRoute> {
                 if (!isOnline) return@composable Offline(navController)
-                Placeholder("Mapa")
+                MapRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) })
             }
             composable<SavedRoute> { SavedRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) }) }
             composable<CityRoute> {
@@ -153,9 +152,3 @@ private fun Offline(navController: NavHostController) {
     )
 }
 
-@Composable
-private fun Placeholder(name: String) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(name, style = MaterialTheme.typography.headlineMedium)
-    }
-}

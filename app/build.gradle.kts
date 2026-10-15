@@ -31,7 +31,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "TM_API_KEY", "\"${localKey("TM_API_KEY")}\"")
-        manifestPlaceholders["MAPS_API_KEY"] = localKey("MAPS_API_KEY")
     }
 
     buildTypes {
@@ -95,7 +94,7 @@ dependencies {
 
     // Ubicación y mapas
     implementation(libs.play.services.location)
-    implementation(libs.maps.compose)
+    implementation(libs.osmdroid)
 
     // Firebase
     implementation(platform(libs.firebase.bom))

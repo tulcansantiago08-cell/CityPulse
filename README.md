@@ -23,10 +23,11 @@ Añade tus claves en `local.properties` (este archivo no se sube al repositorio)
 
 ```properties
 TM_API_KEY=tu_clave_de_ticketmaster
-MAPS_API_KEY=tu_clave_de_google_maps
 ```
 
-La app compila sin ellas, pero no cargará eventos de Ticketmaster ni el mapa.
+La app compila sin ella, pero no cargará eventos de Ticketmaster.
+
+El mapa usa las teselas estándar de OpenStreetMap (osmdroid), que no necesitan clave.
 
 ## Ejecutar
 
