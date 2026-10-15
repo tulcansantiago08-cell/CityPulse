@@ -15,8 +15,8 @@
     <string name="badge_free">GRATIS</string>
     <string name="loading">Cargando</string>
     <string name="walk_minutes_unit">min</string>
-    <string name="state_on">Activado</string>
-    <string name="state_off">Desactivado</string>
+    <string name="toggle_on">Activado</string>
+    <string name="toggle_off">Desactivado</string>
 
     <!-- Barra de navegación -->
     <string name="nav_home">Inicio</string>
@@ -67,7 +67,10 @@
     <string name="surprise_no_rolls">Sin tiradas</string>
     <string name="surprise_go">¡Voy!</string>
     <string name="surprise_empty_no_rolls_title">Sin tiradas por hoy</string>
-    <string name="surprise_empty_no_rolls_body">Ya usaste tus %1$d sorpresas de hoy. Mañana tendrás nuevas.</string>
+    <plurals name="surprise_empty_no_rolls_body">
+        <item quantity="one">Ya usaste tu sorpresa de hoy. Mañana tendrás nuevas.</item>
+        <item quantity="other">Ya usaste tus %1$d sorpresas de hoy. Mañana tendrás nuevas.</item>
+    </plurals>
     <string name="surprise_empty_title">Nada a menos de 30 min</string>
     <string name="surprise_empty_body">Ahora mismo no hay eventos cerca que estén por empezar. Vuelve a intentarlo más tarde.</string>
     <string name="surprise_see_nearby">Ver eventos cerca</string>

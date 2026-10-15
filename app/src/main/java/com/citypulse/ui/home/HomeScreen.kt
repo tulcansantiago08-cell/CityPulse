@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -268,7 +269,7 @@ private fun LoadError(onRetry: () -> Unit) {
 private fun FreeOnlyToggle(checked: Boolean, onToggle: () -> Unit) {
     val knobOffset by animateDpAsState(if (checked) 20.dp else 2.dp, label = "knob")
     val trackColor by animateColorAsState(if (checked) Color.Transparent else Color.White.copy(alpha = 0.16f), label = "track")
-    val stateText = stringResource(if (checked) R.string.state_on else R.string.state_off)
+    val stateText = stringResource(if (checked) R.string.toggle_on else R.string.toggle_off)
     Row(
         Modifier
             .clip(CircleShape)
@@ -287,7 +288,8 @@ private fun FreeOnlyToggle(checked: Boolean, onToggle: () -> Unit) {
         ) {
             Box(
                 Modifier
-                    .offset(x = knobOffset, y = 2.dp)
+                    // Lambda: la animación solo vuelve a colocar el círculo, sin recomponer.
+                    .offset { IntOffset(knobOffset.roundToPx(), 2.dp.roundToPx()) }
                     .size(18.dp)
                     .background(Color.White, CircleShape),
             )

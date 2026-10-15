@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -80,7 +81,7 @@ fun SurpriseScreen(
             icon = Icons.Rounded.ExploreOff,
             title = stringResource(if (state.rollsLeft == 0) R.string.surprise_empty_no_rolls_title else R.string.surprise_empty_title),
             message = if (state.rollsLeft == 0) {
-                stringResource(R.string.surprise_empty_no_rolls_body, state.maxRolls)
+                pluralStringResource(R.plurals.surprise_empty_no_rolls_body, state.maxRolls, state.maxRolls)
             } else {
                 stringResource(R.string.surprise_empty_body)
             },

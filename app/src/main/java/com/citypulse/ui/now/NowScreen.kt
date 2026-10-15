@@ -104,7 +104,7 @@ fun NowScreen(
         item {
             Column(Modifier.statusBarsPadding().padding(top = 12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    PulseDot(CpColors.Live)
+                    PulseDot(color = CpColors.Live)
                     Text(stringResource(R.string.now_overline), style = OverlineStyle, color = CpColors.LiveSoft)
                 }
                 Text(stringResource(R.string.now_title), style = MaterialTheme.typography.headlineLarge, color = Color.White, modifier = Modifier.padding(top = 6.dp))

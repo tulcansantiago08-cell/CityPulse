@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
-import android.graphics.drawable.BitmapDrawable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -15,6 +14,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -26,13 +26,13 @@ import coil3.toBitmap
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.ui.common.EventUi
+import java.io.File
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint as OsmPoint
 import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import java.io.File
 
 /**
  * Las teselas estándar de OpenStreetMap son claras; este filtro las pasa a escala de grises,
@@ -127,7 +127,7 @@ fun OsmEventMap(
                 map.overlays.add(
                     Marker(map).apply {
                         position = OsmPoint(origin.latitude, origin.longitude)
-                        icon = BitmapDrawable(map.resources, userDotBitmap(density))
+                        icon = userDotBitmap(density).toDrawable(map.resources)
                         setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                         setInfoWindow(null)
                         setOnMarkerClickListener { _, _ -> true }
@@ -144,7 +144,7 @@ fun OsmEventMap(
                 map.overlays.add(
                     Marker(map).apply {
                         position = OsmPoint(event.latitude, event.longitude)
-                        icon = BitmapDrawable(map.resources, pinBitmap(density, photos[event.id], event.fallback, ring))
+                        icon = pinBitmap(density, photos[event.id], event.fallback, ring).toDrawable(map.resources)
                         setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                         setInfoWindow(null)
                         title = event.title

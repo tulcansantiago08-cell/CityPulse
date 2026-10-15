@@ -37,7 +37,7 @@ import com.citypulse.core.designsystem.theme.Poppins
 
 /** Punto que late con un halo expansivo (animación cpPulse del prototipo). */
 @Composable
-fun PulseDot(color: Color = Color.White, modifier: Modifier = Modifier, size: Dp = 6.dp) {
+fun PulseDot(modifier: Modifier = Modifier, color: Color = Color.White, size: Dp = 6.dp) {
     val transition = rememberInfiniteTransition(label = "pulse")
     val progress by transition.animateFloat(
         initialValue = 0f,

@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.Shader
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.createBitmap
 import com.citypulse.core.designsystem.theme.CpColors
 import kotlin.math.max
 
@@ -30,7 +31,7 @@ fun pinBitmap(
     val size = sizeDp * density
     val margin = glowDp * density
     val total = (size + margin * 2).toInt()
-    val bitmap = Bitmap.createBitmap(total, total, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(total, total)
     val canvas = Canvas(bitmap)
     val c = total / 2f
     val radius = size / 2f
@@ -70,7 +71,7 @@ fun pinBitmap(
 /** Punto azul de "estás aquí". */
 fun userDotBitmap(density: Float): Bitmap {
     val size = (22 * density).toInt()
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size)
     val canvas = Canvas(bitmap)
     val c = size / 2f
     canvas.drawCircle(c, c, c, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = CpColors.Cyan.copy(alpha = 0.35f).toArgb() })

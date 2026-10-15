@@ -1,7 +1,7 @@
 package com.citypulse.ui.map
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.drawable.toDrawable
 import com.citypulse.R
 import com.citypulse.core.designsystem.component.glass
 import com.citypulse.core.designsystem.theme.CpColors
@@ -102,10 +103,10 @@ fun OsmMiniMap(
                             )
                         },
                     )
-                    map.overlays.add(marker(map, user, BitmapDrawable(map.resources, userDotBitmap(density.density))))
+                    map.overlays.add(marker(map, user, userDotBitmap(density.density).toDrawable(map.resources)))
                 }
                 map.overlays.add(
-                    marker(map, event, BitmapDrawable(map.resources, pinBitmap(density.density, null, fallback, PinRing.Selected))),
+                    marker(map, event, pinBitmap(density.density, null, fallback, PinRing.Selected).toDrawable(map.resources)),
                 )
                 map.addOnFirstLayoutListener { _, _, _, _, _ ->
                     if (user != null) {
@@ -132,7 +133,7 @@ fun OsmMiniMap(
     }
 }
 
-private fun marker(map: MapView, point: OsmPoint, drawable: BitmapDrawable) = Marker(map).apply {
+private fun marker(map: MapView, point: OsmPoint, drawable: Drawable) = Marker(map).apply {
     position = point
     icon = drawable
     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
