@@ -87,6 +87,7 @@
     <string name="city_use_location">Usar mi ubicación actual</string>
     <string name="city_use_location_hint">Detecta la ciudad automáticamente</string>
     <string name="city_location_error">No pudimos detectar tu ubicación</string>
+    <string name="city_location_denied">Sin permiso de ubicación: elige la ciudad de la lista</string>
     <string name="city_popular">CIUDADES POPULARES</string>
     <string name="city_results">RESULTADOS</string>
     <string name="city_not_found">No encontramos “%1$s”. Prueba con otra ciudad.</string>

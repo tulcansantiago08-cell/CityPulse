@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -57,12 +58,23 @@ import com.citypulse.core.designsystem.theme.OverlineStyle
 import com.citypulse.core.designsystem.theme.Poppins
 import com.citypulse.data.city.StaticCityRepository
 import com.citypulse.domain.model.City
+import com.citypulse.ui.common.hasLocationPermission
+import com.citypulse.ui.common.rememberLocationPermissionRequester
 
 @Composable
 fun CityRoute(onBack: () -> Unit, onDone: () -> Unit, viewModel: CityViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val requester = rememberLocationPermissionRequester(viewModel::onPermissionResult)
     LaunchedEffect(viewModel) { viewModel.done.collect { onDone() } }
-    CityScreen(state, onBack, viewModel::onQueryChange, viewModel::select, viewModel::useCurrentLocation)
+    CityScreen(
+        state = state,
+        onBack = onBack,
+        onQueryChange = viewModel::onQueryChange,
+        onSelect = viewModel::select,
+        // Sin permiso, primero se pide; la ubicación se busca al concederlo.
+        onUseLocation = { if (context.hasLocationPermission()) viewModel.useCurrentLocation() else requester.request() },
+    )
 }
 
 @Composable
@@ -86,7 +98,7 @@ fun CityScreen(
             }
         }
         item { SearchField(state.query, onQueryChange, Modifier.padding(top = 14.dp)) }
-        item { UseLocationRow(state.locating, state.locationError, onUseLocation) }
+        item { UseLocationRow(state.locating, state.locationError, state.permissionDenied, onUseLocation) }
         item {
             Text(
                 stringResource(if (state.query.isBlank()) R.string.city_popular else R.string.city_results),
@@ -134,7 +146,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
 }
 
 @Composable
-private fun UseLocationRow(locating: Boolean, error: Boolean, onClick: () -> Unit) {
+private fun UseLocationRow(locating: Boolean, error: Boolean, denied: Boolean, onClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -153,9 +165,15 @@ private fun UseLocationRow(locating: Boolean, error: Boolean, onClick: () -> Uni
         Column(Modifier.padding(start = 12.dp)) {
             Text(stringResource(R.string.city_use_location), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White)
             Text(
-                stringResource(if (error) R.string.city_location_error else R.string.city_use_location_hint),
+                stringResource(
+                    when {
+                        denied -> R.string.city_location_denied
+                        error -> R.string.city_location_error
+                        else -> R.string.city_use_location_hint
+                    },
+                ),
                 style = MaterialTheme.typography.bodySmall,
-                color = if (error) CpColors.LiveSoft else Color.White.copy(alpha = 0.55f),
+                color = if (error || denied) CpColors.LiveSoft else Color.White.copy(alpha = 0.55f),
             )
         }
     }

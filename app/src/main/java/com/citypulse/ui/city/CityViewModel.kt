@@ -23,6 +23,7 @@ data class CityUiState(
     val selected: City? = null,
     val locating: Boolean = false,
     val locationError: Boolean = false,
+    val permissionDenied: Boolean = false,
 )
 
 @HiltViewModel
@@ -35,13 +36,16 @@ class CityViewModel @Inject constructor(
     private val query = MutableStateFlow("")
     private val locating = MutableStateFlow(false)
     private val locationError = MutableStateFlow(false)
+    private val permissionDenied = MutableStateFlow(false)
 
     /** Se emite cuando ya hay ciudad elegida y hay que volver a Inicio. */
     private val doneChannel = Channel<Unit>(Channel.BUFFERED)
     val done = doneChannel.receiveAsFlow()
 
-    val uiState: StateFlow<CityUiState> = combine(query, preferences.preferences, locating, locationError) { q, prefs, loc, err ->
-        CityUiState(q, cityRepository.search(q), prefs.city, loc, err)
+    val uiState: StateFlow<CityUiState> = combine(
+        query, preferences.preferences, locating, locationError, permissionDenied,
+    ) { q, prefs, loc, err, denied ->
+        CityUiState(q, cityRepository.search(q), prefs.city, loc, err, denied)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CityUiState(cities = cityRepository.popularCities()))
 
     fun onQueryChange(value: String) {
@@ -56,10 +60,17 @@ class CityViewModel @Inject constructor(
         }
     }
 
+    /** Resultado del diálogo de permiso lanzado desde "Usar mi ubicación actual". */
+    fun onPermissionResult(granted: Boolean) {
+        permissionDenied.value = !granted
+        if (granted) useCurrentLocation()
+    }
+
     fun useCurrentLocation() {
         viewModelScope.launch {
             locating.value = true
             locationError.value = false
+            permissionDenied.value = false
             val city = locationRepository.currentLocation()?.let { locationRepository.cityAt(it) }
             locating.value = false
             if (city != null) select(city) else locationError.value = true
