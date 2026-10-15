@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -76,21 +75,21 @@ fun FloatingNavBar(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            NavItem(NavTab.Home, selected, onSelect)
-            NavItem(NavTab.Now, selected, onSelect)
+            // Las pestañas se reparten el ancho: con el texto del sistema agrandado no se cortan.
+            NavItem(NavTab.Home, selected, onSelect, Modifier.weight(1f))
+            NavItem(NavTab.Now, selected, onSelect, Modifier.weight(1f))
             SurpriseButton(onClick = { onSelect(NavTab.Surprise) }, Modifier.offset(y = (-13).dp))
-            NavItem(NavTab.Map, selected, onSelect)
-            NavItem(NavTab.Saved, selected, onSelect)
+            NavItem(NavTab.Map, selected, onSelect, Modifier.weight(1f))
+            NavItem(NavTab.Saved, selected, onSelect, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun NavItem(tab: NavTab, selected: NavTab, onSelect: (NavTab) -> Unit) {
+private fun NavItem(tab: NavTab, selected: NavTab, onSelect: (NavTab) -> Unit, modifier: Modifier = Modifier) {
     val active = tab == selected
     Column(
-        Modifier
-            .width(58.dp)
+        modifier
             .semantics { this.selected = active }
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -106,7 +105,13 @@ private fun NavItem(tab: NavTab, selected: NavTab, onSelect: (NavTab) -> Unit) {
             tint = if (active) Color.White else Color.White.copy(alpha = 0.55f),
             modifier = Modifier.size(24.dp).then(if (active) Modifier.gradientTint() else Modifier),
         )
-        Text(stringResource(tab.label), fontSize = 10.sp, color = if (active) Color.White else Color.White.copy(alpha = 0.55f))
+        Text(
+            stringResource(tab.label),
+            fontSize = 10.sp,
+            color = if (active) Color.White else Color.White.copy(alpha = 0.55f),
+            maxLines = 1,
+            softWrap = false,
+        )
     }
 }
 
