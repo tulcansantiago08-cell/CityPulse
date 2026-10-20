@@ -8,7 +8,7 @@ import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import androidx.core.content.ContextCompat
-import com.citypulse.data.city.normalizedForSearch
+import com.citypulse.domain.text.normalizedForSearch
 import com.citypulse.domain.geo.distanceMeters
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.GeoPoint

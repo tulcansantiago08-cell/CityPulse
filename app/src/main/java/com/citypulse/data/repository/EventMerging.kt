@@ -1,6 +1,6 @@
 package com.citypulse.data.repository
 
-import com.citypulse.data.city.normalizedForSearch
+import com.citypulse.domain.text.normalizedForSearch
 import com.citypulse.domain.model.Event
 import java.time.LocalDateTime
 

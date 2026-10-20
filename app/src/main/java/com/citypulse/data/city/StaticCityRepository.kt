@@ -3,7 +3,7 @@ package com.citypulse.data.city
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.repository.CityRepository
-import java.text.Normalizer
+import com.citypulse.domain.text.normalizedForSearch
 import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,6 +41,3 @@ class StaticCityRepository @Inject constructor() : CityRepository {
     }
 }
 
-/** Minúsculas y sin tildes: "Bogotá" → "bogota". */
-fun String.normalizedForSearch(): String =
-    Normalizer.normalize(this, Normalizer.Form.NFD).replace(Regex("\\p{Mn}+"), "").lowercase()
