@@ -22,6 +22,7 @@ Proyecto académico.
 - **Ficha.** Hoja arrastrable con horario, precio, distancia, descripción, minimapa y botón *Cómo llegar* (Google Maps a pie).
 - **Guardados.** Se conservan en el dispositivo y se pueden ver sin conexión.
 - **Sin conexión.** Las pestañas que necesitan red muestran un aviso con acceso directo a Guardados.
+- **IA (Gemini).** Búsqueda en lenguaje natural ("algo gratis para esta noche"), resumen y traducción de la descripción en la ficha, y una frase que explica cada Sorpresa. La IA solo interpreta y redacta: los eventos siempre salen de los datos reales. Sin IA, la búsqueda entiende lo básico en el propio teléfono.
 
 ## Arquitectura
 
@@ -67,7 +68,7 @@ com.citypulse
 
 ## Stack
 
-Kotlin · Jetpack Compose + Material 3 · Navigation Compose (rutas tipadas) · Hilt · Retrofit + kotlinx.serialization · Room · DataStore · Coil · Fused Location Provider · osmdroid · Firebase Firestore · JUnit, MockK, Turbine y Compose UI Test.
+Kotlin · Jetpack Compose + Material 3 · Firebase AI Logic (Gemini) · Navigation Compose (rutas tipadas) · Hilt · Retrofit + kotlinx.serialization · Room · DataStore · Coil · Fused Location Provider · osmdroid · Firebase Firestore · JUnit, MockK, Turbine y Compose UI Test.
 
 ## Fuentes de datos
 
@@ -101,7 +102,16 @@ La app funciona sin ella, pero solo mostrará el catálogo de Firestore.
 
 5. Publica las reglas de [`firestore.rules`](firestore.rules) (solo lectura) en Firestore → Reglas.
 
-### 3. Mapa
+### 3. IA con Gemini (Firebase AI Logic)
+
+Gratis en el plan Spark, sin tarjeta:
+
+1. Firebase console → **AI Logic** → *Comenzar* → proveedor **Gemini Developer API**.
+2. **App Check** (obligatorio para AI Logic desde el 2 de noviembre de 2026): registra la app Android con el proveedor *Play Integrity* (huella SHA-256 del certificado) y, para el emulador, añade en *Administrar tokens de depuración* el token que la app escribe en Logcat al arrancar (`DebugAppCheckProvider`).
+
+Sin estos pasos la app funciona igual, pero la búsqueda usa el modo básico y no hay resúmenes.
+
+### 4. Mapa
 
 El mapa usa las teselas estándar de OpenStreetMap con osmdroid, oscurecidas con un filtro de color. No necesita clave.
 
