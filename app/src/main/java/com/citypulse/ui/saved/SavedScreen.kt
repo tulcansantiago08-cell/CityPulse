@@ -3,6 +3,7 @@ package com.citypulse.ui.saved
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -32,9 +34,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.citypulse.R
+import com.citypulse.core.designsystem.component.PlainTextButton
 import com.citypulse.core.designsystem.component.SavedEventCard
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
+import com.citypulse.core.designsystem.theme.OverlineStyle
 import com.citypulse.data.fake.SampleData
 import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.toUi
@@ -43,7 +47,7 @@ import java.time.LocalDateTime
 @Composable
 fun SavedRoute(onOpenEvent: (String) -> Unit, viewModel: SavedViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    SavedScreen(state, onOpenEvent, viewModel::remove)
+    SavedScreen(state, onOpenEvent, viewModel::remove, viewModel::clearPast)
 }
 
 @Composable
@@ -51,6 +55,7 @@ fun SavedScreen(
     state: SavedUiState,
     onOpenEvent: (String) -> Unit,
     onRemove: (String) -> Unit,
+    onClearPast: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
@@ -71,7 +76,7 @@ fun SavedScreen(
                 )
             }
         }
-        if (state.events.isEmpty() && !state.loading) {
+        if (state.isEmpty && !state.loading) {
             item(span = { GridItemSpan(maxLineSpan) }) { NothingSaved() }
         }
         items(state.events, key = { it.id }) { event ->
@@ -83,6 +88,25 @@ fun SavedScreen(
                 onRemove = { onRemove(event.id) },
                 onClick = { onOpenEvent(event.id) },
             )
+        }
+        if (state.past.isNotEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Row(Modifier.padding(top = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.saved_past), style = OverlineStyle, color = CpColors.TextMuted, modifier = Modifier.weight(1f))
+                    PlainTextButton(stringResource(R.string.saved_clear_past), onClick = onClearPast)
+                }
+            }
+            items(state.past, key = { it.id }) { event ->
+                SavedEventCard(
+                    whenLabel = stringResource(R.string.saved_ended) + " · " + event.absoluteWhen,
+                    title = event.title,
+                    imageUrl = event.imageUrl,
+                    fallback = event.fallback,
+                    onRemove = { onRemove(event.id) },
+                    onClick = { onOpenEvent(event.id) },
+                    modifier = Modifier.alpha(0.5f),
+                )
+            }
         }
     }
 }

@@ -119,6 +119,9 @@
     </plurals>
     <string name="saved_empty_title">Aún no guardas nada</string>
     <string name="saved_empty_body">Toca el corazón en cualquier evento para tenerlo a mano.</string>
+    <string name="saved_past">YA PASARON</string>
+    <string name="saved_clear_past">Quitar los pasados</string>
+    <string name="saved_ended">Finalizado</string>
 
     <!-- Estados vacíos -->
     <string name="empty_location_title">Sin acceso a tu ubicación</string>

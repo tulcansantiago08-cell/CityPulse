@@ -21,7 +21,11 @@ import kotlinx.coroutines.launch
 data class SavedUiState(
     val loading: Boolean = true,
     val events: List<EventUi> = emptyList(),
-)
+    /** Guardados que ya terminaron, aparte para no mezclarlos con los próximos. */
+    val past: List<EventUi> = emptyList(),
+) {
+    val isEmpty: Boolean get() = events.isEmpty() && past.isEmpty()
+}
 
 @HiltViewModel
 class SavedViewModel @Inject constructor(
@@ -36,14 +40,20 @@ class SavedViewModel @Inject constructor(
         clock.ticks(),
     ) { saved, cityEvents, instant ->
         val now = instant.localIn(cityEvents?.city?.zone ?: ZoneId.systemDefault())
-        val events = saved.map { event ->
+        val all = saved.map { event ->
             // Si el evento no es de la ciudad actual no hay distancia útil: se mide desde el propio evento.
             listOf(event).withDistanceFrom(cityEvents?.origin ?: event.location).first().toUi(now)
         }
-        SavedUiState(loading = false, events = events)
+        val (past, upcoming) = all.partition { it.ended }
+        SavedUiState(loading = false, events = upcoming, past = past.reversed())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SavedUiState())
 
     fun remove(eventId: String) {
         viewModelScope.launch { savedEvents.remove(eventId) }
+    }
+
+    fun clearPast() {
+        val ids = uiState.value.past.map { it.id }
+        viewModelScope.launch { ids.forEach { savedEvents.remove(it) } }
     }
 }
