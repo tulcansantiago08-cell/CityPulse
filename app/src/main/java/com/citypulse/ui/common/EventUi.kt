@@ -37,6 +37,10 @@ data class EventUi(
     val overline: String,
     /** "Hoy · 21:00", "Mié 14 · 08:00" */
     val whenLabel: String,
+    /** Fecha absoluta para compartir: "martes 20 oct · 21:00" (no "Hoy", que caduca). */
+    val absoluteWhen: String,
+    /** El evento ya terminó (p. ej. uno guardado de días anteriores). */
+    val ended: Boolean,
     /** "21:00–23:30" */
     val timeRange: String,
     /** "0,5 km · 6 min a pie" */
@@ -100,6 +104,8 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
         walkMinutes = walkMinutes,
         overline = "${event.category.label} · $overline",
         whenLabel = "${event.start.toLocalDate().dayLabel(now.toLocalDate())} · ${event.start.hourLabel()}",
+        absoluteWhen = "${SpanishDaysLong[event.start.dayOfWeek.value - 1].lowercase()} ${event.start.dayOfMonth} ${SpanishMonths[event.start.monthValue - 1]} · ${event.start.hourLabel()}",
+        ended = event.hasEnded(now),
         timeRange = "${event.start.hourLabel()}–${event.end.hourLabel()}",
         distanceLabel = distanceLabel(distanceMeters, walkMinutes),
         description = event.description,

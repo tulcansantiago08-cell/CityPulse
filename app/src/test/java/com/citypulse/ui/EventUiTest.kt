@@ -38,4 +38,13 @@ class EventUiTest {
         assertTrue(search.startsWith("https://www.google.com/search?q=Evento"))
         assertTrue("entradas" in search)
     }
+
+    @Test
+    fun `fecha absoluta para compartir y estado finalizado`() {
+        val past = listOf(testEvent("ayer", start = now.minusDays(1), end = now.minusDays(1).plusHours(2)))
+            .withDistanceFrom(PuertaDelSol).single().toUi(now)
+        assertTrue(past.ended)
+        assertEquals("lunes 12 oct · 18:00", past.absoluteWhen)
+        assertFalse(label(price = null, free = true, url = null).ended)
+    }
 }

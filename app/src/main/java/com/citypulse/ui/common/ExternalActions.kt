@@ -37,6 +37,6 @@ fun Context.shareText(text: String) {
 fun EventUi.shareMessage(): String = buildString {
     append(title)
     append(" — ").append(venue).append(", ").append(area)
-    append("\n").append(whenLabel).append(" (").append(timeRange).append(")")
+    append("\n").append(absoluteWhen).append(" (").append(timeRange).append(")")
     url?.let { append("\n").append(it) }
 }
