@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.CityEvents
 import com.citypulse.domain.model.PriceBands
 import com.citypulse.domain.model.SearchIntent
+import com.citypulse.domain.repository.AiQuotaExceededException
 import com.citypulse.domain.repository.EventAssistant
 import com.citypulse.domain.time.Clock
 import com.citypulse.domain.time.now
@@ -15,6 +16,7 @@ import com.citypulse.domain.usecase.matchingText
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,7 +27,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 enum class AiSearchStatus { Idle, Thinking, Done }
 
@@ -39,6 +40,10 @@ data class AiSearchUiState(
     val usedFallback: Boolean = false,
     /** Se muestran resultados básicos mientras Gemini afina la búsqueda. */
     val refining: Boolean = false,
+    /** Los resultados mostrados ya son los de la IA. */
+    val aiRefined: Boolean = false,
+    /** La IA no respondió porque se agotó la cuota gratuita del día. */
+    val quotaExceeded: Boolean = false,
     val results: List<EventUi> = emptyList(),
 )
 
@@ -82,7 +87,10 @@ class AiSearchViewModel @Inject constructor(
             val local = localSearchIntent(query)
             val localResults = if (local.isEmpty) events.events.matchingText(query, now) else events.events.matching(local, now, currency)
             _state.update {
-                it.copy(status = AiSearchStatus.Done, intent = local, usedFallback = false, refining = true, results = localResults.map { r -> r.toUi(now) })
+                it.copy(
+                    status = AiSearchStatus.Done, intent = local, usedFallback = false, refining = true,
+                    aiRefined = false, quotaExceeded = false, results = localResults.map { r -> r.toUi(now) },
+                )
             }
 
             // 2) Cuando responde Gemini, se sustituyen por los resultados afinados.
@@ -90,11 +98,13 @@ class AiSearchViewModel @Inject constructor(
                 onSuccess = { intent ->
                     val results = events.events.matching(intent, now, currency)
                     _state.update {
-                        it.copy(intent = intent, usedFallback = false, refining = false, results = results.map { r -> r.toUi(now) })
+                        it.copy(intent = intent, usedFallback = false, refining = false, aiRefined = true, results = results.map { r -> r.toUi(now) })
                     }
                 },
                 // Sin IA (sin conexión, cuota agotada, demasiada espera) se queda la búsqueda básica.
-                onFailure = { _state.update { it.copy(usedFallback = true, refining = false) } },
+                onFailure = { error ->
+                    _state.update { it.copy(usedFallback = true, refining = false, quotaExceeded = error is AiQuotaExceededException) }
+                },
             )
         }
     }

@@ -358,11 +358,12 @@ private fun AiSummaryCard(summary: AiText, onSummarize: () -> Unit, modifier: Mo
                             AiText.Loading -> R.string.ai_summarizing
                             is AiText.Ready -> R.string.ai_summary_title
                             AiText.Unavailable -> R.string.ai_unavailable_retry
+                            AiText.QuotaExceeded -> R.string.ai_quota_short
                         },
                     ),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = if (summary is AiText.Unavailable) CpColors.LiveSoft else Color.White,
+                    color = if (summary is AiText.Unavailable || summary is AiText.QuotaExceeded) CpColors.LiveSoft else Color.White,
                     modifier = Modifier.padding(start = 8.dp),
                 )
             }

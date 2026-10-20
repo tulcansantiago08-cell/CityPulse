@@ -5,6 +5,9 @@ import com.citypulse.domain.model.NearbyEvent
 import com.citypulse.domain.model.SearchIntent
 import java.time.LocalDateTime
 
+/** Se agotó la cuota gratuita de IA de todos los modelos; se renueva cada día. */
+class AiQuotaExceededException : Exception("Cuota de IA agotada")
+
 /** Funciones de IA de la app. Si la IA no está disponible, devuelven un fallo y la app sigue. */
 interface EventAssistant {
     /** Convierte una petición en lenguaje natural en filtros. */

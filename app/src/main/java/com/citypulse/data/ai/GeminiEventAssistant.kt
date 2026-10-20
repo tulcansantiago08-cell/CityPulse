@@ -6,6 +6,7 @@ import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.NearbyEvent
 import com.citypulse.domain.model.SearchIntent
 import com.citypulse.domain.model.TimeSlot
+import com.citypulse.domain.repository.AiQuotaExceededException
 import com.citypulse.domain.repository.EventAssistant
 import com.google.firebase.Firebase
 import com.google.firebase.ai.GenerativeModel
@@ -39,9 +40,13 @@ private const val EXPLAIN_TIMEOUT_MS = 90_000L
 
 /**
  * Modelos de Gemini (sin facturación en la Gemini Developer API vía Firebase AI Logic), por
- * orden de preferencia. Si el primero está saturado se prueba el siguiente.
+ * orden de preferencia. Cada modelo tiene su propia cuota diaria gratuita: primero los "Lite",
+ * pensados para mucho volumen y más rápidos; si uno se agota o se satura, se pasa al siguiente.
  */
-private val MODELS = listOf("gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite")
+private val MODELS = listOf("gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash")
+
+/** Si un modelo agota su cuota sin decir cuándo vuelve, se descarta durante este tiempo. */
+private const val DEFAULT_QUOTA_PAUSE_MS = 60 * 60 * 1000L
 private const val RETRY_DELAY_MS = 1_500L
 private const val ATTEMPT_TIMEOUT_MS = 25_000L
 
@@ -110,34 +115,60 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
         }
     }
 
+    /** Modelo → instante (ms) hasta el que no se usa porque agotó su cuota. */
+    private val exhaustedUntil = ConcurrentHashMap<String, Long>()
+
     /**
-     * Pide la respuesta al modelo principal y, si está saturado o falla, a los alternativos,
-     * con una breve espera entre intentos. Así un pico de demanda no deja la función sin IA.
+     * Pide la respuesta a los modelos por orden, saltando los que tienen la cuota agotada. Si uno
+     * se cuelga o está saturado, prueba el siguiente tras una breve espera.
      */
     private suspend fun generate(models: List<GenerativeModel>, prompt: String, timeoutMs: Long): String =
         withTimeout(timeoutMs) {
             var lastError: Throwable? = null
             for ((index, model) in models.withIndex()) {
+                val name = MODELS[index]
+                if ((exhaustedUntil[name] ?: 0L) > System.currentTimeMillis()) continue
                 try {
                     // Cada modelo tiene su propio límite: si uno se queda colgado se pasa al siguiente.
                     val text = withTimeoutOrNull(ATTEMPT_TIMEOUT_MS) { model.generateContent(prompt).text?.trim() }
                     if (!text.isNullOrBlank()) return@withTimeout text
-                    lastError = IllegalStateException("${MODELS[index]}: sin respuesta en ${ATTEMPT_TIMEOUT_MS / 1000} s")
+                    lastError = IllegalStateException("$name: sin respuesta en ${ATTEMPT_TIMEOUT_MS / 1000} s")
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
                     lastError = e
-                    delay(RETRY_DELAY_MS)
+                    if (e.isQuotaError()) {
+                        exhaustedUntil[name] = System.currentTimeMillis() + (e.retryDelayMs() ?: DEFAULT_QUOTA_PAUSE_MS)
+                    } else {
+                        delay(RETRY_DELAY_MS)
+                    }
                 }
-                Log.w(TAG, "${MODELS[index]} no respondió: ${lastError?.message}")
+                Log.w(TAG, "$name no respondió: ${lastError?.message?.lineSequence()?.firstOrNull()}")
             }
-            throw lastError ?: IllegalStateException("Sin modelos")
+            // Si todos los modelos están sin cuota, se avisa de ello en concreto.
+            if (MODELS.all { (exhaustedUntil[it] ?: 0L) > System.currentTimeMillis() }) throw AiQuotaExceededException()
+            throw lastError ?: AiQuotaExceededException()
         }
 
-    /** Los resúmenes no cambian: se guardan para no gastar la cuota gratuita dos veces. */
+    private fun Throwable.isQuotaError(): Boolean =
+        message.orEmpty().let { "quota" in it.lowercase() || "exceeded" in it.lowercase() || "429" in it }
+
+    /** Lee "Please retry in 1h11m49s" del mensaje de error. */
+    private fun Throwable.retryDelayMs(): Long? {
+        val match = Regex("""retry in (?:(\d+)h)?(?:(\d+)m)?(?:([\d.]+)s)?""").find(message.orEmpty()) ?: return null
+        val (h, m, sec) = match.destructured
+        val total = (h.toLongOrNull() ?: 0) * 3_600_000 + (m.toLongOrNull() ?: 0) * 60_000 + ((sec.toDoubleOrNull() ?: 0.0) * 1000).toLong()
+        return total.takeIf { it > 0 }
+    }
+
+    // Cachés: repetir una búsqueda o volver a ver un resumen o una sorpresa no gasta cuota.
     private val summaries = ConcurrentHashMap<String, String>()
+    private val intents = ConcurrentHashMap<String, SearchIntent>()
+    private val explanations = ConcurrentHashMap<String, String>()
 
     override suspend fun interpret(query: String, cityName: String, currency: String, now: LocalDateTime) = runCatching {
+        val cacheKey = "$cityName|${now.toLocalDate()}|${now.hour / 6}|${query.trim().lowercase()}"
+        intents[cacheKey]?.let { return@runCatching it }
         val prompt = """
             Eres el buscador de CityPulse, una app de eventos para viajeros en $cityName.
             Ahora es ${now.format(DateTimeFormatter.ofPattern("EEEE d 'de' MMMM, HH:mm", Locale.forLanguageTag("es")))}.
@@ -153,7 +184,7 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
             Petición: "$query"
         """.trimIndent()
         val text = generate(jsonModels, prompt, INTERPRET_TIMEOUT_MS)
-        json.decodeFromString<SearchIntentDto>(text).toDomain()
+        json.decodeFromString<SearchIntentDto>(text).toDomain().also { intents[cacheKey] = it }
     }.onFailure { Log.w(TAG, "interpret", it) }
 
     override suspend fun summarize(event: Event) = runCatching {
@@ -171,6 +202,7 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
     }.onFailure { Log.w(TAG, "summarize", it) }
 
     override suspend fun explainSurprise(event: NearbyEvent, now: LocalDateTime) = runCatching {
+        explanations[event.event.id]?.let { return@runCatching it }
         val e = event.event
         val timing = when {
             e.isLive(now) -> "ya está en curso"
@@ -182,6 +214,6 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
             está a ${event.walkMinutes} minutos a pie; $timing; ${if (e.isFree) "es gratis" else "precio: ${e.price ?: "en la web del evento"}"}.
             Ahora son las ${now.format(DateTimeFormatter.ofPattern("HH:mm"))}. Sin comillas ni emojis.
         """.trimIndent()
-        generate(textModels, prompt, EXPLAIN_TIMEOUT_MS).trim('"')
+        generate(textModels, prompt, EXPLAIN_TIMEOUT_MS).trim('"').also { explanations[event.event.id] = it }
     }.onFailure { Log.w(TAG, "explainSurprise", it) }
 }

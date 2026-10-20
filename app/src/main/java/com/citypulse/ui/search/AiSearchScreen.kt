@@ -59,6 +59,7 @@ import com.citypulse.core.designsystem.component.SkeletonBlock
 import com.citypulse.core.designsystem.component.glass
 import com.citypulse.core.designsystem.component.gradientTint
 import com.citypulse.core.designsystem.theme.BrandGradient
+import com.citypulse.core.designsystem.theme.BrandGradientHorizontal
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.core.designsystem.theme.OverlineStyle
 import com.citypulse.core.designsystem.theme.Poppins
@@ -204,7 +205,23 @@ private fun Understood(state: AiSearchUiState) {
             }
         }
         if (state.usedFallback) {
-            Text(stringResource(R.string.ai_fallback), fontSize = 12.sp, color = CpColors.LiveSoft, modifier = Modifier.padding(bottom = 6.dp))
+            Text(
+                stringResource(if (state.quotaExceeded) R.string.ai_quota else R.string.ai_fallback),
+                fontSize = 12.sp,
+                color = CpColors.LiveSoft,
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
+        }
+        if (state.aiRefined) {
+            Text(
+                stringResource(R.string.ai_refined),
+                fontSize = 12.sp,
+                color = Color.White,
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .background(BrandGradientHorizontal, CircleShape)
+                    .padding(horizontal = 12.dp, vertical = 5.dp),
+            )
         }
         when {
             intent == null || intent.isEmpty -> Text(stringResource(R.string.ai_understood_nothing), fontSize = 12.sp, color = CpColors.TextTertiary)

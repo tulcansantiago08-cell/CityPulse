@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.citypulse.domain.model.GeoPoint
+import com.citypulse.domain.repository.AiQuotaExceededException
 import com.citypulse.domain.repository.EventAssistant
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.SavedEventsRepository
@@ -34,6 +35,7 @@ sealed interface AiText {
     data object Loading : AiText
     data class Ready(val text: String) : AiText
     data object Unavailable : AiText
+    data object QuotaExceeded : AiText
 }
 
 data class DetailUiState(
@@ -90,7 +92,13 @@ class DetailViewModel @Inject constructor(
         viewModelScope.launch {
             summary.value = AiText.Loading
             val event = eventRepository.getEvent(eventId) ?: savedEvents.observeSaved().first().firstOrNull { it.id == eventId }
-            summary.value = event?.let { assistant.summarize(it).getOrNull() }?.let(AiText::Ready) ?: AiText.Unavailable
+            val result = event?.let { assistant.summarize(it) }
+            summary.value = when {
+                result == null -> AiText.Unavailable
+                result.isSuccess -> AiText.Ready(result.getOrThrow())
+                result.exceptionOrNull() is AiQuotaExceededException -> AiText.QuotaExceeded
+                else -> AiText.Unavailable
+            }
         }
     }
 

@@ -136,6 +136,9 @@
     <string name="ai_understood">Entendí:</string>
     <string name="ai_understood_nothing">No encontré filtros concretos; te muestro todo lo próximo.</string>
     <string name="ai_fallback">La IA no está disponible ahora mismo: búsqueda básica.</string>
+    <string name="ai_quota">Se agotó la IA gratuita de hoy: búsqueda básica. Mañana vuelve a estar disponible.</string>
+    <string name="ai_refined">✨ Afinado con IA</string>
+    <string name="ai_quota_short">Se agotó la IA gratuita de hoy. Vuelve a intentarlo mañana.</string>
     <string name="ai_no_results">Ningún evento encaja con eso. Prueba a decirlo de otra forma o a quitar algún filtro.</string>
     <plurals name="ai_results_count">
         <item quantity="one">%d evento</item>
