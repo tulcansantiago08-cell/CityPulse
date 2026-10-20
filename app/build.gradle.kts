@@ -32,6 +32,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "TM_API_KEY", "\"${localKey("TM_API_KEY")}\"")
+        // Token de depuración de App Check ya registrado en Firebase (solo se usa en debug).
+        buildConfigField("String", "APP_CHECK_DEBUG_TOKEN", "\"${localKey("APP_CHECK_DEBUG_TOKEN")}\"")
     }
 
     buildTypes {

@@ -110,7 +110,7 @@ La app funciona sin ella, pero solo mostrará el catálogo de Firestore.
 Gratis en el plan Spark, sin tarjeta:
 
 1. Firebase console → **AI Logic** → *Comenzar* → proveedor **Gemini Developer API**.
-2. **App Check** (obligatorio para AI Logic desde el 2 de noviembre de 2026): registra la app Android con el proveedor *Play Integrity* (huella SHA-256 del certificado) y, para el emulador, añade en *Administrar tokens de depuración* el token que la app escribe en Logcat al arrancar (`DebugAppCheckProvider`).
+2. **App Check** (obligatorio para AI Logic desde el 2 de noviembre de 2026): registra la app Android con el proveedor *Play Integrity* (huella SHA-256 del certificado) y, para el emulador, añade en *Administrar tokens de depuración* el token que la app escribe en Logcat al arrancar (`DebugAppCheckProvider`). Si guardas ese token en `local.properties` como `APP_CHECK_DEBUG_TOKEN=...`, la versión de depuración lo usa siempre y no cambia al reinstalar.
 
 Sin estos pasos la app funciona igual, pero la búsqueda usa el modo básico y no hay resúmenes.
 
