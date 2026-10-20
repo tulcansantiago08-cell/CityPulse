@@ -40,9 +40,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -59,15 +62,19 @@ import com.citypulse.core.designsystem.component.GlassIconButton
 import com.citypulse.core.designsystem.component.GradientButton
 import com.citypulse.core.designsystem.component.SkeletonBlock
 import com.citypulse.core.designsystem.component.dashedBorder
+import com.citypulse.core.designsystem.component.glass
 import com.citypulse.core.designsystem.theme.BrandGradientHorizontal
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.data.fake.SampleData
 import com.citypulse.domain.model.Category
+import com.citypulse.domain.model.PriceBands
+import com.citypulse.domain.model.PriceRange
 import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.CategoryOptions
 import com.citypulse.ui.common.EventUi
+import com.citypulse.ui.common.formatMoney
 import com.citypulse.ui.common.toUi
 import java.time.LocalDateTime
 
@@ -86,6 +93,7 @@ fun HomeRoute(
         onToggleFreeOnly = viewModel::toggleFreeOnly,
         onToggleSave = viewModel::toggleSaved,
         onRetry = viewModel::retry,
+        onSelectPriceRange = viewModel::selectPriceRange,
     )
 }
 
@@ -99,6 +107,7 @@ fun HomeScreen(
     onToggleSave: (String) -> Unit,
     modifier: Modifier = Modifier,
     onRetry: () -> Unit = {},
+    onSelectPriceRange: (PriceRange) -> Unit = {},
 ) {
     LazyColumn(
         modifier.fillMaxSize(),
@@ -121,6 +130,7 @@ fun HomeScreen(
                 }
             }
         }
+        item { PriceRangeRow(state.priceRange, state.priceBands, onSelectPriceRange) }
         item {
             Row(
                 Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
@@ -235,6 +245,41 @@ private fun HappeningNowRow(
                 saved = event.id in savedIds,
                 onToggleSave = { onToggleSave(event.id) },
                 onClick = { onOpenEvent(event.id) },
+            )
+        }
+    }
+}
+
+/** Opciones de rango de precio, con los importes en la moneda de la ciudad. */
+@Composable
+private fun PriceRangeRow(selected: PriceRange, bands: PriceBands, onSelect: (PriceRange) -> Unit) {
+    val low = formatMoney(bands.low, bands.currency)
+    val high = formatMoney(bands.high, bands.currency)
+    val options = listOf(
+        PriceRange.Any to stringResource(R.string.price_any),
+        PriceRange.Low to stringResource(R.string.price_up_to, low),
+        PriceRange.Mid to stringResource(R.string.price_between, low, high),
+        PriceRange.High to stringResource(R.string.price_more_than, high),
+    )
+    val description = stringResource(R.string.home_price_filter)
+    LazyRow(
+        Modifier.padding(top = 16.dp).semantics { contentDescription = description },
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(options, key = { it.first.name }) { (range, label) ->
+            val active = range == selected
+            Text(
+                label,
+                fontSize = 12.sp,
+                fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (active) Color.White else Color.White.copy(alpha = 0.7f),
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .then(if (active) Modifier.background(BrandGradientHorizontal) else Modifier.glass(CircleShape))
+                    .semantics { this.selected = active }
+                    .clickable(role = Role.Tab) { onSelect(range) }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
             )
         }
     }

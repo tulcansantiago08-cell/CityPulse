@@ -3,6 +3,7 @@ package com.citypulse.ui
 import app.cash.turbine.test
 import com.citypulse.data.fake.FakeEventRepository
 import com.citypulse.domain.model.Category
+import com.citypulse.domain.model.PriceRange
 import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.usecase.ObserveCityEvents
 import com.citypulse.domain.usecase.ToggleSavedEvent
@@ -69,6 +70,20 @@ class HomeViewModelTest {
             assertTrue(prefs.state.value.freeOnly)
             assertTrue(state.happeningNow.all { it.free })
             assertFalse("jazz" in state.happeningNow.map { it.id })
+        }
+    }
+
+    @Test
+    fun `rango de precio medio deja solo los eventos entre 10 y 30 euros y se guarda`() = runTest {
+        val vm = viewModel()
+        vm.uiState.test {
+            expectMostRecentItem()
+            vm.selectPriceRange(PriceRange.Mid)
+            val state = expectMostRecentItem()
+            assertEquals(PriceRange.Mid, prefs.state.value.priceRange)
+            assertEquals("EUR", state.priceBands.currency)
+            // Jazz (15 €) y flamenco (25 €); los gratuitos quedan fuera.
+            assertEquals(setOf("jazz", "flamenco"), state.happeningNow.map { it.id }.toSet())
         }
     }
 

@@ -40,6 +40,11 @@
     <string name="home_search_city">Buscar ciudad</string>
     <string name="home_happening_now">Pasando ahora</string>
     <string name="home_free_only">Solo gratis</string>
+    <string name="home_price_filter">Filtrar por precio</string>
+    <string name="price_any">Todos los precios</string>
+    <string name="price_up_to">Hasta %1$s</string>
+    <string name="price_between">%1$s – %2$s</string>
+    <string name="price_more_than">Más de %1$s</string>
     <string name="home_this_week">Esta semana</string>
     <string name="home_nothing_live">Nada en curso con estos filtros.</string>
     <string name="home_nothing_this_week">No hay más eventos esta semana con estos filtros.</string>

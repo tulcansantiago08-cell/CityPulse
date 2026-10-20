@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.CityEvents
+import com.citypulse.domain.model.PriceBands
+import com.citypulse.domain.model.PriceRange
 import com.citypulse.domain.model.RefreshState
 import com.citypulse.domain.model.UserPreferences
+import com.citypulse.domain.model.isInPriceRange
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.SavedEventsRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
@@ -42,6 +45,9 @@ data class HomeUiState(
     val happeningNow: List<EventUi> = emptyList(),
     val thisWeek: List<EventUi> = emptyList(),
     val savedIds: Set<String> = emptySet(),
+    val priceRange: PriceRange = PriceRange.Any,
+    /** Límites de los rangos en la moneda de la ciudad. */
+    val priceBands: PriceBands = PriceBands.forCurrency("EUR"),
     /** No hay eventos que mostrar porque fallaron las descargas. */
     val error: Boolean = false,
 )
@@ -78,7 +84,11 @@ class HomeViewModel @Inject constructor(
         // "Ahora" en la hora local de la ciudad elegida, no en la del teléfono.
         val now = instant.localIn(cityEvents?.city?.zone ?: prefs.city?.zone ?: ZoneId.systemDefault())
         val nothingCached = cityEvents?.events.isNullOrEmpty()
-        val filtered = cityEvents?.events.orEmpty().filter { it.event.matches(prefs.freeOnly, category) }
+        val city = cityEvents?.city ?: prefs.city
+        val bands = city?.let(PriceBands::forCity) ?: PriceBands.forCurrency("EUR")
+        val filtered = cityEvents?.events.orEmpty().filter {
+            it.event.matches(prefs.freeOnly, category) && it.event.isInPriceRange(prefs.priceRange, bands)
+        }
         HomeUiState(
             // Sin nada en caché, mientras se descarga se muestran esqueletos en vez de "no hay eventos".
             loading = cityEvents == null || (nothingCached && refresh == RefreshState.Loading),
@@ -91,6 +101,8 @@ class HomeViewModel @Inject constructor(
             happeningNow = filtered.happeningNow(now).map { it.toUi(now) },
             thisWeek = filtered.upcomingThisWeek(now).map { it.toUi(now) },
             savedIds = savedIds,
+            priceRange = prefs.priceRange,
+            priceBands = bands,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
@@ -104,6 +116,10 @@ class HomeViewModel @Inject constructor(
 
     fun toggleSaved(eventId: String) {
         viewModelScope.launch { toggleSavedEvent(eventId) }
+    }
+
+    fun selectPriceRange(range: PriceRange) {
+        viewModelScope.launch { preferences.setPriceRange(range) }
     }
 
     fun toggleFreeOnly() {

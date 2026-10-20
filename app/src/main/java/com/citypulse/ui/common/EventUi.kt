@@ -4,9 +4,11 @@ import androidx.compose.ui.graphics.Color
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.NearbyEvent
+import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Currency
 import java.util.Locale
 
 /** Datos de un evento ya formateados para pintarlos en cualquier tarjeta. */
@@ -56,6 +58,13 @@ fun LocalDate.dayLabel(today: LocalDate): String = when (this) {
 /** Línea de fecha de la pantalla de inicio: "Martes 13 oct · 21:04". */
 fun LocalDateTime.dateLine(): String =
     "${SpanishDaysLong[dayOfWeek.value - 1]} $dayOfMonth ${SpanishMonths[monthValue - 1]} · ${hourLabel()}"
+
+/** Importe redondo con su moneda: "10 €", "20.000 COP". */
+fun formatMoney(amount: Double, currency: String): String =
+    NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-ES")).apply {
+        runCatching { this.currency = Currency.getInstance(currency) }
+        maximumFractionDigits = 0
+    }.format(amount)
 
 fun distanceLabel(meters: Int, walkMinutes: Int): String {
     val km = String.format(Locale.forLanguageTag("es-ES"), "%.1f", meters / 1000.0)

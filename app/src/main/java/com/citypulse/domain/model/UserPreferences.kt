@@ -4,6 +4,7 @@ package com.citypulse.domain.model
 data class UserPreferences(
     val city: City? = null,
     val freeOnly: Boolean = false,
+    val priceRange: PriceRange = PriceRange.Any,
     val radiusMinutes: Int = DEFAULT_RADIUS_MINUTES,
     val onboardingDone: Boolean = false,
 ) {
