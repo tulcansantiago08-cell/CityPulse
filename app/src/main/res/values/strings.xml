@@ -8,6 +8,7 @@
     <string name="action_choose_city_manually">Elegir ciudad manualmente</string>
     <string name="action_see_saved">Ver guardados</string>
     <string name="action_directions">Cómo llegar</string>
+    <string name="action_tickets">Entradas</string>
     <string name="action_share">Compartir</string>
     <string name="action_save_event">Guardar evento</string>
     <string name="action_unsave_event">Quitar de guardados</string>

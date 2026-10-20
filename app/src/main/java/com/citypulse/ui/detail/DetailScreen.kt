@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.Directions
 import androidx.compose.material.icons.rounded.EventBusy
 import androidx.compose.material.icons.rounded.Schedule
@@ -67,6 +68,7 @@ import com.citypulse.R
 import com.citypulse.core.designsystem.component.EmptyState
 import com.citypulse.core.designsystem.component.EventImage
 import com.citypulse.core.designsystem.component.FreeBadge
+import com.citypulse.core.designsystem.component.GlassButton
 import com.citypulse.core.designsystem.component.GlassIconButton
 import com.citypulse.core.designsystem.component.GlassSurface
 import com.citypulse.core.designsystem.component.GlassTag
@@ -229,16 +231,30 @@ private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -
             }
             Box(Modifier.fillMaxWidth().height(visibleHeight - 20.dp)) {
                 SheetContent(event, state, onDirections, onOpenEventPage, Modifier.fillMaxSize())
-                GradientButton(
-                    text = stringResource(R.string.action_directions),
-                    onClick = onDirections,
-                    icon = Icons.Rounded.Directions,
-                    modifier = Modifier
+                Row(
+                    Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .navigationBarsPadding()
                         .padding(horizontal = 20.dp, vertical = 20.dp),
-                )
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    // Solo si el evento tiene página de venta (Ticketmaster); la compra se hace allí.
+                    if (event.url != null) {
+                        GlassButton(
+                            text = stringResource(R.string.action_tickets),
+                            onClick = onOpenEventPage,
+                            icon = Icons.Rounded.ConfirmationNumber,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    GradientButton(
+                        text = stringResource(R.string.action_directions),
+                        onClick = onDirections,
+                        icon = Icons.Rounded.Directions,
+                        modifier = Modifier.weight(1.2f),
+                    )
+                }
             }
         }
     }
