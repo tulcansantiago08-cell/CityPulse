@@ -4,6 +4,7 @@ import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.EventSource
 import com.citypulse.domain.model.GeoPoint
+import com.citypulse.domain.model.parsePriceLabel
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -30,6 +31,8 @@ data class CatalogEntry(
     val description: String,
     val imageUrl: String?,
     val url: String?,
+    val priceMin: Double? = null,
+    val currency: String? = null,
 ) {
     /** Ocurrencias de la entrada entre [from] y los [days] días siguientes. */
     fun occurrences(from: LocalDate, days: Int = 7): List<Event> =
@@ -55,12 +58,16 @@ data class CatalogEntry(
             imageUrl = imageUrl,
             source = EventSource.CityPulse,
             url = url,
+            priceMin = if (isFree) 0.0 else priceMin,
+            currency = currency,
         )
     }
 
     companion object {
         /** Lee un documento de Firestore; devuelve `null` si le falta algún campo obligatorio. */
         fun fromDocument(id: String, data: Map<String, Any?>): CatalogEntry? = runCatching {
+            // Si el documento no trae el precio en número, se deduce del texto ("15 €").
+            val parsed = parsePriceLabel(data["price"] as? String)
             CatalogEntry(
                 id = id,
                 city = data["city"] as String,
@@ -78,6 +85,8 @@ data class CatalogEntry(
                 description = data["description"] as? String ?: "",
                 imageUrl = data["imageUrl"] as? String,
                 url = data["url"] as? String,
+                priceMin = (data["priceMin"] as? Number)?.toDouble() ?: parsed?.first,
+                currency = data["currency"] as? String ?: parsed?.second,
             )
         }.getOrNull()
     }

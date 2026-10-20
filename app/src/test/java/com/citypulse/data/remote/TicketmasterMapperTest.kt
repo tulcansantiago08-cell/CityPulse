@@ -34,6 +34,8 @@ class TicketmasterMapperTest {
         assertEquals(40.4169, event.location.latitude, 1e-6)
         assertFalse(event.isFree)
         assertEquals("Desde 15 €", event.price)
+        assertEquals(15.0, event.priceMin!!, 0.0)
+        assertEquals("EUR", event.currency)
         assertEquals("https://img/large.jpg", event.imageUrl)
         assertEquals(EventSource.Ticketmaster, event.source)
     }

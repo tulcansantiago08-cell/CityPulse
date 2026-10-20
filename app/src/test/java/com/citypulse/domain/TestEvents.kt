@@ -15,6 +15,8 @@ fun testEvent(
     location: GeoPoint = PuertaDelSol,
     category: Category = Category.Music,
     price: String? = null,
+    priceMin: Double? = null,
+    currency: String? = "EUR",
 ) = Event(
     id = id,
     title = "Evento $id",
@@ -26,6 +28,8 @@ fun testEvent(
     end = end,
     price = price,
     isFree = price == null,
+    priceMin = if (price == null) 0.0 else priceMin,
+    currency = currency,
     description = "",
     imageUrl = null,
     source = EventSource.CityPulse,

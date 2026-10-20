@@ -26,6 +26,8 @@ data class SavedEventEntity(
     val imageUrl: String?,
     val source: String,
     val url: String?,
+    val priceMin: Double? = null,
+    val currency: String? = null,
     val savedAt: Long,
 )
 
@@ -45,6 +47,8 @@ fun Event.toSavedEntity(savedAt: Long = System.currentTimeMillis()) = SavedEvent
     imageUrl = imageUrl,
     source = source.name,
     url = url,
+    priceMin = priceMin,
+    currency = currency,
     savedAt = savedAt,
 )
 
@@ -63,4 +67,6 @@ fun SavedEventEntity.toEvent() = Event(
     imageUrl = imageUrl,
     source = EventSource.valueOf(source),
     url = url,
+    priceMin = priceMin,
+    currency = currency,
 )

@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [SavedEventEntity::class, CachedEventEntity::class], version = 3, exportSchema = false)
+@Database(entities = [SavedEventEntity::class, CachedEventEntity::class], version = 4, exportSchema = false)
 abstract class CityPulseDatabase : RoomDatabase() {
     abstract fun savedEventDao(): SavedEventDao
     abstract fun cachedEventDao(): CachedEventDao
@@ -34,6 +34,18 @@ abstract class CityPulseDatabase : RoomDatabase() {
                     """.trimIndent(),
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_cached_events_city ON cached_events (city)")
+            }
+        }
+
+        /** v4: precio mínimo y moneda, para el filtro por rango de precio. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (table in listOf("saved_events", "cached_events")) {
+                    db.execSQL("ALTER TABLE $table ADD COLUMN priceMin REAL")
+                    db.execSQL("ALTER TABLE $table ADD COLUMN currency TEXT")
+                }
+                // La caché se rehace en la próxima descarga, ya con los precios.
+                db.execSQL("DELETE FROM cached_events")
             }
         }
     }

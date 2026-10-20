@@ -49,6 +49,8 @@ fun TmEvent.toDomain(): Event? {
         imageUrl = bestImage(),
         source = EventSource.Ticketmaster,
         url = url,
+        priceMin = if (isFree) 0.0 else price?.let { it.min ?: it.max },
+        currency = price?.currency,
     )
 }
 

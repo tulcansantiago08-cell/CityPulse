@@ -65,7 +65,7 @@ abstract class DataModule {
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): CityPulseDatabase =
             Room.databaseBuilder(context, CityPulseDatabase::class.java, "citypulse.db")
-                .addMigrations(CityPulseDatabase.MIGRATION_1_2, CityPulseDatabase.MIGRATION_2_3)
+                .addMigrations(CityPulseDatabase.MIGRATION_1_2, CityPulseDatabase.MIGRATION_2_3, CityPulseDatabase.MIGRATION_3_4)
                 .build()
 
         @Provides

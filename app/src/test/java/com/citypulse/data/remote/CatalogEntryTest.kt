@@ -43,6 +43,14 @@ class CatalogEntryTest {
     }
 
     @Test
+    fun `el precio numerico se deduce del texto si el documento no lo trae`() {
+        val entry = CatalogEntry.fromDocument("teatro", sundayMarket + mapOf("price" to "Desde 40.000 COP", "free" to false))!!
+        val event = entry.occurrences(LocalDate.of(2026, 10, 12), days = 7).first()
+        assertEquals(40_000.0, event.priceMin!!, 0.0)
+        assertEquals("COP", event.currency)
+    }
+
+    @Test
     fun `documento incompleto se descarta`() {
         assertNull(CatalogEntry.fromDocument("x", sundayMarket - "lat"))
     }

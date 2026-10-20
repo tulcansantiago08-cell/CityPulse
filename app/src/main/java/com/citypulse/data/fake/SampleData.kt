@@ -5,6 +5,7 @@ import com.citypulse.domain.model.City
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.EventSource
 import com.citypulse.domain.model.GeoPoint
+import com.citypulse.domain.model.parsePriceLabel
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -50,6 +51,8 @@ object SampleData {
                 end = at(day, to),
                 price = price,
                 isFree = price == null,
+                priceMin = if (price == null) 0.0 else parsePriceLabel(price)?.first,
+                currency = if (price == null) "EUR" else parsePriceLabel(price)?.second,
                 description = description,
                 imageUrl = unsplash(image),
                 source = EventSource.CityPulse,

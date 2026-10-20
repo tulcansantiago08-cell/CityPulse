@@ -10,6 +10,7 @@ enum class EventSource { Ticketmaster, CityPulse }
  *
  * @property price precio legible ("15 €", "Desde 20 €"); `null` si no se conoce.
  * @property isFree el evento es gratuito (no basta con no conocer el precio).
+ * @property priceMin precio mínimo en [currency], para filtrar por rango; `null` si no se conoce.
  */
 data class Event(
     val id: String,
@@ -26,6 +27,8 @@ data class Event(
     val imageUrl: String?,
     val source: EventSource,
     val url: String? = null,
+    val priceMin: Double? = null,
+    val currency: String? = null,
 ) {
     /** El evento ya empezó y todavía no termina. */
     fun isLive(now: LocalDateTime): Boolean = !now.isBefore(start) && now.isBefore(end)

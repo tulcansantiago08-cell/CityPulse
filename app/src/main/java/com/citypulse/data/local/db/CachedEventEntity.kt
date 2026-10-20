@@ -28,6 +28,8 @@ data class CachedEventEntity(
     val imageUrl: String?,
     val source: String,
     val url: String?,
+    val priceMin: Double? = null,
+    val currency: String? = null,
     val fetchedAt: Long,
 )
 
@@ -48,6 +50,8 @@ fun Event.toCachedEntity(city: String, fetchedAt: Long) = CachedEventEntity(
     imageUrl = imageUrl,
     source = source.name,
     url = url,
+    priceMin = priceMin,
+    currency = currency,
     fetchedAt = fetchedAt,
 )
 
@@ -66,4 +70,6 @@ fun CachedEventEntity.toEvent() = Event(
     imageUrl = imageUrl,
     source = EventSource.valueOf(source),
     url = url,
+    priceMin = priceMin,
+    currency = currency,
 )
