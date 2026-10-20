@@ -149,4 +149,9 @@
     <string name="ai_chip_today">Hoy</string>
     <string name="ai_chip_live">En curso</string>
     <string name="ai_chip_walk">≤ %1$d min a pie</string>
+    <string name="ai_summarize">Resumir y traducir con IA</string>
+    <string name="ai_summarizing">Resumiendo…</string>
+    <string name="ai_summary_title">Resumen con IA</string>
+    <string name="ai_disclaimer">Generado por IA a partir de la descripción; puede contener errores.</string>
+    <string name="ai_unavailable_retry">La IA no está disponible ahora. Toca para reintentar.</string>
 </resources>

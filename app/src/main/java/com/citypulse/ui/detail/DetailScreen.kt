@@ -31,12 +31,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.Directions
 import androidx.compose.material.icons.rounded.EventBusy
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Sell
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -75,6 +77,7 @@ import com.citypulse.core.designsystem.component.GlassTag
 import com.citypulse.core.designsystem.component.GradientButton
 import com.citypulse.core.designsystem.component.LiveBadge
 import com.citypulse.core.designsystem.component.SaveButton
+import com.citypulse.core.designsystem.component.gradientTint
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.data.fake.SampleData
@@ -103,6 +106,7 @@ fun DetailRoute(onBack: () -> Unit, viewModel: DetailViewModel = hiltViewModel()
         onShare = { state.event?.let { context.shareText(it.shareMessage()) } },
         onDirections = { state.event?.let { context.openWalkingDirections(it.latitude, it.longitude) } },
         onOpenEventPage = { state.event?.url?.let(context::openUrl) },
+        onSummarize = viewModel::summarize,
     )
 }
 
@@ -122,6 +126,7 @@ fun DetailScreen(
     onDirections: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenEventPage: () -> Unit = {},
+    onSummarize: () -> Unit = {},
 ) {
     val event = state.event
     if (event == null) {
@@ -150,7 +155,7 @@ fun DetailScreen(
                 ),
             ),
         )
-        DetailSheet(event, state, onDirections, onOpenEventPage)
+        DetailSheet(event, state, onDirections, onOpenEventPage, onSummarize)
         Row(
             Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -166,7 +171,13 @@ fun DetailScreen(
 
 /** Hoja glass que se arrastra entre dos alturas; tocar el asa también la alterna. */
 @Composable
-private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -> Unit, onOpenEventPage: () -> Unit) {
+private fun DetailSheet(
+    event: EventUi,
+    state: DetailUiState,
+    onDirections: () -> Unit,
+    onOpenEventPage: () -> Unit,
+    onSummarize: () -> Unit,
+) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val density = LocalDensity.current
         val maxHeightPx = constraints.maxHeight
@@ -230,7 +241,7 @@ private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -
                 (maxHeightPx - (sheetState.offset.takeUnless { it.isNaN() } ?: collapsedPx)).toDp()
             }
             Box(Modifier.fillMaxWidth().height(visibleHeight - 20.dp)) {
-                SheetContent(event, state, onDirections, onOpenEventPage, Modifier.fillMaxSize())
+                SheetContent(event, state, onDirections, onOpenEventPage, onSummarize, Modifier.fillMaxSize())
                 Row(
                     Modifier
                         .align(Alignment.BottomCenter)
@@ -266,6 +277,7 @@ private fun SheetContent(
     state: DetailUiState,
     onDirections: () -> Unit,
     onOpenEventPage: () -> Unit,
+    onSummarize: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -309,6 +321,7 @@ private fun SheetContent(
             color = Color.White.copy(alpha = 0.82f),
             modifier = Modifier.padding(top = 16.dp),
         )
+        AiSummaryCard(state.summary, onSummarize, Modifier.padding(top = 16.dp))
         OsmMiniMap(
             eventLocation = GeoPoint(event.latitude, event.longitude),
             origin = state.origin,
@@ -318,6 +331,56 @@ private fun SheetContent(
             onClick = onDirections,
             modifier = Modifier.padding(top = 16.dp),
         )
+    }
+}
+
+/** Resumen con IA bajo demanda: botón → "Resumiendo…" → texto (o aviso si la IA no responde). */
+@Composable
+private fun AiSummaryCard(summary: AiText, onSummarize: () -> Unit, modifier: Modifier = Modifier) {
+    val clickable = summary is AiText.Idle || summary is AiText.Unavailable
+    GlassSurface(
+        modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        borderColor = CpColors.Cyan.copy(alpha = 0.35f),
+        onClick = if (clickable) onSummarize else null,
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (summary is AiText.Loading) {
+                    CircularProgressIndicator(Modifier.size(16.dp), color = CpColors.Cyan, strokeWidth = 2.dp)
+                } else {
+                    Icon(Icons.Rounded.AutoAwesome, null, tint = Color.White, modifier = Modifier.size(18.dp).gradientTint())
+                }
+                Text(
+                    stringResource(
+                        when (summary) {
+                            AiText.Idle -> R.string.ai_summarize
+                            AiText.Loading -> R.string.ai_summarizing
+                            is AiText.Ready -> R.string.ai_summary_title
+                            AiText.Unavailable -> R.string.ai_unavailable_retry
+                        },
+                    ),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (summary is AiText.Unavailable) CpColors.LiveSoft else Color.White,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+            if (summary is AiText.Ready) {
+                Text(
+                    summary.text,
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
+                    color = Color.White.copy(alpha = 0.9f),
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                Text(
+                    stringResource(R.string.ai_disclaimer),
+                    fontSize = 10.sp,
+                    color = CpColors.TextMuted,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+            }
+        }
     }
 }
 
