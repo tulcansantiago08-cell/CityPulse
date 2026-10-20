@@ -15,6 +15,15 @@ fun Context.openWalkingDirections(latitude: Double, longitude: Double) {
     }
 }
 
+/** Abre una web (p. ej. la página del evento con precios y entradas). */
+fun Context.openUrl(url: String) {
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+    } catch (_: ActivityNotFoundException) {
+        // Sin navegador no hay nada que abrir.
+    }
+}
+
 /** Comparte un texto con el selector del sistema. */
 fun Context.shareText(text: String) {
     val send = Intent(Intent.ACTION_SEND).apply {

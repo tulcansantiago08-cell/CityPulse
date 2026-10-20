@@ -2,6 +2,7 @@ package com.citypulse.ui.common
 
 import androidx.compose.ui.graphics.Color
 import com.citypulse.domain.model.Category
+import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.NearbyEvent
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -19,7 +20,10 @@ data class EventUi(
     val fallback: List<Color>,
     val live: Boolean,
     val free: Boolean,
+    /** "Gratis", el precio, "Ver precio" (está en la web del evento) o "En taquilla". */
     val priceLabel: String,
+    /** El precio no se conoce pero se puede consultar en la web del evento ([url]). */
+    val priceOnline: Boolean,
     val walkMinutes: Int,
     /** "Música · hasta 23:30" / "Música · empieza 22:00" */
     val overline: String,
@@ -71,7 +75,8 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
         fallback = event.category.fallbackColors(),
         live = live,
         free = event.isFree,
-        priceLabel = if (event.isFree) "Gratis" else event.price ?: "Consultar precio",
+        priceLabel = priceLabel(event),
+        priceOnline = !event.isFree && event.price == null && event.url != null,
         walkMinutes = walkMinutes,
         overline = "${event.category.label} · $overline",
         whenLabel = "${event.start.toLocalDate().dayLabel(now.toLocalDate())} · ${event.start.hourLabel()}",
@@ -82,6 +87,15 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
         longitude = event.location.longitude,
         url = event.url,
     )
+}
+
+private fun priceLabel(event: Event): String = when {
+    event.isFree -> "Gratis"
+    event.price != null -> event.price
+    // Ticketmaster no siempre da el precio en la API, pero sí en la página del evento.
+    event.url != null -> "Ver precio"
+    // Lugares del catálogo sin tarifa fija: se paga en el sitio.
+    else -> "En taquilla"
 }
 
 /** Degradado de respaldo por categoría mientras carga la imagen (tonos del prototipo). */

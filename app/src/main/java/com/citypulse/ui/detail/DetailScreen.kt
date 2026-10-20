@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Directions
 import androidx.compose.material.icons.rounded.EventBusy
 import androidx.compose.material.icons.rounded.Schedule
@@ -78,6 +79,7 @@ import com.citypulse.data.fake.SampleData
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.EventUi
+import com.citypulse.ui.common.openUrl
 import com.citypulse.ui.common.openWalkingDirections
 import com.citypulse.ui.common.shareMessage
 import com.citypulse.ui.common.shareText
@@ -98,6 +100,7 @@ fun DetailRoute(onBack: () -> Unit, viewModel: DetailViewModel = hiltViewModel()
         onToggleSave = viewModel::toggleSaved,
         onShare = { state.event?.let { context.shareText(it.shareMessage()) } },
         onDirections = { state.event?.let { context.openWalkingDirections(it.latitude, it.longitude) } },
+        onOpenEventPage = { state.event?.url?.let(context::openUrl) },
     )
 }
 
@@ -116,6 +119,7 @@ fun DetailScreen(
     onShare: () -> Unit,
     onDirections: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenEventPage: () -> Unit = {},
 ) {
     val event = state.event
     if (event == null) {
@@ -144,7 +148,7 @@ fun DetailScreen(
                 ),
             ),
         )
-        DetailSheet(event, state, onDirections)
+        DetailSheet(event, state, onDirections, onOpenEventPage)
         Row(
             Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -160,7 +164,7 @@ fun DetailScreen(
 
 /** Hoja glass que se arrastra entre dos alturas; tocar el asa también la alterna. */
 @Composable
-private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -> Unit) {
+private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -> Unit, onOpenEventPage: () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val density = LocalDensity.current
         val maxHeightPx = constraints.maxHeight
@@ -224,7 +228,7 @@ private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -
                 (maxHeightPx - (sheetState.offset.takeUnless { it.isNaN() } ?: collapsedPx)).toDp()
             }
             Box(Modifier.fillMaxWidth().height(visibleHeight - 20.dp)) {
-                SheetContent(event, state, onDirections, Modifier.fillMaxSize())
+                SheetContent(event, state, onDirections, onOpenEventPage, Modifier.fillMaxSize())
                 GradientButton(
                     text = stringResource(R.string.action_directions),
                     onClick = onDirections,
@@ -241,7 +245,13 @@ private fun DetailSheet(event: EventUi, state: DetailUiState, onDirections: () -
 }
 
 @Composable
-private fun SheetContent(event: EventUi, state: DetailUiState, onDirections: () -> Unit, modifier: Modifier = Modifier) {
+private fun SheetContent(
+    event: EventUi,
+    state: DetailUiState,
+    onDirections: () -> Unit,
+    onOpenEventPage: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier
             .verticalScroll(rememberScrollState())
@@ -266,7 +276,15 @@ private fun SheetContent(event: EventUi, state: DetailUiState, onDirections: () 
         )
         Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             InfoCell(Icons.Rounded.Schedule, CpColors.Cyan, stringResource(R.string.detail_schedule), event.timeRange, Modifier.weight(1f))
-            InfoCell(Icons.Rounded.Sell, CpColors.Magenta, stringResource(R.string.detail_price), event.priceLabel, Modifier.weight(1f))
+            InfoCell(
+                Icons.Rounded.Sell,
+                CpColors.Magenta,
+                stringResource(R.string.detail_price),
+                event.priceLabel,
+                Modifier.weight(1f),
+                // Si el precio está en la web del evento, la celda la abre.
+                onClick = if (event.priceOnline) onOpenEventPage else null,
+            )
             InfoCell(Icons.AutoMirrored.Rounded.DirectionsWalk, CpColors.LiveSoft, stringResource(R.string.detail_walk), stringResource(R.string.now_radius_value, event.walkMinutes), Modifier.weight(1f))
         }
         Text(
@@ -288,12 +306,34 @@ private fun SheetContent(event: EventUi, state: DetailUiState, onDirections: () 
 }
 
 @Composable
-private fun InfoCell(icon: ImageVector, tint: Color, label: String, value: String, modifier: Modifier = Modifier) {
-    GlassSurface(modifier, shape = RoundedCornerShape(20.dp)) {
+private fun InfoCell(
+    icon: ImageVector,
+    tint: Color,
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
+    GlassSurface(modifier, shape = RoundedCornerShape(20.dp), onClick = onClick) {
         Column(Modifier.padding(12.dp)) {
             Icon(icon, null, tint = tint, modifier = Modifier.size(18.dp))
             Text(label, fontSize = 10.sp, color = Color.White.copy(alpha = 0.55f), modifier = Modifier.padding(top = 6.dp))
-            Text(value, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color.White)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    value,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (onClick != null) CpColors.Cyan else Color.White,
+                )
+                if (onClick != null) {
+                    Icon(
+                        Icons.AutoMirrored.Rounded.OpenInNew,
+                        contentDescription = null,
+                        tint = CpColors.Cyan,
+                        modifier = Modifier.padding(start = 4.dp).size(14.dp),
+                    )
+                }
+            }
         }
     }
 }
