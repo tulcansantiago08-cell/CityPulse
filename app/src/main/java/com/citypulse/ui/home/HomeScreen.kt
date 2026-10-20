@@ -29,9 +29,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -98,9 +102,11 @@ fun HomeRoute(
         onRetry = viewModel::retry,
         onSelectPriceRange = viewModel::selectPriceRange,
         onAsk = onAsk,
+        onRefresh = viewModel::refresh,
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     state: HomeUiState,
@@ -113,77 +119,95 @@ fun HomeScreen(
     onRetry: () -> Unit = {},
     onSelectPriceRange: (PriceRange) -> Unit = {},
     onAsk: () -> Unit = {},
+    onRefresh: () -> Unit = {},
 ) {
-    LazyColumn(
-        modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 120.dp),
+    val pullState = rememberPullToRefreshState()
+    PullToRefreshBox(
+        isRefreshing = state.refreshing,
+        onRefresh = onRefresh,
+        state = pullState,
+        modifier = modifier.fillMaxSize(),
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = pullState,
+                isRefreshing = state.refreshing,
+                containerColor = CpColors.Surface,
+                color = CpColors.Magenta,
+                modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding(),
+            )
+        },
     ) {
-        item { Header(state, onChangeCity) }
-        item { AskBar(onAsk) }
-        item {
-            LazyRow(
-                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                items(CategoryOptions, key = { it.label }) { option ->
-                    CategoryStory(
-                        label = option.label,
-                        icon = option.icon,
-                        imageUrl = option.imageUrl,
-                        selected = option.category == state.selectedCategory,
-                        onClick = { onSelectCategory(option.category) },
+        LazyColumn(
+            Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 120.dp),
+        ) {
+            item { Header(state, onChangeCity) }
+            item { AskBar(onAsk) }
+            item {
+                LazyRow(
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    items(CategoryOptions, key = { it.label }) { option ->
+                        CategoryStory(
+                            label = option.label,
+                            icon = option.icon,
+                            imageUrl = option.imageUrl,
+                            selected = option.category == state.selectedCategory,
+                            onClick = { onSelectCategory(option.category) },
+                        )
+                    }
+                }
+            }
+            item { PriceRangeRow(state.priceRange, state.priceBands, onSelectPriceRange) }
+            item {
+                Row(
+                    Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(stringResource(R.string.home_happening_now), style = MaterialTheme.typography.titleMedium, color = Color.White)
+                    CountPill(state.happeningNow.size, Modifier.padding(start = 8.dp))
+                    Box(Modifier.weight(1f))
+                    FreeOnlyToggle(state.freeOnly, onToggleFreeOnly)
+                }
+            }
+            item {
+                when {
+                    state.loading -> CarouselSkeleton()
+                    state.error -> LoadError(onRetry)
+                    else -> HappeningNowRow(state.happeningNow, state.savedIds, onOpenEvent, onToggleSave)
+                }
+            }
+            item {
+                Text(
+                    stringResource(R.string.home_this_week),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 12.dp),
+                )
+            }
+            if (state.loading) {
+                items(3) { SkeletonBlock(RoundedCornerShape(24.dp), Modifier.padding(horizontal = 20.dp, vertical = 5.dp).fillMaxWidth().height(88.dp)) }
+            }
+            if (state.thisWeek.isEmpty() && !state.loading && !state.error) {
+                item {
+                    DashedMessage(
+                        stringResource(R.string.home_nothing_this_week),
+                        Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
                     )
                 }
             }
-        }
-        item { PriceRangeRow(state.priceRange, state.priceBands, onSelectPriceRange) }
-        item {
-            Row(
-                Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(stringResource(R.string.home_happening_now), style = MaterialTheme.typography.titleMedium, color = Color.White)
-                CountPill(state.happeningNow.size, Modifier.padding(start = 8.dp))
-                Box(Modifier.weight(1f))
-                FreeOnlyToggle(state.freeOnly, onToggleFreeOnly)
-            }
-        }
-        item {
-            when {
-                state.loading -> CarouselSkeleton()
-                state.error -> LoadError(onRetry)
-                else -> HappeningNowRow(state.happeningNow, state.savedIds, onOpenEvent, onToggleSave)
-            }
-        }
-        item {
-            Text(
-                stringResource(R.string.home_this_week),
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.White,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 12.dp),
-            )
-        }
-        if (state.loading) {
-            items(3) { SkeletonBlock(RoundedCornerShape(24.dp), Modifier.padding(horizontal = 20.dp, vertical = 5.dp).fillMaxWidth().height(88.dp)) }
-        }
-        if (state.thisWeek.isEmpty() && !state.loading && !state.error) {
-            item {
-                DashedMessage(
-                    stringResource(R.string.home_nothing_this_week),
-                    Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
+            items(state.thisWeek, key = { it.id }) { event ->
+                EventRowCard(
+                    whenLabel = event.whenLabel,
+                    title = event.title,
+                    subtitle = "${event.venue} · ${event.priceLabel}",
+                    imageUrl = event.imageUrl,
+                    fallback = event.fallback,
+                    onClick = { onOpenEvent(event.id) },
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp),
                 )
             }
-        }
-        items(state.thisWeek, key = { it.id }) { event ->
-            EventRowCard(
-                whenLabel = event.whenLabel,
-                title = event.title,
-                subtitle = "${event.venue} · ${event.priceLabel}",
-                imageUrl = event.imageUrl,
-                fallback = event.fallback,
-                onClick = { onOpenEvent(event.id) },
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp),
-            )
         }
     }
 }

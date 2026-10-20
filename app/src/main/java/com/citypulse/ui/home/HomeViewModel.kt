@@ -50,6 +50,8 @@ data class HomeUiState(
     val priceBands: PriceBands = PriceBands.forCurrency("EUR"),
     /** No hay eventos que mostrar porque fallaron las descargas. */
     val error: Boolean = false,
+    /** Se están descargando eventos nuevos (indicador de "deslizar para actualizar"). */
+    val refreshing: Boolean = false,
 )
 
 private data class HomeInputs(
@@ -93,6 +95,7 @@ class HomeViewModel @Inject constructor(
             // Sin nada en caché, mientras se descarga se muestran esqueletos en vez de "no hay eventos".
             loading = cityEvents == null || (nothingCached && refresh == RefreshState.Loading),
             error = nothingCached && refresh == RefreshState.Error,
+            refreshing = refresh == RefreshState.Loading && !nothingCached,
             cityName = cityEvents?.city?.name ?: prefs.city?.name.orEmpty(),
             dateLine = now.dateLine(),
             greeting = greetingFor(now.toLocalTime()),
@@ -109,6 +112,9 @@ class HomeViewModel @Inject constructor(
     fun selectCategory(category: Category?) {
         selectedCategory.value = category
     }
+
+    /** "Deslizar para actualizar": vuelve a pedir los eventos aunque la caché sea reciente. */
+    fun refresh() = retry()
 
     fun retry() {
         viewModelScope.launch { preferences.preferences.first().city?.let { events.refresh(it) } }
