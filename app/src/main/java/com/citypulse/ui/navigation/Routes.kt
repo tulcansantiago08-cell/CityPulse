@@ -10,4 +10,5 @@ import kotlinx.serialization.Serializable
 @Serializable data object SavedRoute
 @Serializable data object CityRoute
 @Serializable data object LocationDeniedRoute
+@Serializable data object AiSearchRoute
 @Serializable data class DetailRoute(val eventId: String)

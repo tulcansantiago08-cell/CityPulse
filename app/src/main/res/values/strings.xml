@@ -124,4 +124,29 @@
     <string name="empty_location_body">Necesitamos saber dónde estás para mostrarte eventos a pocos minutos a pie.</string>
     <string name="empty_offline_title">Sin conexión</string>
     <string name="empty_offline_body">No podemos cargar lo que pasa ahora. Tus eventos guardados siguen disponibles sin conexión.</string>
+
+    <!-- Búsqueda con IA -->
+    <string name="ai_ask_hint">Pregúntale a CityPulse…</string>
+    <string name="ai_search_overline">BÚSQUEDA CON IA</string>
+    <string name="ai_search_title">¿Qué te apetece?</string>
+    <string name="ai_search_body">Escríbelo como lo dirías: la IA lo convierte en filtros sobre los eventos reales de %1$s.</string>
+    <string name="ai_search_send">Buscar</string>
+    <string name="ai_thinking">Pensando…</string>
+    <string name="ai_understood">Entendí:</string>
+    <string name="ai_understood_nothing">No encontré filtros concretos; te muestro todo lo próximo.</string>
+    <string name="ai_fallback">La IA no está disponible ahora mismo: búsqueda básica.</string>
+    <string name="ai_no_results">Nada encaja con eso esta semana. Prueba a decirlo de otra forma.</string>
+    <plurals name="ai_results_count">
+        <item quantity="one">%d evento</item>
+        <item quantity="other">%d eventos</item>
+    </plurals>
+    <string name="ai_suggestion_1">Algo gratis para esta noche</string>
+    <string name="ai_suggestion_2">Música en vivo a menos de 15 minutos</string>
+    <string name="ai_suggestion_3">Un mercado el fin de semana</string>
+    <string name="ai_suggestion_4">Plan cultural barato mañana por la mañana</string>
+    <string name="ai_chip_free">Gratis</string>
+    <string name="ai_chip_max_price">Hasta %1$s</string>
+    <string name="ai_chip_today">Hoy</string>
+    <string name="ai_chip_live">En curso</string>
+    <string name="ai_chip_walk">≤ %1$d min a pie</string>
 </resources>

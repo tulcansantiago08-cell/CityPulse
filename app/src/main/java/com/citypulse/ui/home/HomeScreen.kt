@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
@@ -63,6 +64,7 @@ import com.citypulse.core.designsystem.component.GradientButton
 import com.citypulse.core.designsystem.component.SkeletonBlock
 import com.citypulse.core.designsystem.component.dashedBorder
 import com.citypulse.core.designsystem.component.glass
+import com.citypulse.core.designsystem.component.gradientTint
 import com.citypulse.core.designsystem.theme.BrandGradientHorizontal
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
@@ -82,6 +84,7 @@ import java.time.LocalDateTime
 fun HomeRoute(
     onOpenEvent: (String) -> Unit,
     onChangeCity: () -> Unit,
+    onAsk: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -94,6 +97,7 @@ fun HomeRoute(
         onToggleSave = viewModel::toggleSaved,
         onRetry = viewModel::retry,
         onSelectPriceRange = viewModel::selectPriceRange,
+        onAsk = onAsk,
     )
 }
 
@@ -108,12 +112,14 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onRetry: () -> Unit = {},
     onSelectPriceRange: (PriceRange) -> Unit = {},
+    onAsk: () -> Unit = {},
 ) {
     LazyColumn(
         modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 120.dp),
     ) {
         item { Header(state, onChangeCity) }
+        item { AskBar(onAsk) }
         item {
             LazyRow(
                 contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
@@ -247,6 +253,25 @@ private fun HappeningNowRow(
                 onClick = { onOpenEvent(event.id) },
             )
         }
+    }
+}
+
+/** Acceso a la búsqueda con IA: parece un campo de texto y abre la pantalla de búsqueda. */
+@Composable
+private fun AskBar(onClick: () -> Unit) {
+    Row(
+        Modifier
+            .padding(start = 20.dp, end = 20.dp, top = 16.dp)
+            .fillMaxWidth()
+            .height(48.dp)
+            .clip(CircleShape)
+            .glass(CircleShape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Rounded.AutoAwesome, null, tint = Color.White, modifier = Modifier.size(18.dp).gradientTint())
+        Text(stringResource(R.string.ai_ask_hint), fontSize = 14.sp, color = CpColors.TextTertiary, modifier = Modifier.padding(start = 10.dp))
     }
 }
 

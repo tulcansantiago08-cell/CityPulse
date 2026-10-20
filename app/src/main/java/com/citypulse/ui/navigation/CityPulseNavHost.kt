@@ -24,10 +24,11 @@ import com.citypulse.ui.empty.OfflineScreen
 import com.citypulse.ui.home.HomeRoute
 import com.citypulse.ui.map.MapRoute
 import com.citypulse.ui.now.NowRoute
-import com.citypulse.ui.saved.SavedRoute
-import com.citypulse.ui.surprise.SurpriseRoute
 import com.citypulse.ui.onboarding.LocationSetupResult
 import com.citypulse.ui.onboarding.OnboardingRoute
+import com.citypulse.ui.saved.SavedRoute
+import com.citypulse.ui.search.AiSearchRoute
+import com.citypulse.ui.surprise.SurpriseRoute
 
 /** Raíz de la navegación: NavHost y, encima, la barra flotante solo en las pestañas. */
 @Composable
@@ -53,6 +54,7 @@ fun CityPulseNavHost(
                 HomeRoute(
                     onOpenEvent = { navController.navigate(DetailRoute(it)) },
                     onChangeCity = { navController.navigate(CityRoute) },
+                    onAsk = { navController.navigate(AiSearchRoute) },
                 )
             }
             composable<NowRoute> {
@@ -82,6 +84,12 @@ fun CityPulseNavHost(
                 LocationDeniedRoute(
                     onResult = { navController.handleLocationSetup(it) },
                     onChooseCity = { navController.navigate(CityRoute) },
+                )
+            }
+            composable<AiSearchRoute> {
+                AiSearchRoute(
+                    onBack = { navController.popBackStack() },
+                    onOpenEvent = { navController.navigate(DetailRoute(it)) },
                 )
             }
             composable<DetailRoute> { DetailRoute(onBack = { navController.popBackStack() }) }
