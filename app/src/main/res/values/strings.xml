@@ -162,4 +162,20 @@
     <string name="ai_summary_title">Resumen con IA</string>
     <string name="ai_disclaimer">Generado por IA a partir de la descripción; puede contener errores.</string>
     <string name="ai_unavailable_retry">La IA no está disponible ahora. Toca para reintentar.</string>
+
+    <!-- Acerca de -->
+    <string name="about_open">Acerca de CityPulse</string>
+    <string name="about_version">Versión %1$s · Proyecto académico</string>
+    <string name="about_intro">CityPulse te muestra lo que está pasando ahora en la ciudad: conciertos, mercados, ferias y cultura a pocos minutos a pie de donde estás.</string>
+    <string name="about_data_title">DE DÓNDE SALEN LOS DATOS</string>
+    <string name="about_data_tm">Ticketmaster: conciertos, espectáculos y la venta de entradas.</string>
+    <string name="about_data_catalog">Catálogo propio (Firebase): mercados, ferias y planes gratuitos. Son datos de demostración; los horarios y precios pueden no coincidir con la realidad.</string>
+    <string name="about_data_osm">Mapas © colaboradores de OpenStreetMap.</string>
+    <string name="about_data_images">Imágenes de ejemplo de Unsplash. Rutas a pie con Google Maps.</string>
+    <string name="about_ai_title">INTELIGENCIA ARTIFICIAL</string>
+    <string name="about_ai_body">La búsqueda, los resúmenes y las frases de Sorpresa usan Gemini de Google. La IA solo interpreta lo que escribes y redacta textos: los eventos siempre salen de los datos reales. Puede equivocarse; revisa la ficha antes de ir.</string>
+    <string name="about_privacy_title">TUS DATOS</string>
+    <string name="about_privacy_body">Tu ubicación se usa en el teléfono para calcular distancias y no se guarda en ningún servidor. Tus guardados y preferencias se quedan en el dispositivo. Lo que escribes en la búsqueda con IA y la información de los eventos que resumes se envían a Google para procesarlos.</string>
+    <string name="about_osm_link">Licencia de OpenStreetMap</string>
+    <string name="about_code_link">Código fuente en GitHub</string>
 </resources>

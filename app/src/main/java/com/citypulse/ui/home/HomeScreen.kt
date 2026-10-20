@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -89,6 +90,7 @@ fun HomeRoute(
     onOpenEvent: (String) -> Unit,
     onChangeCity: () -> Unit,
     onAsk: () -> Unit = {},
+    onAbout: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -103,6 +105,7 @@ fun HomeRoute(
         onSelectPriceRange = viewModel::selectPriceRange,
         onAsk = onAsk,
         onRefresh = viewModel::refresh,
+        onAbout = onAbout,
     )
 }
 
@@ -120,6 +123,7 @@ fun HomeScreen(
     onSelectPriceRange: (PriceRange) -> Unit = {},
     onAsk: () -> Unit = {},
     onRefresh: () -> Unit = {},
+    onAbout: () -> Unit = {},
 ) {
     val pullState = rememberPullToRefreshState()
     PullToRefreshBox(
@@ -141,7 +145,7 @@ fun HomeScreen(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 120.dp),
         ) {
-            item { Header(state, onChangeCity) }
+            item { Header(state, onChangeCity, onAbout) }
             item { AskBar(onAsk) }
             item {
                 LazyRow(
@@ -213,7 +217,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun Header(state: HomeUiState, onChangeCity: () -> Unit) {
+private fun Header(state: HomeUiState, onChangeCity: () -> Unit, onAbout: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = 12.dp),
         verticalAlignment = Alignment.Top,
@@ -237,6 +241,7 @@ private fun Header(state: HomeUiState, onChangeCity: () -> Unit) {
                 Icon(Icons.Rounded.ExpandMore, contentDescription = stringResource(R.string.home_change_city), tint = CpColors.Cyan, modifier = Modifier.size(24.dp))
             }
         }
+        GlassIconButton(Icons.Rounded.Info, contentDescription = stringResource(R.string.about_open), onClick = onAbout, iconSize = 20.dp)
         GlassIconButton(Icons.Rounded.Search, contentDescription = stringResource(R.string.home_search_city), onClick = onChangeCity)
     }
 }

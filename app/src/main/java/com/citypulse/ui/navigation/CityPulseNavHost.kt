@@ -17,6 +17,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.citypulse.core.designsystem.component.FloatingNavBar
 import com.citypulse.core.designsystem.component.NavTab
+import com.citypulse.ui.about.AboutScreen
 import com.citypulse.ui.city.CityRoute
 import com.citypulse.ui.detail.DetailRoute
 import com.citypulse.ui.empty.LocationDeniedRoute
@@ -55,6 +56,7 @@ fun CityPulseNavHost(
                     onOpenEvent = { navController.navigate(DetailRoute(it)) },
                     onChangeCity = { navController.navigate(CityRoute) },
                     onAsk = { navController.navigate(AiSearchRoute) },
+                    onAbout = { navController.navigate(AboutRoute) },
                 )
             }
             composable<NowRoute> {
@@ -86,6 +88,7 @@ fun CityPulseNavHost(
                     onChooseCity = { navController.navigate(CityRoute) },
                 )
             }
+            composable<AboutRoute> { AboutScreen(onBack = { navController.popBackStack() }) }
             composable<AiSearchRoute> {
                 AiSearchRoute(
                     onBack = { navController.popBackStack() },
