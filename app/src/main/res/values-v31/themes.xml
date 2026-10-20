@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: la pantalla de arranque del sistema usa el fondo oscuro y el icono de la app. -->
+    <style name="Theme.CityPulse" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/cp_background</item>
+        <item name="android:windowSplashScreenBackground">@color/cp_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+    </style>
+</resources>
