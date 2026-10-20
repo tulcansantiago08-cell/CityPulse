@@ -29,4 +29,13 @@ class EventUiTest {
         assertTrue(online.priceOnline)
         assertFalse(label(price = "15 €", free = false, url = "https://x").priceOnline)
     }
+
+    @Test
+    fun `siempre hay forma de conseguir entradas salvo en los gratuitos`() {
+        assertEquals(null, label(price = null, free = true, url = null).ticketsUrl)
+        assertEquals("https://tm/1", label(price = "15 €", free = false, url = "https://tm/1").ticketsUrl)
+        val search = label(price = "8 €", free = false, url = null).ticketsUrl!!
+        assertTrue(search.startsWith("https://www.google.com/search?q=Evento"))
+        assertTrue("entradas" in search)
+    }
 }

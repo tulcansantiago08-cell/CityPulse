@@ -106,6 +106,7 @@ fun DetailRoute(onBack: () -> Unit, viewModel: DetailViewModel = hiltViewModel()
         onShare = { state.event?.let { context.shareText(it.shareMessage()) } },
         onDirections = { state.event?.let { context.openWalkingDirections(it.latitude, it.longitude) } },
         onOpenEventPage = { state.event?.url?.let(context::openUrl) },
+        onOpenTickets = { state.event?.ticketsUrl?.let(context::openUrl) },
         onSummarize = viewModel::summarize,
     )
 }
@@ -127,6 +128,7 @@ fun DetailScreen(
     modifier: Modifier = Modifier,
     onOpenEventPage: () -> Unit = {},
     onSummarize: () -> Unit = {},
+    onOpenTickets: () -> Unit = onOpenEventPage,
 ) {
     val event = state.event
     if (event == null) {
@@ -155,7 +157,7 @@ fun DetailScreen(
                 ),
             ),
         )
-        DetailSheet(event, state, onDirections, onOpenEventPage, onSummarize)
+        DetailSheet(event, state, onDirections, onOpenEventPage, onSummarize, onOpenTickets)
         Row(
             Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -177,6 +179,7 @@ private fun DetailSheet(
     onDirections: () -> Unit,
     onOpenEventPage: () -> Unit,
     onSummarize: () -> Unit,
+    onOpenTickets: () -> Unit,
 ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val density = LocalDensity.current
@@ -250,15 +253,14 @@ private fun DetailSheet(
                         .padding(horizontal = 20.dp, vertical = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    // Solo si el evento tiene página de venta (Ticketmaster); la compra se hace allí.
-                    if (event.url != null) {
-                        GlassButton(
-                            text = stringResource(R.string.action_tickets),
-                            onClick = onOpenEventPage,
-                            icon = Icons.Rounded.ConfirmationNumber,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+                    // Siempre se indica cómo entrar: página de venta, búsqueda de entradas o entrada libre.
+                    GlassButton(
+                        text = stringResource(if (event.ticketsUrl != null) R.string.action_tickets else R.string.tickets_free),
+                        onClick = onOpenTickets,
+                        icon = Icons.Rounded.ConfirmationNumber,
+                        enabled = event.ticketsUrl != null,
+                        modifier = Modifier.weight(1f),
+                    )
                     GradientButton(
                         text = stringResource(R.string.action_directions),
                         onClick = onDirections,

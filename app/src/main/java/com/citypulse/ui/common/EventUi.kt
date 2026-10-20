@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.NearbyEvent
+import java.net.URLEncoder
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,6 +27,11 @@ data class EventUi(
     val priceLabel: String,
     /** El precio no se conoce pero se puede consultar en la web del evento ([url]). */
     val priceOnline: Boolean,
+    /**
+     * Dónde conseguir entradas: la página de venta si existe; si no, una búsqueda web del evento.
+     * `null` en los gratuitos (entrada libre).
+     */
+    val ticketsUrl: String?,
     val walkMinutes: Int,
     /** "Música · hasta 23:30" / "Música · empieza 22:00" */
     val overline: String,
@@ -86,6 +92,11 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
         free = event.isFree,
         priceLabel = priceLabel(event),
         priceOnline = !event.isFree && event.price == null && event.url != null,
+        ticketsUrl = when {
+            event.isFree -> null
+            event.url != null -> event.url
+            else -> ticketSearchUrl(event)
+        },
         walkMinutes = walkMinutes,
         overline = "${event.category.label} · $overline",
         whenLabel = "${event.start.toLocalDate().dayLabel(now.toLocalDate())} · ${event.start.hourLabel()}",
@@ -96,6 +107,12 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
         longitude = event.location.longitude,
         url = event.url,
     )
+}
+
+/** Búsqueda web del evento en su lugar, para eventos de pago sin página de venta propia. */
+private fun ticketSearchUrl(event: Event): String {
+    val query = URLEncoder.encode("${event.title} ${event.venue} ${event.area} entradas", Charsets.UTF_8.name())
+    return "https://www.google.com/search?q=$query&hl=es"
 }
 
 private fun priceLabel(event: Event): String = when {
