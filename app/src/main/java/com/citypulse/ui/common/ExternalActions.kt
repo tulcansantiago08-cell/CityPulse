@@ -7,7 +7,8 @@ import androidx.core.net.toUri
 
 /** Abre Google Maps (app o web) con la ruta a pie hasta el evento. */
 fun Context.openWalkingDirections(latitude: Double, longitude: Double) {
-    val uri = "https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude&travelmode=walking".toUri()
+    // hl=es: la versión web de Google Maps en español. La app de Maps usa el idioma del teléfono.
+    val uri = "https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude&travelmode=walking&hl=es".toUri()
     try {
         startActivity(Intent(Intent.ACTION_VIEW, uri))
     } catch (_: ActivityNotFoundException) {
