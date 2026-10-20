@@ -47,7 +47,11 @@ class DefaultEventRepository @Inject constructor(
     override val refreshState: StateFlow<RefreshState> = _refreshState.asStateFlow()
 
     override fun observeEvents(city: City): Flow<List<Event>> = channelFlow {
-        launch { refreshIfStale(city) }
+        // Se marca "cargando" antes de emitir la caché: si está vacía, la pantalla muestra
+        // esqueletos en vez de un "no hay eventos" momentáneo.
+        val stale = isStale(city)
+        if (stale) _refreshState.value = RefreshState.Loading
+        launch { if (stale) refresh(city) }
         cache.observeByCity(city.name).collectLatest { rows -> send(rows.map { it.toEvent() }) }
     }
 
@@ -81,8 +85,8 @@ class DefaultEventRepository @Inject constructor(
 
     override suspend fun getEvent(id: String): Event? = cache.get(id)?.toEvent()
 
-    private suspend fun refreshIfStale(city: City) {
+    private suspend fun isStale(city: City): Boolean {
         val last = cache.lastFetch(city.name)
-        if (last == null || System.currentTimeMillis() - last > CACHE_TTL_MILLIS) refresh(city)
+        return last == null || System.currentTimeMillis() - last > CACHE_TTL_MILLIS
     }
 }
