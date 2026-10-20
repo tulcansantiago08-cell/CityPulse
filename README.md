@@ -22,6 +22,9 @@ Proyecto académico.
 - **Ficha.** Hoja arrastrable con horario, precio, distancia, descripción, minimapa y botón *Cómo llegar* (Google Maps a pie).
 - **Guardados.** Se conservan en el dispositivo y se pueden ver sin conexión.
 - **Sin conexión.** Las pestañas que necesitan red muestran un aviso con acceso directo a Guardados.
+- **Actualizar deslizando** hacia abajo en Inicio, y **"Quitar filtros"** cuando los filtros dejan la lista vacía.
+- **Entradas:** cada ficha indica cómo entrar: página de venta (Ticketmaster), búsqueda de entradas o *Entrada libre*.
+- **Acerca de:** créditos de las fuentes de datos, uso de la IA y privacidad.
 - **IA (Gemini).** Búsqueda en lenguaje natural ("algo gratis para esta noche"), resumen y traducción de la descripción en la ficha, y una frase que explica cada Sorpresa. La IA solo interpreta y redacta: los eventos siempre salen de los datos reales. Sin IA, la búsqueda entiende lo básico en el propio teléfono.
 
 ## Arquitectura
