@@ -4,11 +4,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
+import android.view.MotionEvent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -27,7 +30,11 @@ import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.ui.common.EventUi
 import java.io.File
+import kotlin.math.sqrt
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint as OsmPoint
 import org.osmdroid.views.CustomZoomButtonsController
@@ -50,6 +57,22 @@ internal fun darkMapFilter(): ColorMatrixColorFilter {
 
 private const val DEFAULT_ZOOM = 15.0
 
+/** Radio visible de un pin (los mismos tamaños que [pinBitmap]). */
+private fun pinRadiusPx(selected: Boolean, density: Float) = (if (selected) 27f else 19f) * density
+
+/** El pin más cercano al cursor, si el cursor está encima de alguno. */
+private fun pinAt(map: MapView, x: Float, y: Float, events: List<EventUi>, selectedId: String?, density: Float): HoveredPin? {
+    val projection = map.projection
+    return events.mapNotNull { event ->
+        val point = projection.toPixels(OsmPoint(event.latitude, event.longitude), null)
+        val radius = pinRadiusPx(event.id == selectedId, density)
+        val dx = point.x - x
+        val dy = point.y - y
+        val distance = sqrt(dx * dx + dy * dy)
+        if (distance <= radius + 4 * density) HoveredPin(event.id, point.x.toFloat(), point.y.toFloat(), radius) to distance else null
+    }.minByOrNull { it.second }?.first
+}
+
 internal fun configureOsmdroid(context: Context) {
     Configuration.getInstance().apply {
         // Los servidores de teselas exigen identificar la app.
@@ -59,7 +82,15 @@ internal fun configureOsmdroid(context: Context) {
     }
 }
 
-/** Mapa OpenStreetMap con los pines de eventos y el punto del usuario. */
+/** Pin bajo el cursor y su posición en pantalla (píxeles dentro del mapa). */
+data class HoveredPin(val eventId: String, val x: Float, val y: Float, val radiusPx: Float)
+
+/**
+ * Mapa OpenStreetMap con los pines de eventos y el punto del usuario.
+ *
+ * [onHover] informa del pin que hay bajo el cursor (ratón o lápiz) para poder previsualizarlo;
+ * con el dedo no hay cursor y se usa el toque ([onSelect]).
+ */
 @Composable
 fun OsmEventMap(
     origin: GeoPoint,
@@ -68,10 +99,14 @@ fun OsmEventMap(
     selectedId: String?,
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onHover: (HoveredPin?) -> Unit = {},
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current.density
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val currentEvents by rememberUpdatedState(events)
+    val currentSelected by rememberUpdatedState(selectedId)
+    val currentOnHover by rememberUpdatedState(onHover)
 
     val mapView = remember {
         configureOsmdroid(context)
@@ -88,6 +123,21 @@ fun OsmEventMap(
             overlayManager.tilesOverlay.loadingLineColor = CpColors.SurfaceMap.toArgb()
             controller.setZoom(DEFAULT_ZOOM)
             controller.setCenter(OsmPoint(origin.latitude, origin.longitude))
+
+            setOnHoverListener { view, event ->
+                val map = view as MapView
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_HOVER_ENTER, MotionEvent.ACTION_HOVER_MOVE ->
+                        currentOnHover(pinAt(map, event.x, event.y, currentEvents, currentSelected, density))
+                    MotionEvent.ACTION_HOVER_EXIT -> currentOnHover(null)
+                }
+                false
+            }
+            // Al mover o hacer zoom el pin cambia de sitio: se oculta la etiqueta.
+            addMapListener(object : MapListener {
+                override fun onScroll(event: ScrollEvent?): Boolean { currentOnHover(null); return false }
+                override fun onZoom(event: ZoomEvent?): Boolean { currentOnHover(null); return false }
+            })
         }
     }
 

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
@@ -21,10 +22,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +45,7 @@ import com.citypulse.core.designsystem.component.EventImage
 import com.citypulse.core.designsystem.component.FreeBadge
 import com.citypulse.core.designsystem.component.GlassSurface
 import com.citypulse.core.designsystem.component.LiveBadge
+import com.citypulse.core.designsystem.component.glass
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.ui.common.EventUi
 
@@ -55,6 +62,7 @@ fun MapScreen(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var hovered by remember { mutableStateOf<HoveredPin?>(null) }
     Box(modifier.fillMaxSize().background(CpColors.SurfaceMap)) {
         val origin = state.origin
         val selected = state.selected
@@ -65,8 +73,12 @@ fun MapScreen(
                 events = state.events,
                 selectedId = selected?.id,
                 onSelect = onSelect,
+                onHover = { hovered = it },
                 modifier = Modifier.fillMaxSize(),
             )
+        }
+        hovered?.let { pin ->
+            state.events.firstOrNull { it.id == pin.eventId }?.let { event -> PinPreview(event, pin) }
         }
 
         GlassSurface(
@@ -96,6 +108,47 @@ fun MapScreen(
                 modifier = Modifier.padding(start = 6.dp, bottom = 6.dp),
             )
             if (selected != null) SelectedEventCard(selected, onClick = { onOpenEvent(selected.id) })
+        }
+    }
+}
+
+/** Etiqueta que aparece sobre el pin al pasar el cursor: nombre, minutos a pie y estado. */
+@Composable
+private fun PinPreview(event: EventUi, pin: HoveredPin) {
+    val gap = with(LocalDensity.current) { 8.dp.roundToPx() }
+    Column(
+        Modifier
+            // Centrada en horizontal sobre el pin y apoyada encima de él.
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+                layout(constraints.maxWidth, constraints.maxHeight) {
+                    val x = (pin.x - placeable.width / 2f).toInt().coerceIn(0, (constraints.maxWidth - placeable.width).coerceAtLeast(0))
+                    val y = (pin.y - pin.radiusPx - placeable.height - gap).toInt().coerceAtLeast(0)
+                    placeable.place(x, y)
+                }
+            }
+            .widthIn(max = 240.dp)
+            .glass(RoundedCornerShape(16.dp), fill = CpColors.Surface.copy(alpha = 0.95f))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text(
+            event.title,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (event.live) LiveBadge(size = BadgeSize.Small, showDot = false)
+            if (event.free) FreeBadge(size = BadgeSize.Small)
+            Text(
+                stringResource(R.string.map_walk_venue, event.walkMinutes, event.whenLabel),
+                fontSize = 11.sp,
+                color = Color.White.copy(alpha = 0.7f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
