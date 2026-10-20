@@ -45,6 +45,7 @@ import com.citypulse.core.designsystem.component.GlassTag
 import com.citypulse.core.designsystem.component.GradientButton
 import com.citypulse.core.designsystem.component.LiveBadge
 import com.citypulse.core.designsystem.component.glow
+import com.citypulse.core.designsystem.component.gradientTint
 import com.citypulse.core.designsystem.component.scrimBrush
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
@@ -144,6 +145,12 @@ private fun SurpriseCard(
                 color = Color.White,
                 modifier = Modifier.padding(top = 4.dp),
             )
+            state.explanation?.let { text ->
+                Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.Top) {
+                    Icon(Icons.Rounded.AutoAwesome, null, tint = Color.White, modifier = Modifier.padding(top = 2.dp).size(14.dp).gradientTint())
+                    Text(text, fontSize = 13.sp, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.padding(start = 6.dp))
+                }
+            }
             Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 Meta(Icons.Rounded.Schedule, event.timeRange)
                 Meta(Icons.AutoMirrored.Rounded.DirectionsWalk, "${event.walkMinutes} min")

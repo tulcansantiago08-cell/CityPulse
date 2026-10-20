@@ -73,3 +73,15 @@ class FakeRolls(today: LocalDate) : SurpriseRollsRepository {
     override fun observe(today: LocalDate): Flow<SurpriseRolls> = state.map { it.on(today) }
     override suspend fun save(rolls: SurpriseRolls) { state.value = rolls }
 }
+
+/** Asistente de IA falso: respuestas fijas o fallo, según el test. */
+class FakeAssistant(private val available: Boolean = true) : com.citypulse.domain.repository.EventAssistant {
+    var lastQuery: String? = null
+    override suspend fun interpret(query: String, cityName: String, currency: String, now: LocalDateTime) =
+        if (available) Result.success(com.citypulse.domain.model.SearchIntent(freeOnly = true).also { lastQuery = query })
+        else Result.failure(IllegalStateException("sin IA"))
+    override suspend fun summarize(event: Event) =
+        if (available) Result.success("Resumen de ${event.title}") else Result.failure(IllegalStateException("sin IA"))
+    override suspend fun explainSurprise(event: com.citypulse.domain.model.NearbyEvent, now: LocalDateTime) =
+        if (available) Result.success("Ve a ${event.event.title}") else Result.failure(IllegalStateException("sin IA"))
+}

@@ -50,11 +50,12 @@ class NowAndSurpriseViewModelTest {
     @Test
     fun `sorpresa tira al abrir y descuenta tiradas hasta agotarlas`() = runTest {
         val rolls = FakeRolls(now.toLocalDate())
-        val vm = SurpriseViewModel(observe, rolls, FixedClock(now))
+        val vm = SurpriseViewModel(observe, rolls, FixedClock(now), FakeAssistant())
         vm.uiState.test {
             var state = expectMostRecentItem()
             assertNotNull(state.event)
             assertEquals(1, state.rollNumber)
+            assertEquals("Ve a ${state.event!!.title}", state.explanation)
             repeat(10) { vm.reroll() }
             state = expectMostRecentItem()
             assertEquals(state.maxRolls, state.rollNumber)
