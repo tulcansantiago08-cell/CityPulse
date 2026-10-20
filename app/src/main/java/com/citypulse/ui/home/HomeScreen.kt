@@ -38,6 +38,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +53,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -66,6 +68,7 @@ import com.citypulse.core.designsystem.component.EventCardLarge
 import com.citypulse.core.designsystem.component.EventRowCard
 import com.citypulse.core.designsystem.component.GlassIconButton
 import com.citypulse.core.designsystem.component.GradientButton
+import com.citypulse.core.designsystem.component.PlainTextButton
 import com.citypulse.core.designsystem.component.SkeletonBlock
 import com.citypulse.core.designsystem.component.dashedBorder
 import com.citypulse.core.designsystem.component.glass
@@ -106,6 +109,7 @@ fun HomeRoute(
         onAsk = onAsk,
         onRefresh = viewModel::refresh,
         onAbout = onAbout,
+        onClearFilters = viewModel::clearFilters,
     )
 }
 
@@ -124,6 +128,7 @@ fun HomeScreen(
     onAsk: () -> Unit = {},
     onRefresh: () -> Unit = {},
     onAbout: () -> Unit = {},
+    onClearFilters: () -> Unit = {},
 ) {
     val pullState = rememberPullToRefreshState()
     PullToRefreshBox(
@@ -179,7 +184,7 @@ fun HomeScreen(
                 when {
                     state.loading -> CarouselSkeleton()
                     state.error -> LoadError(onRetry)
-                    else -> HappeningNowRow(state.happeningNow, state.savedIds, onOpenEvent, onToggleSave)
+                    else -> HappeningNowRow(state.happeningNow, state.savedIds, onOpenEvent, onToggleSave, state.filtersActive, onClearFilters)
                 }
             }
             item {
@@ -195,8 +200,10 @@ fun HomeScreen(
             }
             if (state.thisWeek.isEmpty() && !state.loading && !state.error) {
                 item {
-                    DashedMessage(
+                    EmptyWithFilters(
                         stringResource(R.string.home_nothing_this_week),
+                        state.filtersActive,
+                        onClearFilters,
                         Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
                     )
                 }
@@ -252,10 +259,14 @@ private fun HappeningNowRow(
     savedIds: Set<String>,
     onOpenEvent: (String) -> Unit,
     onToggleSave: (String) -> Unit,
+    filtersActive: Boolean = false,
+    onClearFilters: () -> Unit = {},
 ) {
     if (events.isEmpty()) {
-        DashedMessage(
+        EmptyWithFilters(
             stringResource(R.string.home_nothing_live),
+            filtersActive,
+            onClearFilters,
             Modifier.padding(horizontal = 20.dp).fillMaxWidth().height(160.dp),
         )
         return
@@ -316,8 +327,12 @@ private fun PriceRangeRow(selected: PriceRange, bands: PriceBands, onSelect: (Pr
         PriceRange.High to stringResource(R.string.price_more_than, high),
     )
     val description = stringResource(R.string.home_price_filter)
+    // La opción elegida siempre queda a la vista, aunque esté al final de la fila.
+    val rowState = rememberLazyListState()
+    LaunchedEffect(selected) { rowState.animateScrollToItem(options.indexOfFirst { it.first == selected }.coerceAtLeast(0)) }
     LazyRow(
         Modifier.padding(top = 16.dp).semantics { contentDescription = description },
+        state = rowState,
         contentPadding = PaddingValues(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -335,6 +350,21 @@ private fun PriceRangeRow(selected: PriceRange, bands: PriceBands, onSelect: (Pr
                     .clickable(role = Role.Tab) { onSelect(range) }
                     .padding(horizontal = 14.dp, vertical = 8.dp),
             )
+        }
+    }
+}
+
+/** Mensaje de lista vacía; si hay filtros activos, ofrece quitarlos (pueden ser la causa). */
+@Composable
+private fun EmptyWithFilters(text: String, filtersActive: Boolean, onClearFilters: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier.dashedBorder(28.dp).padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(text, fontSize = 13.sp, color = CpColors.TextTertiary, textAlign = TextAlign.Center)
+        if (filtersActive) {
+            PlainTextButton(stringResource(R.string.home_clear_filters), onClick = onClearFilters)
         }
     }
 }

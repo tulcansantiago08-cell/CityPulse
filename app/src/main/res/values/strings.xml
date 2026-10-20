@@ -41,6 +41,7 @@
     <string name="home_search_city">Buscar ciudad</string>
     <string name="home_happening_now">Pasando ahora</string>
     <string name="home_free_only">Solo gratis</string>
+    <string name="home_clear_filters">Quitar filtros</string>
     <string name="home_price_filter">Filtrar por precio</string>
     <string name="price_any">Todos los precios</string>
     <string name="price_up_to">Hasta %1$s</string>

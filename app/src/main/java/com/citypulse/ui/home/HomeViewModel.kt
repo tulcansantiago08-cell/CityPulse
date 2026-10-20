@@ -52,7 +52,10 @@ data class HomeUiState(
     val error: Boolean = false,
     /** Se están descargando eventos nuevos (indicador de "deslizar para actualizar"). */
     val refreshing: Boolean = false,
-)
+) {
+    /** Hay algún filtro que puede estar escondiendo eventos. */
+    val filtersActive: Boolean get() = freeOnly || selectedCategory != null || priceRange != PriceRange.Any
+}
 
 private data class HomeInputs(
     val cityEvents: CityEvents?,
@@ -126,6 +129,14 @@ class HomeViewModel @Inject constructor(
 
     fun selectPriceRange(range: PriceRange) {
         viewModelScope.launch { preferences.setPriceRange(range) }
+    }
+
+    fun clearFilters() {
+        selectedCategory.value = null
+        viewModelScope.launch {
+            preferences.setFreeOnly(false)
+            preferences.setPriceRange(PriceRange.Any)
+        }
     }
 
     fun toggleFreeOnly() {

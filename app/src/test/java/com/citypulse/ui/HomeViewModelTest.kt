@@ -88,6 +88,22 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `quitar filtros restablece categoria, gratis y precio`() = runTest {
+        val vm = viewModel()
+        vm.uiState.test {
+            expectMostRecentItem()
+            vm.selectCategory(Category.Music)
+            vm.toggleFreeOnly()
+            vm.selectPriceRange(PriceRange.High)
+            assertTrue(expectMostRecentItem().filtersActive)
+            vm.clearFilters()
+            val state = expectMostRecentItem()
+            assertFalse(state.filtersActive)
+            assertEquals(PriceRange.Any, prefs.state.value.priceRange)
+        }
+    }
+
+    @Test
     fun `filtrar por categoria`() = runTest {
         val vm = viewModel()
         vm.uiState.test {
