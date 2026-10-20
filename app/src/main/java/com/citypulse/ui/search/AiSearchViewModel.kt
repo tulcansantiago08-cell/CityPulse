@@ -37,6 +37,8 @@ data class AiSearchUiState(
     val intent: SearchIntent? = null,
     val currency: String = "EUR",
     val usedFallback: Boolean = false,
+    /** Se muestran resultados básicos mientras Gemini afina la búsqueda. */
+    val refining: Boolean = false,
     val results: List<EventUi> = emptyList(),
 )
 
@@ -75,21 +77,24 @@ class AiSearchViewModel @Inject constructor(
             val events = cityEvents.filterNotNull().first()
             val currency = PriceBands.currencyFor(events.city.country)
             val now = clock.now(events.city.zone)
+
+            // 1) Al instante: interpretación básica en el teléfono.
+            val local = localSearchIntent(query)
+            val localResults = if (local.isEmpty) events.events.matchingText(query, now) else events.events.matching(local, now, currency)
+            _state.update {
+                it.copy(status = AiSearchStatus.Done, intent = local, usedFallback = false, refining = true, results = localResults.map { r -> r.toUi(now) })
+            }
+
+            // 2) Cuando responde Gemini, se sustituyen por los resultados afinados.
             assistant.interpret(query, events.city.name, currency, now).fold(
                 onSuccess = { intent ->
                     val results = events.events.matching(intent, now, currency)
                     _state.update {
-                        it.copy(status = AiSearchStatus.Done, intent = intent, usedFallback = false, results = results.map { r -> r.toUi(now) })
+                        it.copy(intent = intent, usedFallback = false, refining = false, results = results.map { r -> r.toUi(now) })
                     }
                 },
-                onFailure = {
-                    // Sin IA (sin conexión, cuota agotada…) se interpreta lo básico en el teléfono.
-                    val intent = localSearchIntent(query)
-                    val results = if (intent.isEmpty) events.events.matchingText(query, now) else events.events.matching(intent, now, currency)
-                    _state.update {
-                        it.copy(status = AiSearchStatus.Done, intent = intent, usedFallback = true, results = results.map { r -> r.toUi(now) })
-                    }
-                },
+                // Sin IA (sin conexión, cuota agotada, demasiada espera) se queda la búsqueda básica.
+                onFailure = { _state.update { it.copy(usedFallback = true, refining = false) } },
             )
         }
     }

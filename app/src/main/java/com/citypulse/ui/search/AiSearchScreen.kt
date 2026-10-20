@@ -197,6 +197,12 @@ private fun Intro(cityName: String, onSuggestion: (String) -> Unit) {
 private fun Understood(state: AiSearchUiState) {
     Column(Modifier.padding(top = 6.dp, bottom = 4.dp)) {
         val intent = state.intent
+        if (state.refining) {
+            Row(Modifier.padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(Modifier.size(14.dp), color = CpColors.Cyan, strokeWidth = 2.dp)
+                Text(stringResource(R.string.ai_refining), fontSize = 12.sp, color = CpColors.Cyan, modifier = Modifier.padding(start = 8.dp))
+            }
+        }
         if (state.usedFallback) {
             Text(stringResource(R.string.ai_fallback), fontSize = 12.sp, color = CpColors.LiveSoft, modifier = Modifier.padding(bottom = 6.dp))
         }
