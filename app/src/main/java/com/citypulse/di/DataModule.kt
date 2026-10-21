@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.citypulse.data.ai.GeminiEventAssistant
+import com.citypulse.data.auth.FirebaseAuthRepository
 import com.citypulse.data.city.StaticCityRepository
 import com.citypulse.data.local.DataStoreSurpriseRollsRepository
 import com.citypulse.data.local.DataStoreUserPreferencesRepository
@@ -16,6 +17,7 @@ import com.citypulse.data.local.db.SavedEventDao
 import com.citypulse.data.network.AndroidConnectivityRepository
 import com.citypulse.data.repository.DefaultEventRepository
 import com.citypulse.data.local.cityPulseDataStore
+import com.citypulse.domain.repository.AuthRepository
 import com.citypulse.domain.repository.CityRepository
 import com.citypulse.domain.repository.ConnectivityRepository
 import com.citypulse.domain.repository.EventAssistant
@@ -58,6 +60,9 @@ abstract class DataModule {
 
     @Binds
     abstract fun bindEventAssistant(impl: GeminiEventAssistant): EventAssistant
+
+    @Binds
+    abstract fun bindAuthRepository(impl: FirebaseAuthRepository): AuthRepository
 
     @Binds
     abstract fun bindSurpriseRollsRepository(impl: DataStoreSurpriseRollsRepository): SurpriseRollsRepository

@@ -28,12 +28,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.ExpandMore
-import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -73,7 +74,9 @@ import com.citypulse.core.designsystem.component.SkeletonBlock
 import com.citypulse.core.designsystem.component.dashedBorder
 import com.citypulse.core.designsystem.component.glass
 import com.citypulse.core.designsystem.component.gradientTint
+import com.citypulse.core.designsystem.theme.BrandGradient
 import com.citypulse.core.designsystem.theme.BrandGradientHorizontal
+import com.citypulse.ui.profile.ProfileViewModel
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.data.fake.SampleData
@@ -93,10 +96,12 @@ fun HomeRoute(
     onOpenEvent: (String) -> Unit,
     onChangeCity: () -> Unit,
     onAsk: () -> Unit = {},
-    onAbout: () -> Unit = {},
+    onAccount: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val profile by profileViewModel.uiState.collectAsStateWithLifecycle()
     HomeScreen(
         state = state,
         onOpenEvent = onOpenEvent,
@@ -108,7 +113,8 @@ fun HomeRoute(
         onSelectPriceRange = viewModel::selectPriceRange,
         onAsk = onAsk,
         onRefresh = viewModel::refresh,
-        onAbout = onAbout,
+        onAccount = onAccount,
+        accountInitial = profile.account?.initial,
         onClearFilters = viewModel::clearFilters,
     )
 }
@@ -127,7 +133,8 @@ fun HomeScreen(
     onSelectPriceRange: (PriceRange) -> Unit = {},
     onAsk: () -> Unit = {},
     onRefresh: () -> Unit = {},
-    onAbout: () -> Unit = {},
+    onAccount: () -> Unit = {},
+    accountInitial: String? = null,
     onClearFilters: () -> Unit = {},
 ) {
     val pullState = rememberPullToRefreshState()
@@ -150,7 +157,7 @@ fun HomeScreen(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 120.dp),
         ) {
-            item { Header(state, onChangeCity, onAbout) }
+            item { Header(state, onChangeCity, onAccount, accountInitial) }
             item { AskBar(onAsk) }
             item {
                 LazyRow(
@@ -224,7 +231,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun Header(state: HomeUiState, onChangeCity: () -> Unit, onAbout: () -> Unit) {
+private fun Header(state: HomeUiState, onChangeCity: () -> Unit, onAccount: () -> Unit, accountInitial: String?) {
     Row(
         Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = 12.dp),
         verticalAlignment = Alignment.Top,
@@ -248,8 +255,30 @@ private fun Header(state: HomeUiState, onChangeCity: () -> Unit, onAbout: () -> 
                 Icon(Icons.Rounded.ExpandMore, contentDescription = stringResource(R.string.home_change_city), tint = CpColors.Cyan, modifier = Modifier.size(24.dp))
             }
         }
-        GlassIconButton(Icons.Rounded.Info, contentDescription = stringResource(R.string.about_open), onClick = onAbout, iconSize = 20.dp)
+        AccountButton(accountInitial, onAccount)
         GlassIconButton(Icons.Rounded.Search, contentDescription = stringResource(R.string.home_search_city), onClick = onChangeCity)
+    }
+}
+
+/** Avatar con la inicial si hay sesión iniciada; si no, icono de persona. */
+@Composable
+private fun AccountButton(initial: String?, onClick: () -> Unit) {
+    val label = stringResource(R.string.account_open)
+    if (initial == null) {
+        GlassIconButton(Icons.Rounded.Person, contentDescription = label, onClick = onClick, iconSize = 22.dp)
+    } else {
+        Box(
+            Modifier
+                .minimumInteractiveComponentSize()
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(BrandGradient)
+                .clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
+                .semantics { contentDescription = label },
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(initial, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+        }
     }
 }
 

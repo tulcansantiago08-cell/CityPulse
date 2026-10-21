@@ -24,6 +24,7 @@ Proyecto académico.
 - **Sin conexión.** Las pestañas que necesitan red muestran un aviso con acceso directo a Guardados.
 - **Actualizar deslizando** hacia abajo en Inicio, y **"Quitar filtros"** cuando los filtros dejan la lista vacía.
 - **Entradas:** cada ficha indica cómo entrar: página de venta (Ticketmaster), búsqueda de entradas o *Entrada libre*.
+- **Cuenta (opcional).** Registro e inicio de sesión con correo y contraseña, recuperación de contraseña y pantalla de perfil. Con sesión iniciada, los guardados se copian en la nube y aparecen en cualquier móvil con la misma cuenta; sin cuenta la app funciona igual.
 - **Acerca de:** créditos de las fuentes de datos, uso de la IA y privacidad.
 - **IA (Gemini).** Búsqueda en lenguaje natural ("algo gratis para esta noche"), resumen y traducción de la descripción en la ficha, y una frase que explica cada Sorpresa. La IA solo interpreta y redacta: los eventos siempre salen de los datos reales. Sin IA, la búsqueda entiende lo básico en el propio teléfono.
 
@@ -43,7 +44,8 @@ flowchart LR
     subgraph Data["data"]
         ER[DefaultEventRepository]
         TM[Ticketmaster<br/>Retrofit]
-        FS[Firestore<br/>catálogo propio]
+        FS[Firestore<br/>catálogo y guardados]
+        AU[Firebase Auth]
         DB[(Room<br/>caché y guardados)]
         DS[(DataStore<br/>preferencias)]
         LOC[Fused Location<br/>+ Geocoder]
@@ -55,6 +57,7 @@ flowchart LR
     ER --> DB
     R -.-> DS
     R -.-> LOC
+    R -.-> AU
 ```
 
 - **Primero caché, luego red.** `DefaultEventRepository` emite al instante lo guardado en Room. Si la caché tiene más de 30 minutos, descarga de Ticketmaster y Firestore en paralelo, fusiona los resultados sin duplicados y la actualiza. Si una fuente falla, se conservan sus eventos anteriores.
@@ -71,7 +74,7 @@ com.citypulse
 
 ## Stack
 
-Kotlin · Jetpack Compose + Material 3 · Firebase AI Logic (Gemini) · Navigation Compose (rutas tipadas) · Hilt · Retrofit + kotlinx.serialization · Room · DataStore · Coil · Fused Location Provider · osmdroid · Firebase Firestore · JUnit, MockK, Turbine y Compose UI Test.
+Kotlin · Jetpack Compose + Material 3 · Firebase AI Logic (Gemini) · Firebase Authentication · Navigation Compose (rutas tipadas) · Hilt · Retrofit + kotlinx.serialization · Room · DataStore · Coil · Fused Location Provider · osmdroid · Firebase Firestore · JUnit, MockK, Turbine y Compose UI Test.
 
 ## Fuentes de datos
 
@@ -103,7 +106,8 @@ La app funciona sin ella, pero solo mostrará el catálogo de Firestore.
    python3 scripts/seed_firestore.py
    ```
 
-5. Publica las reglas de [`firestore.rules`](firestore.rules) (solo lectura) en Firestore → Reglas.
+5. Publica las reglas de [`firestore.rules`](firestore.rules) en Firestore → Reglas: el catálogo es de solo lectura y cada cuenta solo puede leer y cambiar sus propios guardados.
+6. Authentication → *Comenzar* → *Método de acceso* → activa **Correo electrónico/contraseña** (para la cuenta opcional).
 
 ### 3. IA con Gemini (Firebase AI Logic)
 

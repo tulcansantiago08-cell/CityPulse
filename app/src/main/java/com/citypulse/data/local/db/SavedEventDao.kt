@@ -22,4 +22,10 @@ interface SavedEventDao {
 
     @Query("DELETE FROM saved_events WHERE id = :id")
     suspend fun delete(id: String)
+
+    @Query("SELECT * FROM saved_events")
+    suspend fun getAll(): List<SavedEventEntity>
+
+    @Query("DELETE FROM saved_events")
+    suspend fun deleteAll()
 }

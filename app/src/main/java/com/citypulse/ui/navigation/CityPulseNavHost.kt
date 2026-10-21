@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.citypulse.core.designsystem.component.FloatingNavBar
 import com.citypulse.core.designsystem.component.NavTab
 import com.citypulse.ui.about.AboutScreen
+import com.citypulse.ui.auth.AuthRoute as AuthScreenRoute
 import com.citypulse.ui.city.CityRoute
 import com.citypulse.ui.detail.DetailRoute
 import com.citypulse.ui.empty.LocationDeniedRoute
@@ -27,6 +28,7 @@ import com.citypulse.ui.map.MapRoute
 import com.citypulse.ui.now.NowRoute
 import com.citypulse.ui.onboarding.LocationSetupResult
 import com.citypulse.ui.onboarding.OnboardingRoute
+import com.citypulse.ui.profile.ProfileRoute as ProfileScreenRoute
 import com.citypulse.ui.saved.SavedRoute
 import com.citypulse.ui.search.AiSearchRoute
 import com.citypulse.ui.surprise.SurpriseRoute
@@ -56,7 +58,7 @@ fun CityPulseNavHost(
                     onOpenEvent = { navController.navigate(DetailRoute(it)) },
                     onChangeCity = { navController.navigate(CityRoute) },
                     onAsk = { navController.navigate(AiSearchRoute) },
-                    onAbout = { navController.navigate(AboutRoute) },
+                    onAccount = { navController.navigate(ProfileRoute) },
                 )
             }
             composable<NowRoute> {
@@ -75,7 +77,12 @@ fun CityPulseNavHost(
                 if (!isOnline) return@composable Offline(navController)
                 MapRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) })
             }
-            composable<SavedRoute> { SavedRoute(onOpenEvent = { navController.navigate(DetailRoute(it)) }) }
+            composable<SavedRoute> {
+                SavedRoute(
+                    onOpenEvent = { navController.navigate(DetailRoute(it)) },
+                    onSignIn = { navController.navigate(AuthRoute()) },
+                )
+            }
             composable<CityRoute> {
                 CityRoute(
                     onBack = { navController.popBackStack() },
@@ -89,6 +96,20 @@ fun CityPulseNavHost(
                 )
             }
             composable<AboutRoute> { AboutScreen(onBack = { navController.popBackStack() }) }
+            composable<ProfileRoute> {
+                ProfileScreenRoute(
+                    onBack = { navController.popBackStack() },
+                    onSignIn = { navController.navigate(AuthRoute()) },
+                    onSignUp = { navController.navigate(AuthRoute(signUp = true)) },
+                    onAbout = { navController.navigate(AboutRoute) },
+                )
+            }
+            composable<AuthRoute> {
+                AuthScreenRoute(
+                    onBack = { navController.popBackStack() },
+                    onDone = { navController.popBackStack() },
+                )
+            }
             composable<AiSearchRoute> {
                 AiSearchRoute(
                     onBack = { navController.popBackStack() },

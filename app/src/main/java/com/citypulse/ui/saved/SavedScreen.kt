@@ -13,7 +13,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.CloudUpload
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.citypulse.R
+import com.citypulse.core.designsystem.component.GlassSurface
 import com.citypulse.core.designsystem.component.PlainTextButton
 import com.citypulse.core.designsystem.component.SavedEventCard
 import com.citypulse.core.designsystem.theme.CityPulseTheme
@@ -42,12 +46,26 @@ import com.citypulse.core.designsystem.theme.OverlineStyle
 import com.citypulse.data.fake.SampleData
 import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.toUi
+import com.citypulse.ui.profile.ProfileViewModel
 import java.time.LocalDateTime
 
 @Composable
-fun SavedRoute(onOpenEvent: (String) -> Unit, viewModel: SavedViewModel = hiltViewModel()) {
+fun SavedRoute(
+    onOpenEvent: (String) -> Unit,
+    onSignIn: () -> Unit = {},
+    viewModel: SavedViewModel = hiltViewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    SavedScreen(state, onOpenEvent, viewModel::remove, viewModel::clearPast)
+    val profile by profileViewModel.uiState.collectAsStateWithLifecycle()
+    SavedScreen(
+        state = state,
+        onOpenEvent = onOpenEvent,
+        onRemove = viewModel::remove,
+        onClearPast = viewModel::clearPast,
+        showSignInHint = !profile.loading && profile.account == null,
+        onSignIn = onSignIn,
+    )
 }
 
 @Composable
@@ -56,6 +74,8 @@ fun SavedScreen(
     onOpenEvent: (String) -> Unit,
     onRemove: (String) -> Unit,
     onClearPast: () -> Unit = {},
+    showSignInHint: Boolean = false,
+    onSignIn: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
@@ -75,6 +95,9 @@ fun SavedScreen(
                     modifier = Modifier.padding(top = 2.dp),
                 )
             }
+        }
+        if (showSignInHint) {
+            item(span = { GridItemSpan(maxLineSpan) }) { SignInHint(onSignIn) }
         }
         if (state.isEmpty && !state.loading) {
             item(span = { GridItemSpan(maxLineSpan) }) { NothingSaved() }
@@ -107,6 +130,17 @@ fun SavedScreen(
                     modifier = Modifier.alpha(0.5f),
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun SignInHint(onClick: () -> Unit) {
+    GlassSurface(Modifier.fillMaxWidth().padding(bottom = 4.dp), shape = RoundedCornerShape(18.dp), onClick = onClick) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Rounded.CloudUpload, null, tint = CpColors.Cyan, modifier = Modifier.size(20.dp))
+            Text(stringResource(R.string.saved_sign_in_hint), fontSize = 13.sp, color = Color.White.copy(alpha = 0.85f), modifier = Modifier.padding(start = 10.dp).weight(1f))
+            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = CpColors.TextMuted, modifier = Modifier.size(20.dp))
         }
     }
 }

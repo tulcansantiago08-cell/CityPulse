@@ -12,4 +12,6 @@ import kotlinx.serialization.Serializable
 @Serializable data object LocationDeniedRoute
 @Serializable data object AiSearchRoute
 @Serializable data object AboutRoute
+@Serializable data object ProfileRoute
+@Serializable data class AuthRoute(val signUp: Boolean = false)
 @Serializable data class DetailRoute(val eventId: String)

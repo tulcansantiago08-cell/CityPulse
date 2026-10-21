@@ -1,11 +1,18 @@
 rules_version = '2';
-// Reglas de producción: la app solo lee el catálogo; nadie puede escribir desde fuera.
-// Publicar en Firebase console → Firestore Database → Reglas después de cargar los datos.
+// Reglas de producción. Publicar en Firebase console → Firestore Database → Reglas.
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Catálogo de eventos: la app solo lo lee; nadie puede escribir desde fuera.
     match /events/{eventId} {
       allow read: if true;
       allow write: if false;
+    }
+    // Guardados de cada cuenta: solo su dueño puede leerlos y cambiarlos.
+    match /users/{uid}/saved/{eventId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasAll(['title', 'start', 'end', 'latitude', 'longitude'])
+        && request.resource.size() < 20 * 1024;
     }
   }
 }

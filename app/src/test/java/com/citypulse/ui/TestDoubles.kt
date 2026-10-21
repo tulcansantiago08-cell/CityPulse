@@ -66,6 +66,7 @@ class FakeSaved : SavedEventsRepository {
     override suspend fun save(event: Event) = saved.update { it + (event.id to event) }
     override suspend fun remove(eventId: String) = saved.update { it - eventId }
     override suspend fun isSaved(eventId: String) = eventId in saved.value
+    override suspend fun clearLocal() = saved.update { emptyMap() }
 }
 
 class FakeRolls(today: LocalDate) : SurpriseRollsRepository {
@@ -84,4 +85,19 @@ class FakeAssistant(private val available: Boolean = true) : com.citypulse.domai
         if (available) Result.success("Resumen de ${event.title}") else Result.failure(IllegalStateException("sin IA"))
     override suspend fun explainSurprise(event: com.citypulse.domain.model.NearbyEvent, now: LocalDateTime) =
         if (available) Result.success("Ve a ${event.event.title}") else Result.failure(IllegalStateException("sin IA"))
+}
+
+class FakeAuth(var failWith: com.citypulse.domain.repository.AuthError? = null) : com.citypulse.domain.repository.AuthRepository {
+    val user = MutableStateFlow<com.citypulse.domain.model.UserAccount?>(null)
+    val resetRequests = mutableListOf<String>()
+    override val currentUser: Flow<com.citypulse.domain.model.UserAccount?> = user
+    private fun check() = failWith?.let { throw com.citypulse.domain.repository.AuthException(it) }
+    override suspend fun signIn(email: String, password: String) {
+        check(); user.value = com.citypulse.domain.model.UserAccount("uid", null, email)
+    }
+    override suspend fun signUp(name: String, email: String, password: String) {
+        check(); user.value = com.citypulse.domain.model.UserAccount("uid", name, email)
+    }
+    override suspend fun sendPasswordReset(email: String) { check(); resetRequests += email }
+    override suspend fun signOut() { user.value = null }
 }
