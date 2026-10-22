@@ -1,9 +1,9 @@
 package com.citypulse.domain.model
 
 /**
- * Escala del deslizador de presupuesto en la moneda de la ciudad: "hasta 25" son euros en Madrid
- * y "hasta 50.000" pesos en Bogotá. Todas las monedas tienen el mismo número de pasos, así que el
- * paso elegido (lo que se guarda) se entiende igual al cambiar de ciudad.
+ * Escala del deslizador de presupuesto en la moneda de la ciudad: "hasta 25" son euros en Madrid,
+ * "hasta 100.000" pesos en Bogotá o "hasta 3.000" yenes en Tokio. Todas las monedas tienen el
+ * mismo número de pasos, así que el paso elegido (lo que se guarda) se entiende igual en cualquier sitio.
  *
  * @property amounts máximos de cada paso; el primero es 0 (solo gratis). El paso siguiente al
  * último es "Sin límite".
@@ -16,42 +16,47 @@ data class BudgetScale(val currency: String, val amounts: List<Double>) {
     fun maxFor(step: Int?): Double? = step?.takeIf { it in amounts.indices }?.let { amounts[it] }
 
     companion object {
-        /** Moneda habitual del país de la ciudad (por nombre, como lo guarda [City]). */
-        fun currencyFor(country: String): String = when (country.lowercase()) {
-            "españa", "portugal", "francia", "alemania", "italia" -> "EUR"
-            "colombia" -> "COP"
-            "méxico", "mexico" -> "MXN"
-            "argentina" -> "ARS"
-            else -> "USD"
+        /** Cualquier moneda: el paso base son unos 5 € en esa moneda, redondeados a una cifra cómoda. */
+        fun forCurrency(currency: String): BudgetScale {
+            val unit = niceAmount(5 * eurosIn(currency))
+            return BudgetScale(currency, listOf(0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20).map { it * unit })
         }
 
-        fun forCurrency(currency: String): BudgetScale = when (currency) {
-            "COP" -> BudgetScale(currency, steps(10_000.0))
-            "MXN" -> BudgetScale(currency, steps(100.0))
-            "ARS" -> BudgetScale(currency, steps(5_000.0))
-            else -> BudgetScale(currency, steps(5.0)) // EUR, USD y otras de valor parecido
-        }
-
-        fun forCity(city: City): BudgetScale = forCurrency(currencyFor(city.country))
-
-        /** 0, 1, 2, 3, 4, 5, 6, 8, 10, 15 y 20 veces la unidad: pasos finos en lo barato. */
-        private fun steps(unit: Double) = listOf(0, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20).map { it * unit }
+        fun forCity(city: City): BudgetScale = forCurrency(city.currency)
     }
+}
+
+/**
+ * Valor aproximado de 1 € en cada moneda (2026). Solo se usa para la escala del presupuesto y para
+ * estimar precios, así que basta con el orden de magnitud. Si la moneda no está, se asume ≈ 1 €.
+ */
+fun eurosIn(currency: String): Double = EUR_RATES[currency] ?: 1.0
+
+private val EUR_RATES = mapOf(
+    // Europa
+    "EUR" to 1.0, "GBP" to 0.85, "CHF" to 0.95, "SEK" to 11.0, "NOK" to 11.5, "DKK" to 7.5, "ISK" to 150.0,
+    "PLN" to 4.3, "CZK" to 25.0, "HUF" to 400.0, "RON" to 5.0, "BGN" to 2.0, "RSD" to 117.0, "TRY" to 45.0,
+    "UAH" to 47.0, "RUB" to 100.0,
+    // América
+    "USD" to 1.1, "CAD" to 1.5, "MXN" to 20.0, "GTQ" to 8.5, "CRC" to 560.0, "DOP" to 68.0, "COP" to 4_500.0,
+    "PEN" to 4.1, "CLP" to 1_050.0, "ARS" to 1_300.0, "UYU" to 45.0, "PYG" to 8_500.0, "BOB" to 7.6, "BRL" to 6.2,
+    "VES" to 50.0,
+    // Asia, Oceanía y África
+    "JPY" to 165.0, "KRW" to 1_500.0, "CNY" to 7.9, "HKD" to 8.6, "TWD" to 35.0, "SGD" to 1.45, "THB" to 38.0,
+    "MYR" to 4.9, "IDR" to 18_000.0, "PHP" to 63.0, "VND" to 28_000.0, "INR" to 95.0, "AED" to 4.0, "SAR" to 4.1,
+    "ILS" to 4.0, "QAR" to 4.0, "AUD" to 1.65, "NZD" to 1.8, "ZAR" to 20.0, "EGP" to 54.0, "MAD" to 10.8,
+    "KES" to 140.0, "NGN" to 1_700.0,
+)
+
+/** Redondea a 1, 2 o 5 por una potencia de 10 (20.000, 500, 5…), la cifra "cómoda" más cercana. */
+fun niceAmount(value: Double): Double {
+    if (value <= 0) return 1.0
+    val magnitude = Math.pow(10.0, Math.floor(Math.log10(value)))
+    return listOf(1.0, 2.0, 5.0, 10.0).map { it * magnitude }.minBy { Math.abs(it - value) }
 }
 
 /** Origen de un precio estimado: la IA (Gemini) o la regla local por categoría y recinto. */
 enum class PriceEstimate { Local, Ai }
-
-/**
- * Equivalencia aproximada de 1 € en cada moneda, coherente con los pasos de [BudgetScale]
- * (5 € ≈ 10.000 COP ≈ 100 MXN ≈ 5.000 ARS). Solo se usa para precios estimados.
- */
-fun eurosIn(currency: String): Double = when (currency) {
-    "COP" -> 2_000.0
-    "MXN" -> 20.0
-    "ARS" -> 1_000.0
-    else -> 1.0
-}
 
 /** Precio típico en euros de la entrada más barata según la categoría, el recinto y el título. */
 fun localPriceEstimateEur(event: Event): Double {
@@ -85,13 +90,9 @@ fun Event.withLocalPriceEstimate(currency: String): Event {
     return copy(priceMin = amount, currency = currency, priceEstimate = PriceEstimate.Local)
 }
 
-/** Redondea a una cifra "de taquilla": euros enteros, miles de pesos colombianos, etc. */
+/** Redondea a una cifra "de taquilla": euros enteros, miles de pesos, cientos de yenes… */
 fun roundPrice(amount: Double, currency: String): Double {
-    val unit = when (currency) {
-        "COP", "ARS" -> 1_000.0
-        "MXN" -> 10.0
-        else -> 1.0
-    }
+    val unit = niceAmount(eurosIn(currency)).coerceAtLeast(1.0)
     return (Math.round(amount / unit) * unit).toDouble()
 }
 
@@ -105,15 +106,17 @@ fun Event.fitsBudget(max: Double?, currency: String): Boolean {
     return amount <= max
 }
 
-/** Precio mínimo y moneda leídos de un texto como "15 €", "Desde 40.000 COP" o "$ 20,50". */
+/** Precio mínimo y moneda leídos de un texto como "15 €", "Desde 40.000 COP", "3.000 JPY" o "$ 20,50". */
 fun parsePriceLabel(label: String?): Pair<Double, String>? {
     if (label.isNullOrBlank()) return null
-    val currency = when {
-        "€" in label || "EUR" in label -> "EUR"
-        "COP" in label -> "COP"
-        "MXN" in label -> "MXN"
-        "ARS" in label -> "ARS"
-        "$" in label || "USD" in label -> "USD"
+    // Primero un código ISO explícito ("40.000 COP", "3000 JPY"); si no, el símbolo.
+    val isoCode = Regex("""\b[A-Z]{3}\b""").findAll(label).map { it.value }
+        .firstOrNull { code -> runCatching { java.util.Currency.getInstance(code) }.isSuccess }
+    val currency = isoCode ?: when {
+        "€" in label -> "EUR"
+        "£" in label -> "GBP"
+        "¥" in label -> "JPY"
+        "$" in label -> "USD"
         else -> return null
     }
     // Formato español: punto para miles y coma para decimales.

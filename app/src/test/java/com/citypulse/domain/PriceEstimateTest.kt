@@ -39,7 +39,8 @@ class PriceEstimateTest {
     fun `usa la moneda de la ciudad con cifras redondas`() {
         val bogota = withoutPrice("Teatro Colón").withLocalPriceEstimate("COP")
         assertEquals("COP", bogota.currency)
-        assertEquals(64_000.0, bogota.priceMin!!, 0.0)
+        // 32 € de teatro en pesos, redondeado a miles de cinco: 145.000 COP.
+        assertEquals(145_000.0, bogota.priceMin!!, 0.0)
     }
 
     @Test

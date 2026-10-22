@@ -56,6 +56,7 @@ class FakePreferences(initial: UserPreferences = UserPreferences(city = SampleDa
 class FakeLocation(private val point: GeoPoint? = SampleData.PuertaDelSol) : LocationRepository {
     override suspend fun currentLocation(): GeoPoint? = point
     override suspend fun cityAt(point: GeoPoint): City = SampleData.Madrid
+    override suspend fun searchPlaces(query: String): List<City> = emptyList()
 }
 
 class FakeSaved : SavedEventsRepository {

@@ -14,7 +14,7 @@ Proyecto académico.
 
 ## Funcionalidades
 
-- **Ciudad por GPS o manual.** El permiso de ubicación se pide en la bienvenida; si se deniega, se puede elegir la ciudad en una lista con búsqueda que ignora las tildes.
+- **Cualquier lugar del mundo.** La ciudad sale del GPS o se busca por nombre (lista de ciudades populares más búsqueda de cualquier lugar con el Geocoder). La moneda, la zona horaria, el presupuesto, los precios estimados y el catálogo propio se adaptan al lugar. Las distancias a pie se actualizan mientras el usuario se mueve.
 - **Inicio.** Saludo según la hora, filtro por categoría (stories), deslizador de *Presupuesto máximo* (de *Gratis* a *Sin límite*, en la moneda de la ciudad, con el número de eventos que caben), interruptor *Solo gratis*, carrusel *Pasando ahora* (en curso o empieza en menos de 1 h) y lista *Esta semana*.
 - **Estoy aquí ahora.** Eventos de la franja elegida (mañana, tarde o noche) a menos de *N* minutos a pie (5–30), ordenados por cercanía.
 - **Sorpresa.** Un único evento al azar, en curso o que empieza en las próximas 3 h, a menos de 30 min. Máximo 5 tiradas al día y sin repetir.

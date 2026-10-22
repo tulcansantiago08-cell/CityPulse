@@ -3,11 +3,13 @@ package com.citypulse.domain.usecase
 import com.citypulse.domain.geo.distanceMeters
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.CityEvents
+import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.LocationRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -17,7 +19,10 @@ import javax.inject.Inject
 /** Si el usuario está a más de esta distancia de la ciudad elegida, se usa el centro de la ciudad. */
 private const val MAX_USER_DISTANCE_FROM_CITY_METERS = 50_000.0
 
-/** Observa los eventos de la ciudad elegida, ya con la distancia a pie desde el usuario. */
+/**
+ * Observa los eventos de la ciudad elegida, ya con la distancia a pie desde el usuario. La
+ * distancia se recalcula cuando el usuario se mueve (ubicación en tiempo real).
+ */
 class ObserveCityEvents @Inject constructor(
     private val preferences: UserPreferencesRepository,
     private val events: EventRepository,
@@ -32,15 +37,15 @@ class ObserveCityEvents @Inject constructor(
                 if (city == null) {
                     flowOf(null)
                 } else {
-                    val (origin, isUser) = referencePoint(city)
-                    events.observeEvents(city).map { list ->
+                    val reference = location.observeLocation().map { referencePoint(city, it) }.distinctUntilChanged()
+                    combine(events.observeEvents(city), reference) { list, (origin, isUser) ->
                         CityEvents(city, origin, isUser, list.withDistanceFrom(origin))
                     }
                 }
             }
 
-    private suspend fun referencePoint(city: City) =
-        location.currentLocation()
+    private fun referencePoint(city: City, user: GeoPoint?) =
+        user
             ?.takeIf { distanceMeters(it, city.center) <= MAX_USER_DISTANCE_FROM_CITY_METERS }
             ?.let { it to true }
             ?: (city.center to false)

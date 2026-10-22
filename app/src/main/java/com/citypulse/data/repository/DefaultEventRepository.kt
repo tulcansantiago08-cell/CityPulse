@@ -65,7 +65,7 @@ class DefaultEventRepository @Inject constructor(
         val stale = isStale(city)
         if (stale) _refreshState.value = RefreshState.Loading
         launch { if (stale) refresh(city) }
-        cache.observeByCity(city.name).collectLatest { rows -> send(rows.map { it.toEvent() }) }
+        cache.observeByCity(city.key).collectLatest { rows -> send(rows.map { it.toEvent() }) }
     }
 
     override suspend fun refresh(city: City): Result<Unit> = refreshMutex.withLock {
@@ -81,11 +81,11 @@ class DefaultEventRepository @Inject constructor(
             return Result.failure(fromCatalog.exceptionOrNull() ?: fromTicketmaster.exceptionOrNull()!!)
         }
         // Si una fuente falla, se conservan sus eventos de la caché anterior.
-        val previous = cache.getByCity(city.name).map { it.toEvent() }
+        val previous = cache.getByCity(city.key).map { it.toEvent() }
         fun orPrevious(result: Result<List<Event>>, source: EventSource) =
             result.getOrElse { previous.filter { it.source == source } }
 
-        val currency = BudgetScale.currencyFor(city.country)
+        val currency = city.currency
         // Las estimaciones de la IA de la descarga anterior se conservan: no se vuelve a preguntar.
         val previousAi = previous.filter { it.priceEstimate == PriceEstimate.Ai }.associateBy { it.id }
         val merged = mergeEvents(
@@ -101,7 +101,7 @@ class DefaultEventRepository @Inject constructor(
             }
         }
         val fetchedAt = System.currentTimeMillis()
-        cache.replaceCity(city.name, merged.map { it.toCachedEntity(city.name, fetchedAt) })
+        cache.replaceCity(city.key, merged.map { it.toCachedEntity(city.key, fetchedAt) })
         _refreshState.value = RefreshState.Idle
         background.launch { refineWithAi(city, currency, merged.filter { it.priceEstimate == PriceEstimate.Local }) }
         Result.success(Unit)
@@ -110,10 +110,10 @@ class DefaultEventRepository @Inject constructor(
     /** Pide a la IA el precio de los eventos que solo tienen la estimación local y los actualiza. */
     private suspend fun refineWithAi(city: City, currency: String, events: List<Event>) {
         if (events.isEmpty()) return
-        val prices = assistant.estimatePrices(events, city.name, currency).getOrNull().orEmpty()
+        val prices = assistant.estimatePrices(events, "${city.name}, ${city.country}", currency).getOrNull().orEmpty()
         if (prices.isEmpty()) return
         refreshMutex.withLock {
-            val updated = cache.getByCity(city.name).mapNotNull { row ->
+            val updated = cache.getByCity(city.key).mapNotNull { row ->
                 val price = prices[row.id] ?: return@mapNotNull null
                 // Solo se reemplaza la estimación local; si mientras tanto llegó un precio real, se respeta.
                 if (row.priceEstimate != PriceEstimate.Local.name) return@mapNotNull null
@@ -126,7 +126,7 @@ class DefaultEventRepository @Inject constructor(
     override suspend fun getEvent(id: String): Event? = cache.get(id)?.toEvent()
 
     private suspend fun isStale(city: City): Boolean {
-        val last = cache.lastFetch(city.name)
+        val last = cache.lastFetch(city.key)
         return last == null || System.currentTimeMillis() - last > CACHE_TTL_MILLIS
     }
 }

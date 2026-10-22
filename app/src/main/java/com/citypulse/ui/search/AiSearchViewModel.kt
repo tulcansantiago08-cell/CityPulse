@@ -65,7 +65,7 @@ class AiSearchViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val city = cityEvents.filterNotNull().first().city
-            _state.update { it.copy(cityName = city.name, currency = BudgetScale.currencyFor(city.country)) }
+            _state.update { it.copy(cityName = city.name, currency = city.currency) }
         }
     }
 
@@ -80,7 +80,7 @@ class AiSearchViewModel @Inject constructor(
         searchJob = viewModelScope.launch {
             _state.update { it.copy(query = query, status = AiSearchStatus.Thinking) }
             val events = cityEvents.filterNotNull().first()
-            val currency = BudgetScale.currencyFor(events.city.country)
+            val currency = events.city.currency
             val now = clock.now(events.city.zone)
 
             // 1) Al instante: interpretación básica en el teléfono.

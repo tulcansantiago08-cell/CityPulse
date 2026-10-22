@@ -30,7 +30,7 @@ class DataStoreUserPreferencesRepository @Inject constructor(
         val lng = prefs[Keys.cityLng]
         UserPreferences(
             city = if (name != null && lat != null && lng != null) {
-                City(name, prefs[Keys.cityCountry].orEmpty(), GeoPoint(lat, lng), zoneFor(name, prefs[Keys.cityZone]))
+                City(name, prefs[Keys.cityCountry].orEmpty(), GeoPoint(lat, lng), zoneFor(name, prefs[Keys.cityZone]), prefs[Keys.cityCountryCode])
             } else {
                 null
             },
@@ -48,6 +48,7 @@ class DataStoreUserPreferencesRepository @Inject constructor(
             it[Keys.cityLat] = city.center.latitude
             it[Keys.cityLng] = city.center.longitude
             it[Keys.cityZone] = city.zone.id
+            if (city.countryCode != null) it[Keys.cityCountryCode] = city.countryCode else it.remove(Keys.cityCountryCode)
         }
     }
 
@@ -82,6 +83,7 @@ class DataStoreUserPreferencesRepository @Inject constructor(
         val cityLat = doublePreferencesKey("city_lat")
         val cityLng = doublePreferencesKey("city_lng")
         val cityZone = stringPreferencesKey("city_zone")
+        val cityCountryCode = stringPreferencesKey("city_country_code")
         val freeOnly = booleanPreferencesKey("free_only")
         val budgetStep = intPreferencesKey("budget_step")
 

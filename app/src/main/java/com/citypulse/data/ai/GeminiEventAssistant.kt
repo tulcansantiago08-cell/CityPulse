@@ -1,6 +1,7 @@
 package com.citypulse.data.ai
 
 import android.util.Log
+import com.citypulse.domain.model.BudgetScale
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.NearbyEvent
@@ -199,7 +200,7 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
             Convierte la petición del usuario en filtros. Reglas:
             - categories: solo las que la petición pida (Music, Markets, Fairs, Culture, Food, Art). Vacío si no concreta.
             - freeOnly: true si pide gratis/sin pagar.
-            - maxPrice: tope de precio en $currency si lo menciona ("barato" en EUR ≈ 10; en COP ≈ 20000).
+            - maxPrice: tope de precio en $currency si lo menciona ("barato" ≈ ${cheapIn(currency)} $currency).
             - timeSlot: Morning (6-14 h), Afternoon (14-20 h) o Night (20-6 h) si menciona mañana/tarde/noche.
             - todayOnly: true si dice hoy, esta noche, esta tarde o ahora.
             - liveNow: true solo si pide algo que esté pasando ya mismo.
@@ -262,3 +263,6 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
             .associate { it.id to it.price!! }
     }.onFailure { Log.w(TAG, "estimatePrices", it) }
 }
+
+/** Lo que se considera "barato" en una moneda: el tercer paso del presupuesto (≈ 10 €). */
+private fun cheapIn(currency: String): Long = (BudgetScale.forCurrency(currency).maxFor(2) ?: 10.0).toLong()

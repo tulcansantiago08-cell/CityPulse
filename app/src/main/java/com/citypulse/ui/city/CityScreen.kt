@@ -110,15 +110,15 @@ fun CityScreen(
         if (state.cities.isEmpty()) {
             item {
                 Text(
-                    stringResource(R.string.city_not_found, state.query),
+                    if (state.searchingPlaces) stringResource(R.string.city_searching) else stringResource(R.string.city_not_found, state.query),
                     fontSize = 13.sp,
                     color = CpColors.TextTertiary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 24.dp),
                 )
             }
         }
-        items(state.cities, key = { it.name }) { city ->
-            CityRow(city, active = city.name == state.selected?.name, onClick = { onSelect(city) })
+        items(state.cities, key = { "${it.name}|${it.country}|${it.center}" }) { city ->
+            CityRow(city, active = city.name == state.selected?.name && city.country == state.selected.country, onClick = { onSelect(city) })
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.citypulse.data.city
 
+import com.citypulse.domain.geo.countryCodeFor
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.repository.CityRepository
@@ -8,7 +9,10 @@ import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Lista fija de ciudades populares (las del prototipo) con las coordenadas de su centro. */
+/**
+ * Ciudades populares que se sugieren en el selector, con las coordenadas de su centro. No limitan
+ * dónde funciona la app: cualquier otro lugar se obtiene por GPS o buscándolo por nombre.
+ */
 @Singleton
 class StaticCityRepository @Inject constructor() : CityRepository {
 
@@ -30,7 +34,7 @@ class StaticCityRepository @Inject constructor() : CityRepository {
     )
 
     private fun city(name: String, country: String, lat: Double, lng: Double, zone: String) =
-        City(name, country, GeoPoint(lat, lng), ZoneId.of(zone))
+        City(name, country, GeoPoint(lat, lng), ZoneId.of(zone), countryCodeFor(country))
 
     override fun popularCities(): List<City> = cities
 
