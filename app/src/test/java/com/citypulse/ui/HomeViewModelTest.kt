@@ -89,6 +89,22 @@ class HomeViewModelTest {
             assertTrue("jazz" in ids)
             assertFalse("flamenco" in ids)
             assertTrue(state.filtersActive)
+            // Cada paso dice cuántos eventos se verían; más presupuesto nunca muestra menos.
+            assertEquals(state.happeningNow.size + state.thisWeek.size, state.budgetCounts[4])
+            assertEquals(state.budgetCounts.sorted(), state.budgetCounts)
+        }
+    }
+
+    @Test
+    fun `arrastrar el deslizador filtra al momento sin guardar`() = runTest {
+        val vm = viewModel()
+        vm.uiState.test {
+            expectMostRecentItem()
+            vm.previewBudgetStep(0)
+            val state = expectMostRecentItem()
+            assertTrue(state.happeningNow.all { it.free })
+            assertEquals(0, state.budgetStep)
+            assertNull(prefs.state.value.budgetStep)
         }
     }
 

@@ -46,6 +46,15 @@
     <string name="budget_free">Gratis</string>
     <string name="budget_free_only">Solo gratis</string>
     <string name="budget_unlimited">Sin límite</string>
+    <string name="budget_none">Ningún evento esta semana con este presupuesto</string>
+    <plurals name="budget_without_price">
+        <item quantity="one">Otro sin precio publicado: lo verás con «Sin límite»</item>
+        <item quantity="other">Otros %d sin precio publicado: los verás con «Sin límite»</item>
+    </plurals>
+    <plurals name="budget_results">
+        <item quantity="one">%d evento esta semana con este presupuesto</item>
+        <item quantity="other">%d eventos esta semana con este presupuesto</item>
+    </plurals>
     <string name="price_up_to">Hasta %1$s</string>
     <string name="home_this_week">Esta semana</string>
     <string name="home_nothing_live">Nada en curso con estos filtros.</string>

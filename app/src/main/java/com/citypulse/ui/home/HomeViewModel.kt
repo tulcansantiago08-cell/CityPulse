@@ -48,6 +48,10 @@ data class HomeUiState(
     val budgetStep: Int? = null,
     /** Escala del deslizador en la moneda de la ciudad. */
     val budgetScale: BudgetScale = BudgetScale.forCurrency("EUR"),
+    /** Eventos que se verían con cada paso del deslizador (mismo índice que los pasos). */
+    val budgetCounts: List<Int> = emptyList(),
+    /** Eventos de la semana sin precio publicado: no se pueden comparar con un presupuesto. */
+    val unknownPriceCount: Int = 0,
     /** No hay eventos que mostrar porque fallaron las descargas. */
     val error: Boolean = false,
     /** Se están descargando eventos nuevos (indicador de "deslizar para actualizar"). */
@@ -77,6 +81,9 @@ class HomeViewModel @Inject constructor(
 
     private val selectedCategory = MutableStateFlow<Category?>(null)
 
+    /** Paso del deslizador mientras se arrastra, antes de guardarlo. */
+    private val budgetDraft = MutableStateFlow<Int?>(null)
+
     private val inputs = combine(
         observeCityEvents(),
         preferences.preferences,
@@ -85,16 +92,16 @@ class HomeViewModel @Inject constructor(
         events.refreshState,
     ) { cityEvents, prefs, category, savedIds, refresh -> HomeInputs(cityEvents, prefs, category, savedIds, refresh) }
 
-    val uiState: StateFlow<HomeUiState> = combine(inputs, clock.ticks()) { (cityEvents, prefs, category, savedIds, refresh), instant ->
+    val uiState: StateFlow<HomeUiState> = combine(inputs, clock.ticks(), budgetDraft) { (cityEvents, prefs, category, savedIds, refresh), instant, draft ->
         // "Ahora" en la hora local de la ciudad elegida, no en la del teléfono.
         val now = instant.localIn(cityEvents?.city?.zone ?: prefs.city?.zone ?: ZoneId.systemDefault())
         val nothingCached = cityEvents?.events.isNullOrEmpty()
         val city = cityEvents?.city ?: prefs.city
         val scale = city?.let(BudgetScale::forCity) ?: BudgetScale.forCurrency("EUR")
-        val budget = scale.maxFor(prefs.budgetStep)
-        val filtered = cityEvents?.events.orEmpty().filter {
-            it.event.matches(prefs.freeOnly, category) && it.event.fitsBudget(budget, scale.currency)
-        }
+        val step = draft ?: prefs.budgetStep ?: scale.unlimitedStep
+        val base = cityEvents?.events.orEmpty().filter { it.event.matches(prefs.freeOnly, category) }
+        fun withinStep(s: Int) = scale.maxFor(s).let { max -> base.filter { it.event.fitsBudget(max, scale.currency) } }
+        val filtered = withinStep(step)
         HomeUiState(
             // Sin nada en caché, mientras se descarga se muestran esqueletos en vez de "no hay eventos".
             loading = cityEvents == null || (nothingCached && refresh == RefreshState.Loading),
@@ -108,8 +115,14 @@ class HomeViewModel @Inject constructor(
             happeningNow = filtered.happeningNow(now).map { it.toUi(now) },
             thisWeek = filtered.upcomingThisWeek(now).map { it.toUi(now) },
             savedIds = savedIds,
-            budgetStep = prefs.budgetStep,
+            budgetStep = step.takeIf { it < scale.unlimitedStep },
             budgetScale = scale,
+            // Lo mismo que muestran "Pasando ahora" y "Esta semana" con cada presupuesto.
+            budgetCounts = (0..scale.unlimitedStep).map { s ->
+                withinStep(s).let { it.happeningNow(now).size + it.upcomingThisWeek(now).size }
+            },
+            unknownPriceCount = base.let { it.happeningNow(now) + it.upcomingThisWeek(now) }
+                .count { !it.event.isFree && (it.event.priceMin == null || it.event.currency != scale.currency) },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
@@ -128,10 +141,19 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { toggleSavedEvent(eventId) }
     }
 
-    /** Paso del deslizador de presupuesto; el último ("Sin límite") quita el filtro. */
+    /** Mientras se arrastra el deslizador: filtra al momento, sin guardar todavía. */
+    fun previewBudgetStep(step: Int) {
+        budgetDraft.value = step
+    }
+
+    /** Paso del deslizador de presupuesto al soltarlo; el último ("Sin límite") quita el filtro. */
     fun selectBudgetStep(step: Int) {
         val value = step.takeIf { it < uiState.value.budgetScale.unlimitedStep }
-        viewModelScope.launch { preferences.setBudgetStep(value) }
+        budgetDraft.value = step
+        viewModelScope.launch {
+            preferences.setBudgetStep(value)
+            budgetDraft.value = null
+        }
     }
 
     fun clearFilters() {
@@ -139,6 +161,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             preferences.setFreeOnly(false)
             preferences.setBudgetStep(null)
+            budgetDraft.value = null
         }
     }
 

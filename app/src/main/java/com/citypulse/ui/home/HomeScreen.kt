@@ -3,6 +3,11 @@ package com.citypulse.ui.home
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.material.icons.rounded.SearchOff
+import androidx.compose.material.icons.rounded.EventAvailable
 import kotlin.math.roundToInt
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
@@ -115,6 +120,7 @@ fun HomeRoute(
         onToggleSave = viewModel::toggleSaved,
         onRetry = viewModel::retry,
         onSelectBudget = viewModel::selectBudgetStep,
+        onPreviewBudget = viewModel::previewBudgetStep,
         onAsk = onAsk,
         onRefresh = viewModel::refresh,
         onAccount = onAccount,
@@ -135,6 +141,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onRetry: () -> Unit = {},
     onSelectBudget: (Int) -> Unit = {},
+    onPreviewBudget: (Int) -> Unit = {},
     onAsk: () -> Unit = {},
     onRefresh: () -> Unit = {},
     onAccount: () -> Unit = {},
@@ -179,7 +186,7 @@ fun HomeScreen(
                     }
                 }
             }
-            item { BudgetSlider(state.budgetStep, state.budgetScale, onSelectBudget) }
+            item { BudgetSlider(state.budgetStep, state.budgetScale, state.budgetCounts, state.unknownPriceCount, onPreviewBudget, onSelectBudget) }
             item {
                 Row(
                     Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
@@ -351,9 +358,16 @@ private fun AskBar(onClick: () -> Unit) {
 /** Deslizador de presupuesto máximo, de "Solo gratis" a "Sin límite", en la moneda de la ciudad. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BudgetSlider(step: Int?, scale: BudgetScale, onSelect: (Int) -> Unit) {
+private fun BudgetSlider(
+    step: Int?,
+    scale: BudgetScale,
+    counts: List<Int>,
+    unknownPriceCount: Int,
+    onPreview: (Int) -> Unit,
+    onSelect: (Int) -> Unit,
+) {
     val selected = step ?: scale.unlimitedStep
-    // Mientras se arrastra se muestra el valor sin guardarlo; al soltar se aplica el filtro.
+    // Mientras se arrastra, las listas se filtran al momento; al soltar se guarda el presupuesto.
     var dragging by remember { mutableFloatStateOf(Float.NaN) }
     val shown = if (dragging.isNaN()) selected else dragging.roundToInt()
     val valueLabel = budgetLabel(scale.maxFor(shown), scale.currency)
@@ -377,7 +391,10 @@ private fun BudgetSlider(step: Int?, scale: BudgetScale, onSelect: (Int) -> Unit
         }
         Slider(
             value = shown.toFloat(),
-            onValueChange = { dragging = it },
+            onValueChange = {
+                if (dragging.isNaN() || it.roundToInt() != dragging.roundToInt()) onPreview(it.roundToInt())
+                dragging = it
+            },
             onValueChangeFinished = {
                 if (!dragging.isNaN()) onSelect(dragging.roundToInt())
                 dragging = Float.NaN
@@ -400,6 +417,43 @@ private fun BudgetSlider(step: Int?, scale: BudgetScale, onSelect: (Int) -> Unit
         Row(Modifier.fillMaxWidth().offset(y = (-6).dp), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.budget_free), fontSize = 10.sp, color = Color.White.copy(alpha = 0.4f))
             Text(stringResource(R.string.budget_unlimited), fontSize = 10.sp, color = Color.White.copy(alpha = 0.4f))
+        }
+        counts.getOrNull(shown)?.let { count ->
+            // Con "Sin límite" se ven todos, también los que no publican precio.
+            BudgetResult(count, unknownPriceCount.takeIf { shown < scale.unlimitedStep } ?: 0)
+        }
+    }
+}
+
+/** Cuántos eventos de "Pasando ahora" y "Esta semana" caben en el presupuesto elegido. */
+@Composable
+private fun BudgetResult(count: Int, withoutPrice: Int) {
+    val text = if (count == 0) stringResource(R.string.budget_none) else pluralStringResource(R.plurals.budget_results, count, count)
+    Row(
+        Modifier
+            .padding(top = 6.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .glass(RoundedCornerShape(14.dp))
+            .padding(horizontal = 12.dp, vertical = 9.dp)
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            if (count == 0) Icons.Rounded.SearchOff else Icons.Rounded.EventAvailable,
+            contentDescription = null,
+            tint = if (count == 0) CpColors.LiveSoft else CpColors.Cyan,
+            modifier = Modifier.size(18.dp),
+        )
+        Column(Modifier.padding(start = 8.dp)) {
+            Text(text, fontSize = 13.sp, color = Color.White.copy(alpha = 0.85f))
+            if (withoutPrice > 0) {
+                Text(
+                    pluralStringResource(R.plurals.budget_without_price, withoutPrice, withoutPrice),
+                    fontSize = 11.sp,
+                    color = CpColors.TextMuted,
+                )
+            }
         }
     }
 }
