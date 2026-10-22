@@ -4,7 +4,8 @@ package com.citypulse.domain.model
 data class UserPreferences(
     val city: City? = null,
     val freeOnly: Boolean = false,
-    val priceRange: PriceRange = PriceRange.Any,
+    /** Paso del deslizador de presupuesto (ver [BudgetScale]); `null` es sin límite. */
+    val budgetStep: Int? = null,
     val radiusMinutes: Int = DEFAULT_RADIUS_MINUTES,
     val onboardingDone: Boolean = false,
 ) {

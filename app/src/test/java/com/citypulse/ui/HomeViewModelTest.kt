@@ -3,13 +3,14 @@ package com.citypulse.ui
 import app.cash.turbine.test
 import com.citypulse.data.fake.FakeEventRepository
 import com.citypulse.domain.model.Category
-import com.citypulse.domain.model.PriceRange
 import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.usecase.ObserveCityEvents
 import com.citypulse.domain.usecase.ToggleSavedEvent
 import com.citypulse.ui.home.HomeViewModel
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import com.citypulse.domain.model.BudgetScale
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -74,16 +75,34 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `rango de precio medio deja solo los eventos entre 10 y 30 euros y se guarda`() = runTest {
+    fun `presupuesto de 20 euros deja fuera lo mas caro y se guarda`() = runTest {
+        val vm = viewModel()
+        vm.uiState.test {
+            val before = expectMostRecentItem()
+            assertTrue("flamenco" in before.happeningNow.map { it.id })
+            vm.selectBudgetStep(4) // 0, 5, 10, 15, 20 €
+            val state = expectMostRecentItem()
+            assertEquals(4, prefs.state.value.budgetStep)
+            assertEquals("EUR", state.budgetScale.currency)
+            val ids = state.happeningNow.map { it.id }
+            // Jazz (15 €) y los gratuitos entran; el flamenco (25 €) no.
+            assertTrue("jazz" in ids)
+            assertFalse("flamenco" in ids)
+            assertTrue(state.filtersActive)
+        }
+    }
+
+    @Test
+    fun `el ultimo paso del deslizador quita el limite`() = runTest {
         val vm = viewModel()
         vm.uiState.test {
             expectMostRecentItem()
-            vm.selectPriceRange(PriceRange.Mid)
+            vm.selectBudgetStep(2)
+            expectMostRecentItem()
+            vm.selectBudgetStep(BudgetScale.forCurrency("EUR").unlimitedStep)
             val state = expectMostRecentItem()
-            assertEquals(PriceRange.Mid, prefs.state.value.priceRange)
-            assertEquals("EUR", state.priceBands.currency)
-            // Jazz (15 €) y flamenco (25 €); los gratuitos quedan fuera.
-            assertEquals(setOf("jazz", "flamenco"), state.happeningNow.map { it.id }.toSet())
+            assertNull(prefs.state.value.budgetStep)
+            assertFalse(state.filtersActive)
         }
     }
 
@@ -94,12 +113,12 @@ class HomeViewModelTest {
             expectMostRecentItem()
             vm.selectCategory(Category.Music)
             vm.toggleFreeOnly()
-            vm.selectPriceRange(PriceRange.High)
+            vm.selectBudgetStep(0)
             assertTrue(expectMostRecentItem().filtersActive)
             vm.clearFilters()
             val state = expectMostRecentItem()
             assertFalse(state.filtersActive)
-            assertEquals(PriceRange.Any, prefs.state.value.priceRange)
+            assertNull(prefs.state.value.budgetStep)
         }
     }
 

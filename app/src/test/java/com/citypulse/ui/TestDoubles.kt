@@ -4,7 +4,6 @@ import com.citypulse.data.fake.SampleData
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.GeoPoint
-import com.citypulse.domain.model.PriceRange
 import com.citypulse.domain.model.SurpriseRolls
 import com.citypulse.domain.model.UserPreferences
 import com.citypulse.domain.repository.LocationRepository
@@ -49,7 +48,7 @@ class FakePreferences(initial: UserPreferences = UserPreferences(city = SampleDa
     override val preferences: Flow<UserPreferences> = state
     override suspend fun setCity(city: City) = state.update { it.copy(city = city) }
     override suspend fun setFreeOnly(freeOnly: Boolean) = state.update { it.copy(freeOnly = freeOnly) }
-    override suspend fun setPriceRange(range: PriceRange) = state.update { it.copy(priceRange = range) }
+    override suspend fun setBudgetStep(step: Int?) = state.update { it.copy(budgetStep = step) }
     override suspend fun setRadiusMinutes(minutes: Int) = state.update { it.copy(radiusMinutes = minutes) }
     override suspend fun setOnboardingDone() = state.update { it.copy(onboardingDone = true) }
 }

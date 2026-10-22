@@ -3,7 +3,7 @@ package com.citypulse.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.CityEvents
-import com.citypulse.domain.model.PriceBands
+import com.citypulse.domain.model.BudgetScale
 import com.citypulse.domain.model.SearchIntent
 import com.citypulse.domain.repository.AiQuotaExceededException
 import com.citypulse.domain.repository.EventAssistant
@@ -65,7 +65,7 @@ class AiSearchViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val city = cityEvents.filterNotNull().first().city
-            _state.update { it.copy(cityName = city.name, currency = PriceBands.currencyFor(city.country)) }
+            _state.update { it.copy(cityName = city.name, currency = BudgetScale.currencyFor(city.country)) }
         }
     }
 
@@ -80,7 +80,7 @@ class AiSearchViewModel @Inject constructor(
         searchJob = viewModelScope.launch {
             _state.update { it.copy(query = query, status = AiSearchStatus.Thinking) }
             val events = cityEvents.filterNotNull().first()
-            val currency = PriceBands.currencyFor(events.city.country)
+            val currency = BudgetScale.currencyFor(events.city.country)
             val now = clock.now(events.city.zone)
 
             // 1) Al instante: interpretación básica en el teléfono.

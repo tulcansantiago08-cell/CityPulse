@@ -3,6 +3,12 @@ package com.citypulse.ui.home
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import kotlin.math.roundToInt
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -39,7 +45,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,8 +86,7 @@ import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.data.fake.SampleData
 import com.citypulse.domain.model.Category
-import com.citypulse.domain.model.PriceBands
-import com.citypulse.domain.model.PriceRange
+import com.citypulse.domain.model.BudgetScale
 import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.CategoryOptions
@@ -110,7 +114,7 @@ fun HomeRoute(
         onToggleFreeOnly = viewModel::toggleFreeOnly,
         onToggleSave = viewModel::toggleSaved,
         onRetry = viewModel::retry,
-        onSelectPriceRange = viewModel::selectPriceRange,
+        onSelectBudget = viewModel::selectBudgetStep,
         onAsk = onAsk,
         onRefresh = viewModel::refresh,
         onAccount = onAccount,
@@ -130,7 +134,7 @@ fun HomeScreen(
     onToggleSave: (String) -> Unit,
     modifier: Modifier = Modifier,
     onRetry: () -> Unit = {},
-    onSelectPriceRange: (PriceRange) -> Unit = {},
+    onSelectBudget: (Int) -> Unit = {},
     onAsk: () -> Unit = {},
     onRefresh: () -> Unit = {},
     onAccount: () -> Unit = {},
@@ -175,7 +179,7 @@ fun HomeScreen(
                     }
                 }
             }
-            item { PriceRangeRow(state.priceRange, state.priceBands, onSelectPriceRange) }
+            item { BudgetSlider(state.budgetStep, state.budgetScale, onSelectBudget) }
             item {
                 Row(
                     Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
@@ -344,43 +348,67 @@ private fun AskBar(onClick: () -> Unit) {
     }
 }
 
-/** Opciones de rango de precio, con los importes en la moneda de la ciudad. */
+/** Deslizador de presupuesto máximo, de "Solo gratis" a "Sin límite", en la moneda de la ciudad. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PriceRangeRow(selected: PriceRange, bands: PriceBands, onSelect: (PriceRange) -> Unit) {
-    val low = formatMoney(bands.low, bands.currency)
-    val high = formatMoney(bands.high, bands.currency)
-    val options = listOf(
-        PriceRange.Any to stringResource(R.string.price_any),
-        PriceRange.Low to stringResource(R.string.price_up_to, low),
-        PriceRange.Mid to stringResource(R.string.price_between, low, high),
-        PriceRange.High to stringResource(R.string.price_more_than, high),
+private fun BudgetSlider(step: Int?, scale: BudgetScale, onSelect: (Int) -> Unit) {
+    val selected = step ?: scale.unlimitedStep
+    // Mientras se arrastra se muestra el valor sin guardarlo; al soltar se aplica el filtro.
+    var dragging by remember { mutableFloatStateOf(Float.NaN) }
+    val shown = if (dragging.isNaN()) selected else dragging.roundToInt()
+    val valueLabel = budgetLabel(scale.maxFor(shown), scale.currency)
+    val colors = SliderDefaults.colors(
+        thumbColor = Color.White,
+        activeTrackColor = CpColors.Magenta,
+        inactiveTrackColor = Color.White.copy(alpha = 0.16f),
+        activeTickColor = Color.Transparent,
+        inactiveTickColor = Color.Transparent,
     )
-    val description = stringResource(R.string.home_price_filter)
-    // La opción elegida siempre queda a la vista, aunque esté al final de la fila.
-    val rowState = rememberLazyListState()
-    LaunchedEffect(selected) { rowState.animateScrollToItem(options.indexOfFirst { it.first == selected }.coerceAtLeast(0)) }
-    LazyRow(
-        Modifier.padding(top = 16.dp).semantics { contentDescription = description },
-        state = rowState,
-        contentPadding = PaddingValues(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        items(options, key = { it.first.name }) { (range, label) ->
-            val active = range == selected
+    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 18.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.budget_title), fontSize = 13.sp, color = CpColors.TextSecondary, modifier = Modifier.weight(1f))
             Text(
-                label,
-                fontSize = 12.sp,
-                fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (active) Color.White else Color.White.copy(alpha = 0.7f),
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .then(if (active) Modifier.background(BrandGradientHorizontal) else Modifier.glass(CircleShape))
-                    .semantics { this.selected = active }
-                    .clickable(role = Role.Tab) { onSelect(range) }
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                valueLabel,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                style = TextStyle(brush = if (shown == scale.unlimitedStep) null else BrandGradientHorizontal),
+                color = if (shown == scale.unlimitedStep) Color.White.copy(alpha = 0.7f) else Color.Unspecified,
             )
         }
+        Slider(
+            value = shown.toFloat(),
+            onValueChange = { dragging = it },
+            onValueChangeFinished = {
+                if (!dragging.isNaN()) onSelect(dragging.roundToInt())
+                dragging = Float.NaN
+            },
+            valueRange = 0f..scale.unlimitedStep.toFloat(),
+            steps = scale.unlimitedStep - 1,
+            colors = colors,
+            thumb = { Box(Modifier.size(22.dp).background(Color.White, CircleShape)) },
+            track = { sliderState ->
+                SliderDefaults.Track(
+                    sliderState = sliderState,
+                    modifier = Modifier.height(4.dp),
+                    colors = colors,
+                    drawStopIndicator = null,
+                    thumbTrackGapSize = 0.dp,
+                )
+            },
+            modifier = Modifier.semantics { stateDescription = valueLabel },
+        )
+        Row(Modifier.fillMaxWidth().offset(y = (-6).dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(stringResource(R.string.budget_free), fontSize = 10.sp, color = Color.White.copy(alpha = 0.4f))
+            Text(stringResource(R.string.budget_unlimited), fontSize = 10.sp, color = Color.White.copy(alpha = 0.4f))
+        }
     }
+}
+
+@Composable
+private fun budgetLabel(max: Double?, currency: String): String = when (max) {
+    null -> stringResource(R.string.budget_unlimited)
+    0.0 -> stringResource(R.string.budget_free_only)
+    else -> stringResource(R.string.price_up_to, formatMoney(max, currency))
 }
 
 /** Mensaje de lista vacía; si hay filtros activos, ofrece quitarlos (pueden ser la causa). */

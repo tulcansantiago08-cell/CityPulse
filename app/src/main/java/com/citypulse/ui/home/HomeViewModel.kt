@@ -4,11 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.CityEvents
-import com.citypulse.domain.model.PriceBands
-import com.citypulse.domain.model.PriceRange
+import com.citypulse.domain.model.BudgetScale
 import com.citypulse.domain.model.RefreshState
 import com.citypulse.domain.model.UserPreferences
-import com.citypulse.domain.model.isInPriceRange
+import com.citypulse.domain.model.fitsBudget
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.SavedEventsRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
@@ -45,16 +44,17 @@ data class HomeUiState(
     val happeningNow: List<EventUi> = emptyList(),
     val thisWeek: List<EventUi> = emptyList(),
     val savedIds: Set<String> = emptySet(),
-    val priceRange: PriceRange = PriceRange.Any,
-    /** Límites de los rangos en la moneda de la ciudad. */
-    val priceBands: PriceBands = PriceBands.forCurrency("EUR"),
+    /** Paso elegido en el deslizador de presupuesto; `null` es sin límite. */
+    val budgetStep: Int? = null,
+    /** Escala del deslizador en la moneda de la ciudad. */
+    val budgetScale: BudgetScale = BudgetScale.forCurrency("EUR"),
     /** No hay eventos que mostrar porque fallaron las descargas. */
     val error: Boolean = false,
     /** Se están descargando eventos nuevos (indicador de "deslizar para actualizar"). */
     val refreshing: Boolean = false,
 ) {
     /** Hay algún filtro que puede estar escondiendo eventos. */
-    val filtersActive: Boolean get() = freeOnly || selectedCategory != null || priceRange != PriceRange.Any
+    val filtersActive: Boolean get() = freeOnly || selectedCategory != null || budgetStep != null
 }
 
 private data class HomeInputs(
@@ -90,9 +90,10 @@ class HomeViewModel @Inject constructor(
         val now = instant.localIn(cityEvents?.city?.zone ?: prefs.city?.zone ?: ZoneId.systemDefault())
         val nothingCached = cityEvents?.events.isNullOrEmpty()
         val city = cityEvents?.city ?: prefs.city
-        val bands = city?.let(PriceBands::forCity) ?: PriceBands.forCurrency("EUR")
+        val scale = city?.let(BudgetScale::forCity) ?: BudgetScale.forCurrency("EUR")
+        val budget = scale.maxFor(prefs.budgetStep)
         val filtered = cityEvents?.events.orEmpty().filter {
-            it.event.matches(prefs.freeOnly, category) && it.event.isInPriceRange(prefs.priceRange, bands)
+            it.event.matches(prefs.freeOnly, category) && it.event.fitsBudget(budget, scale.currency)
         }
         HomeUiState(
             // Sin nada en caché, mientras se descarga se muestran esqueletos en vez de "no hay eventos".
@@ -107,8 +108,8 @@ class HomeViewModel @Inject constructor(
             happeningNow = filtered.happeningNow(now).map { it.toUi(now) },
             thisWeek = filtered.upcomingThisWeek(now).map { it.toUi(now) },
             savedIds = savedIds,
-            priceRange = prefs.priceRange,
-            priceBands = bands,
+            budgetStep = prefs.budgetStep,
+            budgetScale = scale,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
@@ -127,15 +128,17 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { toggleSavedEvent(eventId) }
     }
 
-    fun selectPriceRange(range: PriceRange) {
-        viewModelScope.launch { preferences.setPriceRange(range) }
+    /** Paso del deslizador de presupuesto; el último ("Sin límite") quita el filtro. */
+    fun selectBudgetStep(step: Int) {
+        val value = step.takeIf { it < uiState.value.budgetScale.unlimitedStep }
+        viewModelScope.launch { preferences.setBudgetStep(value) }
     }
 
     fun clearFilters() {
         selectedCategory.value = null
         viewModelScope.launch {
             preferences.setFreeOnly(false)
-            preferences.setPriceRange(PriceRange.Any)
+            preferences.setBudgetStep(null)
         }
     }
 

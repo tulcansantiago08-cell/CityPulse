@@ -9,7 +9,6 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.GeoPoint
-import com.citypulse.domain.model.PriceRange
 import com.citypulse.domain.model.UserPreferences
 import com.citypulse.domain.repository.CityRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
@@ -36,7 +35,7 @@ class DataStoreUserPreferencesRepository @Inject constructor(
                 null
             },
             freeOnly = prefs[Keys.freeOnly] ?: false,
-            priceRange = prefs[Keys.priceRange]?.let { runCatching { PriceRange.valueOf(it) }.getOrNull() } ?: PriceRange.Any,
+            budgetStep = prefs[Keys.budgetStep],
             radiusMinutes = prefs[Keys.radius] ?: UserPreferences.DEFAULT_RADIUS_MINUTES,
             onboardingDone = prefs[Keys.onboardingDone] ?: false,
         )
@@ -56,8 +55,11 @@ class DataStoreUserPreferencesRepository @Inject constructor(
         dataStore.edit { it[Keys.freeOnly] = freeOnly }
     }
 
-    override suspend fun setPriceRange(range: PriceRange) {
-        dataStore.edit { it[Keys.priceRange] = range.name }
+    override suspend fun setBudgetStep(step: Int?) {
+        dataStore.edit {
+            if (step == null) it.remove(Keys.budgetStep) else it[Keys.budgetStep] = step
+            it.remove(Keys.legacyPriceRange)
+        }
     }
 
     override suspend fun setRadiusMinutes(minutes: Int) {
@@ -81,7 +83,10 @@ class DataStoreUserPreferencesRepository @Inject constructor(
         val cityLng = doublePreferencesKey("city_lng")
         val cityZone = stringPreferencesKey("city_zone")
         val freeOnly = booleanPreferencesKey("free_only")
-        val priceRange = stringPreferencesKey("price_range")
+        val budgetStep = intPreferencesKey("budget_step")
+
+        /** Filtro de rangos de versiones anteriores; se borra al elegir presupuesto. */
+        val legacyPriceRange = stringPreferencesKey("price_range")
         val radius = intPreferencesKey("radius_minutes")
         val onboardingDone = booleanPreferencesKey("onboarding_done")
     }

@@ -1,8 +1,7 @@
 package com.citypulse.domain
 
-import com.citypulse.domain.model.PriceBands
-import com.citypulse.domain.model.PriceRange
-import com.citypulse.domain.model.isInPriceRange
+import com.citypulse.domain.model.BudgetScale
+import com.citypulse.domain.model.fitsBudget
 import com.citypulse.domain.model.parsePriceLabel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -14,7 +13,7 @@ import java.time.LocalDateTime
 class PriceTest {
 
     private val now = LocalDateTime.of(2026, 10, 13, 18, 0)
-    private val eur = PriceBands.forCurrency("EUR")
+    private val eur = BudgetScale.forCurrency("EUR")
 
     @Test
     fun `lee precio y moneda de los textos del catalogo`() {
@@ -26,30 +25,32 @@ class PriceTest {
     }
 
     @Test
-    fun `rangos en euros con gratis como el mas barato`() {
+    fun `presupuesto en euros con los gratuitos siempre dentro`() {
         val free = testEvent("free", start = now)
         val cheap = testEvent("6", start = now, price = "6 €", priceMin = 6.0)
         val mid = testEvent("15", start = now, price = "15 €", priceMin = 15.0)
-        val high = testEvent("45", start = now, price = "45 €", priceMin = 45.0)
         val unknown = testEvent("?", start = now, price = "x", priceMin = null)
 
-        assertTrue(free.isInPriceRange(PriceRange.Low, eur))
-        assertTrue(cheap.isInPriceRange(PriceRange.Low, eur))
-        assertTrue(mid.isInPriceRange(PriceRange.Mid, eur))
-        assertTrue(high.isInPriceRange(PriceRange.High, eur))
-        assertFalse(mid.isInPriceRange(PriceRange.Low, eur))
-        // Sin precio conocido solo aparece con "Todos".
-        assertFalse(unknown.isInPriceRange(PriceRange.Low, eur))
-        assertTrue(unknown.isInPriceRange(PriceRange.Any, eur))
+        assertTrue(free.fitsBudget(0.0, "EUR"))
+        assertFalse(cheap.fitsBudget(0.0, "EUR"))
+        assertTrue(cheap.fitsBudget(10.0, "EUR"))
+        assertTrue(mid.fitsBudget(15.0, "EUR"))
+        assertFalse(mid.fitsBudget(10.0, "EUR"))
+        // Sin límite entra todo; sin precio conocido no se puede asegurar que quepa.
+        assertTrue(unknown.fitsBudget(null, "EUR"))
+        assertFalse(unknown.fitsBudget(100.0, "EUR"))
     }
 
     @Test
-    fun `cada pais usa su moneda y sus limites`() {
-        val bogota = PriceBands.forCurrency(PriceBands.currencyFor("Colombia"))
+    fun `cada pais usa su moneda y la misma cantidad de pasos`() {
+        val bogota = BudgetScale.forCurrency(BudgetScale.currencyFor("Colombia"))
         assertEquals("COP", bogota.currency)
+        assertEquals(eur.unlimitedStep, bogota.unlimitedStep)
+        assertEquals(50_000.0, bogota.maxFor(5)!!, 0.0)
+        assertNull(bogota.maxFor(bogota.unlimitedStep))
         val show = testEvent("teatro", start = now, price = "40.000 COP", priceMin = 40_000.0, currency = "COP")
-        assertTrue(show.isInPriceRange(PriceRange.Mid, bogota))
+        assertTrue(show.fitsBudget(50_000.0, "COP"))
         // Un precio en otra moneda no se compara.
-        assertFalse(show.isInPriceRange(PriceRange.High, eur))
+        assertFalse(show.fitsBudget(50.0, "EUR"))
     }
 }
