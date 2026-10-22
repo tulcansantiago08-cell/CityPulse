@@ -7,6 +7,7 @@ import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.EventSource
 import com.citypulse.domain.model.GeoPoint
+import com.citypulse.domain.model.PriceEstimate
 import java.time.LocalDateTime
 
 /** Última lista de eventos descargada por ciudad, para mostrar algo al instante y sin conexión. */
@@ -30,6 +31,8 @@ data class CachedEventEntity(
     val url: String?,
     val priceMin: Double? = null,
     val currency: String? = null,
+    /** "Local" o "Ai" si el precio es estimado (ver [PriceEstimate]). */
+    val priceEstimate: String? = null,
     val fetchedAt: Long,
 )
 
@@ -52,6 +55,7 @@ fun Event.toCachedEntity(city: String, fetchedAt: Long) = CachedEventEntity(
     url = url,
     priceMin = priceMin,
     currency = currency,
+    priceEstimate = priceEstimate?.name,
     fetchedAt = fetchedAt,
 )
 
@@ -72,4 +76,5 @@ fun CachedEventEntity.toEvent() = Event(
     url = url,
     priceMin = priceMin,
     currency = currency,
+    priceEstimate = priceEstimate?.let { runCatching { PriceEstimate.valueOf(it) }.getOrNull() },
 )

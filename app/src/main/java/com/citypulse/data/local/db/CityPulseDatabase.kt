@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [SavedEventEntity::class, CachedEventEntity::class], version = 4, exportSchema = false)
+@Database(entities = [SavedEventEntity::class, CachedEventEntity::class], version = 5, exportSchema = false)
 abstract class CityPulseDatabase : RoomDatabase() {
     abstract fun savedEventDao(): SavedEventDao
     abstract fun cachedEventDao(): CachedEventDao
@@ -45,6 +45,16 @@ abstract class CityPulseDatabase : RoomDatabase() {
                     db.execSQL("ALTER TABLE $table ADD COLUMN currency TEXT")
                 }
                 // La caché se rehace en la próxima descarga, ya con los precios.
+                db.execSQL("DELETE FROM cached_events")
+            }
+        }
+
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (table in listOf("saved_events", "cached_events")) {
+                    db.execSQL("ALTER TABLE $table ADD COLUMN priceEstimate TEXT")
+                }
+                // Se rehace la caché para estimar los precios que las fuentes no publican.
                 db.execSQL("DELETE FROM cached_events")
             }
         }

@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.citypulse.R
+import com.citypulse.domain.model.PriceEstimate
 import com.citypulse.core.designsystem.component.EmptyState
 import com.citypulse.core.designsystem.component.EventImage
 import com.citypulse.core.designsystem.component.FreeBadge
@@ -309,7 +310,13 @@ private fun SheetContent(
             InfoCell(
                 Icons.Rounded.Sell,
                 CpColors.Magenta,
-                stringResource(R.string.detail_price),
+                stringResource(
+                    when (event.priceEstimate) {
+                        PriceEstimate.Ai -> R.string.detail_price_estimated_ai
+                        PriceEstimate.Local -> R.string.detail_price_estimated
+                        null -> R.string.detail_price
+                    },
+                ),
                 event.priceLabel,
                 Modifier.weight(1f),
                 // Si el precio está en la web del evento, la celda la abre.

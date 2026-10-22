@@ -6,6 +6,7 @@ import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.EventSource
 import com.citypulse.domain.model.GeoPoint
+import com.citypulse.domain.model.PriceEstimate
 import java.time.LocalDateTime
 
 /** Copia completa del evento para poder mostrarlo sin conexión. */
@@ -28,6 +29,8 @@ data class SavedEventEntity(
     val url: String?,
     val priceMin: Double? = null,
     val currency: String? = null,
+    /** "Local" o "Ai" si el precio es estimado (ver [PriceEstimate]). */
+    val priceEstimate: String? = null,
     val savedAt: Long,
 )
 
@@ -49,6 +52,7 @@ fun Event.toSavedEntity(savedAt: Long = System.currentTimeMillis()) = SavedEvent
     url = url,
     priceMin = priceMin,
     currency = currency,
+    priceEstimate = priceEstimate?.name,
     savedAt = savedAt,
 )
 
@@ -69,4 +73,5 @@ fun SavedEventEntity.toEvent() = Event(
     url = url,
     priceMin = priceMin,
     currency = currency,
+    priceEstimate = priceEstimate?.let { runCatching { PriceEstimate.valueOf(it) }.getOrNull() },
 )

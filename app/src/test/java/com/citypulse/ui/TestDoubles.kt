@@ -84,6 +84,8 @@ class FakeAssistant(private val available: Boolean = true) : com.citypulse.domai
         if (available) Result.success("Resumen de ${event.title}") else Result.failure(IllegalStateException("sin IA"))
     override suspend fun explainSurprise(event: com.citypulse.domain.model.NearbyEvent, now: LocalDateTime) =
         if (available) Result.success("Ve a ${event.event.title}") else Result.failure(IllegalStateException("sin IA"))
+    override suspend fun estimatePrices(events: List<Event>, cityName: String, currency: String) =
+        if (available) Result.success(events.associate { it.id to 20.0 }) else Result.failure(IllegalStateException("sin IA"))
 }
 
 class FakeAuth(var failWith: com.citypulse.domain.repository.AuthError? = null) : com.citypulse.domain.repository.AuthRepository {

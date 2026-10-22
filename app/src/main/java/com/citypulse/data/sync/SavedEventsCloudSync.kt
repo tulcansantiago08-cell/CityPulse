@@ -112,6 +112,7 @@ internal fun SavedEventEntity.toCloud(): Map<String, Any?> = mapOf(
     "url" to url,
     "priceMin" to priceMin,
     "currency" to currency,
+    "priceEstimate" to priceEstimate,
     "savedAt" to savedAt,
 )
 
@@ -135,6 +136,7 @@ internal fun DocumentSnapshot.toSavedEntity(): SavedEventEntity? = runCatching {
         url = getString("url"),
         priceMin = getDouble("priceMin"),
         currency = getString("currency"),
+        priceEstimate = getString("priceEstimate"),
         savedAt = getLong("savedAt") ?: System.currentTimeMillis(),
     )
 }.getOrNull()

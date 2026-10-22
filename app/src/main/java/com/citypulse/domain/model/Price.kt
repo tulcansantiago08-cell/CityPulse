@@ -39,6 +39,62 @@ data class BudgetScale(val currency: String, val amounts: List<Double>) {
     }
 }
 
+/** Origen de un precio estimado: la IA (Gemini) o la regla local por categoría y recinto. */
+enum class PriceEstimate { Local, Ai }
+
+/**
+ * Equivalencia aproximada de 1 € en cada moneda, coherente con los pasos de [BudgetScale]
+ * (5 € ≈ 10.000 COP ≈ 100 MXN ≈ 5.000 ARS). Solo se usa para precios estimados.
+ */
+fun eurosIn(currency: String): Double = when (currency) {
+    "COP" -> 2_000.0
+    "MXN" -> 20.0
+    "ARS" -> 1_000.0
+    else -> 1.0
+}
+
+/** Precio típico en euros de la entrada más barata según la categoría, el recinto y el título. */
+fun localPriceEstimateEur(event: Event): Double {
+    val venue = event.venue.lowercase()
+    val text = "${event.title} ${event.venue}".lowercase()
+    fun has(vararg words: String) = words.any { it in text }
+    fun venueHas(vararg words: String) = words.any { it in venue }
+    return when {
+        venueHas("estadi", "stadium", "metropolitano", "bernabéu", "bernabeu", "camp nou") -> 70.0
+        venueHas("arena", "palau sant jordi", "wizink", "vistalegre", "palacio de los deportes", "ifema", "movistar") -> 55.0
+        has("ópera", "opera", "liceu", "teatro real", "sinfónic", "sinfonic", "orquesta", "orchestra") -> 45.0
+        has("tablao", "flamenco") -> 35.0
+        venueHas("teatro", "teatre", "theatre", "auditori", "auditorio", "palau de la música") -> 32.0
+        event.category == Category.Music && venueHas("sala", "club", "bar", "café", "cafe", "jazz", "razzmatazz", "apolo") -> 18.0
+        event.category == Category.Music -> 28.0
+        event.category == Category.Art || venueHas("museo", "museu", "museum", "galería", "galeria") -> 12.0
+        event.category == Category.Markets -> 5.0
+        event.category == Category.Fairs -> 15.0
+        event.category == Category.Food -> 25.0
+        else -> 22.0
+    }
+}
+
+/**
+ * Si el evento no es gratuito y no publica precio, le pone uno estimado con la regla local, en la
+ * moneda de la ciudad. Los que ya tienen precio (real o estimado) no cambian.
+ */
+fun Event.withLocalPriceEstimate(currency: String): Event {
+    if (isFree || priceMin != null) return this
+    val amount = roundPrice(localPriceEstimateEur(this) * eurosIn(currency), currency)
+    return copy(priceMin = amount, currency = currency, priceEstimate = PriceEstimate.Local)
+}
+
+/** Redondea a una cifra "de taquilla": euros enteros, miles de pesos colombianos, etc. */
+fun roundPrice(amount: Double, currency: String): Double {
+    val unit = when (currency) {
+        "COP", "ARS" -> 1_000.0
+        "MXN" -> 10.0
+        else -> 1.0
+    }
+    return (Math.round(amount / unit) * unit).toDouble()
+}
+
 /**
  * ¿Entra el evento en el presupuesto? Sin máximo (`null`) entra todo; los gratuitos entran siempre.
  * Si no se conoce el precio, o está en otra moneda, no se puede asegurar y queda fuera.

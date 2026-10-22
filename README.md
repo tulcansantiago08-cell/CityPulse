@@ -15,7 +15,7 @@ Proyecto académico.
 ## Funcionalidades
 
 - **Ciudad por GPS o manual.** El permiso de ubicación se pide en la bienvenida; si se deniega, se puede elegir la ciudad en una lista con búsqueda que ignora las tildes.
-- **Inicio.** Saludo según la hora, filtro por categoría (stories), deslizador de *Presupuesto máximo* (de *Gratis* a *Sin límite*, en la moneda de la ciudad), interruptor *Solo gratis*, carrusel *Pasando ahora* (en curso o empieza en menos de 1 h) y lista *Esta semana*.
+- **Inicio.** Saludo según la hora, filtro por categoría (stories), deslizador de *Presupuesto máximo* (de *Gratis* a *Sin límite*, en la moneda de la ciudad, con el número de eventos que caben), interruptor *Solo gratis*, carrusel *Pasando ahora* (en curso o empieza en menos de 1 h) y lista *Esta semana*.
 - **Estoy aquí ahora.** Eventos de la franja elegida (mañana, tarde o noche) a menos de *N* minutos a pie (5–30), ordenados por cercanía.
 - **Sorpresa.** Un único evento al azar, en curso o que empieza en las próximas 3 h, a menos de 30 min. Máximo 5 tiradas al día y sin repetir.
 - **Mapa.** OpenStreetMap en tonos oscuros con un pin por evento (anillo naranja si está en curso).
@@ -78,7 +78,7 @@ Kotlin · Jetpack Compose + Material 3 · Firebase AI Logic (Gemini) · Firebase
 
 ## Fuentes de datos
 
-- **Ticketmaster Discovery API**: conciertos y espectáculos alrededor del centro de la ciudad (15 km, próximos 7 días).
+- **Ticketmaster Discovery API**: conciertos y espectáculos alrededor del centro de la ciudad (15 km, próximos 7 días). La API ya no publica precios: la app los **estima** (Gemini, con una regla local por categoría y recinto como respaldo) y los muestra como «≈ 25 €» para no confundirlos con el precio real.
 - **Catálogo propio en Firestore**: eventos gratuitos, mercados y ferias que no aparecen en Ticketmaster. Cada entrada es **recurrente** (días de la semana + horario, como "domingos de 9 a 15 h") o de una fecha concreta, y la app genera sus fechas para los próximos 7 días. Incluye datos de ejemplo de **Madrid**, **Bogotá** y **Pasto**. Ticketmaster no tiene eventos en Colombia, así que allí la app depende del catálogo propio.
 
 ## Configuración

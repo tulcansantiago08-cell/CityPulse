@@ -99,6 +99,8 @@
     <string name="detail_toggle_sheet">Expandir o contraer detalles</string>
     <string name="detail_schedule">Horario</string>
     <string name="detail_price">Precio</string>
+    <string name="detail_price_estimated">Precio aprox.</string>
+    <string name="detail_price_estimated_ai">Precio aprox. (IA)</string>
     <string name="detail_walk">A pie</string>
 
     <!-- Ciudad -->

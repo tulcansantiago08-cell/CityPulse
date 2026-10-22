@@ -37,6 +37,10 @@ private const val TAG = "CityPulseAI"
 private const val INTERPRET_TIMEOUT_MS = 90_000L
 private const val SUMMARY_TIMEOUT_MS = 90_000L
 private const val EXPLAIN_TIMEOUT_MS = 90_000L
+private const val PRICES_TIMEOUT_MS = 90_000L
+
+/** Eventos por consulta de precios: una sola petición por ciudad cubre la semana. */
+private const val PRICES_BATCH = 80
 
 /**
  * Modelos de Gemini (sin facturación en la Gemini Developer API vía Firebase AI Logic), por
@@ -89,6 +93,14 @@ private val intentSchema = Schema.obj(
 )
 
 @Singleton
+/** Respuesta estructurada de [GeminiEventAssistant.estimatePrices]; coincide con [pricesSchema]. */
+@Serializable
+internal data class PriceEstimateDto(val id: String = "", val price: Double? = null)
+
+private val pricesSchema = Schema.array(
+    Schema.obj(mapOf("id" to Schema.string(), "price" to Schema.double())),
+)
+
 class GeminiEventAssistant @Inject constructor() : EventAssistant {
 
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
@@ -101,6 +113,18 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
                 generationConfig = generationConfig {
                     responseMimeType = "application/json"
                     responseSchema = intentSchema
+                    temperature = 0f
+                },
+            )
+        }
+    }
+    private val priceModels by lazy {
+        MODELS.map { name ->
+            Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
+                modelName = name,
+                generationConfig = generationConfig {
+                    responseMimeType = "application/json"
+                    responseSchema = pricesSchema
                     temperature = 0f
                 },
             )
@@ -216,4 +240,25 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
         """.trimIndent()
         generate(textModels, prompt, EXPLAIN_TIMEOUT_MS).trim('"').also { explanations[event.event.id] = it }
     }.onFailure { Log.w(TAG, "explainSurprise", it) }
+
+    override suspend fun estimatePrices(events: List<Event>, cityName: String, currency: String) = runCatching {
+        if (events.isEmpty()) return@runCatching emptyMap()
+        val batch = events.take(PRICES_BATCH)
+        val lines = batch.joinToString("\n") { e ->
+            "${e.id} | ${e.title.take(80)} | ${e.venue.take(50)} | ${e.category.label}"
+        }
+        val prompt = """
+            Eres un experto en ocio de $cityName. Estos eventos no publican su precio.
+            Para cada uno, estima el precio típico de la entrada más barata en $currency, según el artista
+            o espectáculo, el recinto y el tipo de evento. Usa cifras redondas y realistas para $cityName.
+            Si de verdad no puedes estimarlo, omite ese evento. Responde con el mismo id de cada línea.
+            Formato de cada línea: id | título | recinto | categoría
+            $lines
+        """.trimIndent()
+        val text = generate(priceModels, prompt, PRICES_TIMEOUT_MS)
+        val ids = batch.map { it.id }.toSet()
+        json.decodeFromString<List<PriceEstimateDto>>(text)
+            .filter { it.id in ids && (it.price ?: -1.0) > 0.0 }
+            .associate { it.id to it.price!! }
+    }.onFailure { Log.w(TAG, "estimatePrices", it) }
 }

@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.NearbyEvent
+import com.citypulse.domain.model.PriceEstimate
 import java.net.URLEncoder
 import java.text.NumberFormat
 import java.time.LocalDate
@@ -23,8 +24,10 @@ data class EventUi(
     val fallback: List<Color>,
     val live: Boolean,
     val free: Boolean,
-    /** "Gratis", el precio, "Ver precio" (está en la web del evento) o "En taquilla". */
+    /** "Gratis", el precio, "≈ 25 €" si es estimado, "Ver precio" (está en la web del evento) o "En taquilla". */
     val priceLabel: String,
+    /** El precio es una estimación (la fuente no lo publica); `null` si es real o no hay. */
+    val priceEstimate: PriceEstimate? = null,
     /** El precio no se conoce pero se puede consultar en la web del evento ([url]). */
     val priceOnline: Boolean,
     /**
@@ -95,6 +98,7 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
         live = live,
         free = event.isFree,
         priceLabel = priceLabel(event),
+        priceEstimate = event.priceEstimate.takeIf { !event.isFree && event.priceMin != null },
         priceOnline = !event.isFree && event.price == null && event.url != null,
         ticketsUrl = when {
             event.isFree -> null
@@ -124,6 +128,8 @@ private fun ticketSearchUrl(event: Event): String {
 private fun priceLabel(event: Event): String = when {
     event.isFree -> "Gratis"
     event.price != null -> event.price
+    // Precio estimado por la IA o por la regla local: se marca con "≈" para no confundirlo con el real.
+    event.priceEstimate != null && event.priceMin != null -> "≈ " + formatMoney(event.priceMin, event.currency ?: "EUR")
     // Ticketmaster no siempre da el precio en la API, pero sí en la página del evento.
     event.url != null -> "Ver precio"
     // Lugares del catálogo sin tarifa fija: se paga en el sitio.

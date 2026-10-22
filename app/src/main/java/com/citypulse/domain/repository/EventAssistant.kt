@@ -18,4 +18,10 @@ interface EventAssistant {
 
     /** Una frase que explica por qué se sugiere este evento en la Sorpresa. */
     suspend fun explainSurprise(event: NearbyEvent, now: LocalDateTime): Result<String>
+
+    /**
+     * Precio típico de la entrada más barata, en [currency], de eventos que no lo publican.
+     * Devuelve id del evento → precio; puede faltar alguno si la IA no lo sabe estimar.
+     */
+    suspend fun estimatePrices(events: List<Event>, cityName: String, currency: String): Result<Map<String, Double>>
 }

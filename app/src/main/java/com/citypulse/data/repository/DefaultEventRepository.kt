@@ -5,13 +5,21 @@ import com.citypulse.data.local.db.toCachedEntity
 import com.citypulse.data.local.db.toEvent
 import com.citypulse.data.remote.firestore.FirestoreEventSource
 import com.citypulse.data.remote.ticketmaster.TicketmasterEventSource
+import com.citypulse.domain.model.BudgetScale
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.EventSource
+import com.citypulse.domain.model.PriceEstimate
 import com.citypulse.domain.model.RefreshState
+import com.citypulse.domain.model.roundPrice
+import com.citypulse.domain.model.withLocalPriceEstimate
+import com.citypulse.domain.repository.EventAssistant
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.time.Clock
 import com.citypulse.domain.time.now
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +40,9 @@ private const val CACHE_TTL_MILLIS = 30 * 60 * 1000L
 /**
  * Repositorio "cache then network": emite enseguida lo guardado en Room y, si está viejo,
  * descarga de Ticketmaster y del catálogo de Firestore en paralelo y actualiza la caché.
+ *
+ * Ticketmaster ya no publica precios, así que a los eventos sin precio se les pone uno estimado:
+ * primero la regla local (al instante) y después, en segundo plano, la estimación de la IA.
  */
 @Singleton
 class DefaultEventRepository @Inject constructor(
@@ -39,9 +50,11 @@ class DefaultEventRepository @Inject constructor(
     private val catalog: FirestoreEventSource,
     private val cache: CachedEventDao,
     private val clock: Clock,
+    private val assistant: EventAssistant,
 ) : EventRepository {
 
     private val refreshMutex = Mutex()
+    private val background = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val _refreshState = MutableStateFlow(RefreshState.Idle)
     override val refreshState: StateFlow<RefreshState> = _refreshState.asStateFlow()
@@ -72,15 +85,42 @@ class DefaultEventRepository @Inject constructor(
         fun orPrevious(result: Result<List<Event>>, source: EventSource) =
             result.getOrElse { previous.filter { it.source == source } }
 
+        val currency = BudgetScale.currencyFor(city.country)
+        // Las estimaciones de la IA de la descarga anterior se conservan: no se vuelve a preguntar.
+        val previousAi = previous.filter { it.priceEstimate == PriceEstimate.Ai }.associateBy { it.id }
         val merged = mergeEvents(
             // El catálogo propio va primero: ante duplicados, su ficha es más completa.
             listOf(orPrevious(fromCatalog, EventSource.CityPulse), orPrevious(fromTicketmaster, EventSource.Ticketmaster)),
             now,
-        )
+        ).map { event ->
+            val ai = previousAi[event.id]
+            when {
+                event.isFree || event.priceMin != null -> event
+                ai != null -> event.copy(priceMin = ai.priceMin, currency = ai.currency, priceEstimate = PriceEstimate.Ai)
+                else -> event.withLocalPriceEstimate(currency)
+            }
+        }
         val fetchedAt = System.currentTimeMillis()
         cache.replaceCity(city.name, merged.map { it.toCachedEntity(city.name, fetchedAt) })
         _refreshState.value = RefreshState.Idle
+        background.launch { refineWithAi(city, currency, merged.filter { it.priceEstimate == PriceEstimate.Local }) }
         Result.success(Unit)
+    }
+
+    /** Pide a la IA el precio de los eventos que solo tienen la estimación local y los actualiza. */
+    private suspend fun refineWithAi(city: City, currency: String, events: List<Event>) {
+        if (events.isEmpty()) return
+        val prices = assistant.estimatePrices(events, city.name, currency).getOrNull().orEmpty()
+        if (prices.isEmpty()) return
+        refreshMutex.withLock {
+            val updated = cache.getByCity(city.name).mapNotNull { row ->
+                val price = prices[row.id] ?: return@mapNotNull null
+                // Solo se reemplaza la estimación local; si mientras tanto llegó un precio real, se respeta.
+                if (row.priceEstimate != PriceEstimate.Local.name) return@mapNotNull null
+                row.copy(priceMin = roundPrice(price, currency), currency = currency, priceEstimate = PriceEstimate.Ai.name)
+            }
+            if (updated.isNotEmpty()) cache.insertAll(updated)
+        }
     }
 
     override suspend fun getEvent(id: String): Event? = cache.get(id)?.toEvent()
