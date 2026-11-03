@@ -20,7 +20,9 @@ class DataStoreSurpriseRollsRepository @Inject constructor(
 ) : SurpriseRollsRepository {
 
     override fun observe(today: LocalDate): Flow<SurpriseRolls> = dataStore.data.map { prefs ->
-        val date = prefs[Keys.date]?.let(LocalDate::parse) ?: today
+        // Si la fecha guardada está corrupta se usa LocalDate.MIN: on(today) la trata como otro día
+        // y empieza de cero, en vez de lanzar una excepción y romper la pantalla Sorpresa.
+        val date = prefs[Keys.date]?.let { runCatching { LocalDate.parse(it) }.getOrDefault(LocalDate.MIN) } ?: today
         SurpriseRolls(
             date = date,
             used = prefs[Keys.used] ?: 0,
