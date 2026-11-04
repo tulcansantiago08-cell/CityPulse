@@ -17,6 +17,7 @@ import com.citypulse.domain.repository.EventAssistant
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.time.Clock
 import com.citypulse.domain.time.now
+import com.citypulse.domain.usecase.UPCOMING_HORIZON_DAYS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -92,6 +93,7 @@ class DefaultEventRepository @Inject constructor(
             // El catálogo propio va primero: ante duplicados, su ficha es más completa.
             listOf(orPrevious(fromCatalog, EventSource.CityPulse), orPrevious(fromTicketmaster, EventSource.Ticketmaster)),
             now,
+            horizonDays = UPCOMING_HORIZON_DAYS,
         ).map { event ->
             val ai = previousAi[event.id]
             when {

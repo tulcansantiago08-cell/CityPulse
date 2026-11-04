@@ -19,6 +19,16 @@ class CatalogEntryTest {
     )
 
     @Test
+    fun `una fecha concreta se anuncia hasta 30 dias antes y lo recurrente solo 7`() {
+        val from = LocalDate.of(2026, 11, 9)
+        val concert = CatalogEntry.fromDocument("c", sundayMarket + mapOf("date" to "2026-11-21"))!!
+        assertEquals(1, concert.occurrences(from, days = 7, datedDays = 30).size)
+        assertEquals(0, concert.occurrences(from, days = 7).size)
+        val market = CatalogEntry.fromDocument("m", sundayMarket)!!
+        assertEquals(1, market.occurrences(from, days = 7, datedDays = 30).size)
+    }
+
+    @Test
     fun `evento recurrente genera una ocurrencia por cada dia que coincide`() {
         val entry = CatalogEntry.fromDocument("rastro", sundayMarket)!!
         val monday = LocalDate.of(2026, 10, 12)

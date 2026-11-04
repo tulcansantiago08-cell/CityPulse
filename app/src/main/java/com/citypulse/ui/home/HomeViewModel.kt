@@ -19,6 +19,7 @@ import com.citypulse.domain.usecase.ObserveCityEvents
 import com.citypulse.domain.usecase.ToggleSavedEvent
 import com.citypulse.domain.usecase.happeningNow
 import com.citypulse.domain.usecase.matches
+import com.citypulse.domain.usecase.upcomingLater
 import com.citypulse.domain.usecase.upcomingThisWeek
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.dateLine
@@ -43,6 +44,8 @@ data class HomeUiState(
     val freeOnly: Boolean = false,
     val happeningNow: List<EventUi> = emptyList(),
     val thisWeek: List<EventUi> = emptyList(),
+    /** Eventos con fecha más allá de esta semana. */
+    val later: List<EventUi> = emptyList(),
     val savedIds: Set<String> = emptySet(),
     /** Paso elegido en el deslizador de presupuesto; `null` es sin límite. */
     val budgetStep: Int? = null,
@@ -114,6 +117,7 @@ class HomeViewModel @Inject constructor(
             freeOnly = prefs.freeOnly,
             happeningNow = filtered.happeningNow(now).map { it.toUi(now) },
             thisWeek = filtered.upcomingThisWeek(now).map { it.toUi(now) },
+            later = filtered.upcomingLater(now).map { it.toUi(now) },
             savedIds = savedIds,
             budgetStep = step.takeIf { it < scale.unlimitedStep },
             budgetScale = scale,

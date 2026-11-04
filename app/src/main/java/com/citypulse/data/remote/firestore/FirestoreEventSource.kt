@@ -3,6 +3,7 @@ package com.citypulse.data.remote.firestore
 import com.citypulse.domain.geo.distanceMeters
 import com.citypulse.domain.model.City
 import com.citypulse.domain.model.Event
+import com.citypulse.domain.usecase.UPCOMING_HORIZON_DAYS
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
@@ -26,7 +27,7 @@ class FirestoreEventSource @Inject constructor(
         val snapshot = firestore.collection(COLLECTION).get().await()
         return snapshot.documents
             .mapNotNull { doc -> doc.data?.let { CatalogEntry.fromDocument(doc.id, it) } }
-            .flatMap { it.occurrences(from, days) }
+            .flatMap { it.occurrences(from, days, datedDays = UPCOMING_HORIZON_DAYS.toInt()) }
             .filter { distanceMeters(it.location, city.center) <= CATALOG_RADIUS_METERS }
     }
 

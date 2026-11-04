@@ -6,6 +6,7 @@ import com.citypulse.domain.model.TimeSlot
 import com.citypulse.domain.usecase.happeningNow
 import com.citypulse.domain.usecase.matches
 import com.citypulse.domain.usecase.nearbyInSlot
+import com.citypulse.domain.usecase.upcomingLater
 import com.citypulse.domain.usecase.upcomingThisWeek
 import com.citypulse.domain.usecase.withDistanceFrom
 import org.junit.Assert.assertEquals
@@ -29,6 +30,15 @@ class EventFiltersTest {
 
         assertEquals(listOf("live", "soon"), events.happeningNow(now).map { it.event.id })
         assertEquals(listOf("later"), events.upcomingThisWeek(now).map { it.event.id })
+    }
+
+    @Test
+    fun `mas adelante solo incluye lo que queda fuera de esta semana`() {
+        val events = listOf(
+            testEvent("d6", start = now.plusDays(6)),
+            testEvent("d12", start = now.plusDays(12)),
+        ).withDistanceFrom(com.citypulse.domain.model.GeoPoint(1.2147, -77.2783))
+        assertEquals(listOf("d12"), events.upcomingLater(now).map { it.event.id })
     }
 
     @Test
