@@ -50,6 +50,8 @@ class DatabaseMigrationTest {
             assertEquals("20 €", saved.getValue("pago").price)
             assertNull(saved.getValue("pago").priceMin)
             assertNull(saved.getValue("pago").priceEstimate)
+            // v6: los guardados anteriores no tienen zona; los avisos usan la del teléfono.
+            assertNull(saved.getValue("pago").zone)
             assertTrue(room.cachedEventDao().getByCity("Madrid|ES").isEmpty())
         }
     }

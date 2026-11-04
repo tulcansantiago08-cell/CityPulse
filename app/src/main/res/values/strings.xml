@@ -235,4 +235,10 @@
     <string name="profile_delete_confirm">Eliminar</string>
     <string name="profile_sign_out_body">Tus guardados seguirán en tu cuenta y se quitarán de este teléfono hasta que vuelvas a entrar.</string>
     <string name="saved_sign_in_hint">Inicia sesión para no perder tus guardados</string>
+
+    <!-- Recordatorios -->
+    <string name="reminder_channel_name">Recordatorios de eventos</string>
+    <string name="reminder_channel_description">Aviso una hora antes de los eventos que guardaste.</string>
+    <string name="reminder_title">%1$s empieza en 1 hora</string>
+    <string name="reminder_body">A las %1$s en %2$s</string>
 </resources>

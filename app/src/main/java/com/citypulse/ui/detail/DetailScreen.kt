@@ -87,6 +87,7 @@ import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.openUrl
 import com.citypulse.ui.common.openWalkingDirections
+import com.citypulse.ui.common.rememberNotificationPermissionRequester
 import com.citypulse.ui.common.shareMessage
 import com.citypulse.ui.common.shareText
 import com.citypulse.ui.common.toUi
@@ -99,11 +100,16 @@ import kotlinx.coroutines.launch
 fun DetailRoute(onBack: () -> Unit, viewModel: DetailViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val askNotifications = rememberNotificationPermissionRequester()
     DetailScreen(
         state = state,
         saved = state.saved,
         onBack = onBack,
-        onToggleSave = viewModel::toggleSaved,
+        onToggleSave = {
+            // Al guardar (no al quitar) se pide el permiso para el recordatorio.
+            if (!state.saved) askNotifications()
+            viewModel.toggleSaved()
+        },
         onShare = { state.event?.let { context.shareText(it.shareMessage()) } },
         onDirections = { state.event?.let { context.openWalkingDirections(it.latitude, it.longitude) } },
         onOpenEventPage = { state.event?.url?.let(context::openUrl) },

@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [SavedEventEntity::class, CachedEventEntity::class], version = 5, exportSchema = true)
+@Database(entities = [SavedEventEntity::class, CachedEventEntity::class], version = 6, exportSchema = true)
 abstract class CityPulseDatabase : RoomDatabase() {
     abstract fun savedEventDao(): SavedEventDao
     abstract fun cachedEventDao(): CachedEventDao
@@ -60,7 +60,14 @@ abstract class CityPulseDatabase : RoomDatabase() {
             }
         }
 
+        /** v6: zona horaria de los guardados, para los recordatorios. Los anteriores quedan sin zona. */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE saved_events ADD COLUMN zone TEXT")
+            }
+        }
+
         /** Todas las migraciones, en orden. La app y los tests usan la misma lista. */
-        val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
     }
 }

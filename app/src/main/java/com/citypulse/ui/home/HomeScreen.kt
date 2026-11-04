@@ -97,6 +97,7 @@ import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.CategoryOptions
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.formatMoney
+import com.citypulse.ui.common.rememberNotificationPermissionRequester
 import com.citypulse.ui.common.toUi
 import java.time.LocalDateTime
 
@@ -111,13 +112,18 @@ fun HomeRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val profile by profileViewModel.uiState.collectAsStateWithLifecycle()
+    val askNotifications = rememberNotificationPermissionRequester()
     HomeScreen(
         state = state,
         onOpenEvent = onOpenEvent,
         onChangeCity = onChangeCity,
         onSelectCategory = viewModel::selectCategory,
         onToggleFreeOnly = viewModel::toggleFreeOnly,
-        onToggleSave = viewModel::toggleSaved,
+        onToggleSave = { id ->
+            // Al guardar (no al quitar) se pide el permiso para el recordatorio.
+            if (id !in state.savedIds) askNotifications()
+            viewModel.toggleSaved(id)
+        },
         onRetry = viewModel::retry,
         onSelectBudget = viewModel::selectBudgetStep,
         onPreviewBudget = viewModel::previewBudgetStep,

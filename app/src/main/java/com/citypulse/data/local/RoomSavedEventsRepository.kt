@@ -6,6 +6,8 @@ import com.citypulse.data.local.db.toSavedEntity
 import com.citypulse.data.sync.SavedEventsCloudSync
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.repository.SavedEventsRepository
+import com.citypulse.domain.repository.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -16,12 +18,15 @@ import javax.inject.Singleton
 class RoomSavedEventsRepository @Inject constructor(
     private val dao: SavedEventDao,
     private val cloud: SavedEventsCloudSync,
+    private val preferences: UserPreferencesRepository,
 ) : SavedEventsRepository {
     override fun observeSaved(): Flow<List<Event>> = dao.observeAll().map { list -> list.map { it.toEvent() } }
     override fun observeSavedIds(): Flow<Set<String>> = dao.observeIds().map { it.toSet() }
 
     override suspend fun save(event: Event) {
-        val entity = event.toSavedEntity()
+        // Se guarda desde la ciudad elegida: su zona horaria sirve para avisar a la hora correcta.
+        val zone = preferences.preferences.first().city?.zone?.id
+        val entity = event.toSavedEntity(zone = zone)
         dao.insert(entity)
         cloud.upload(entity)
     }

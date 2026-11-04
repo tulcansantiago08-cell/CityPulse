@@ -131,6 +131,7 @@ internal fun SavedEventEntity.toCloud(): Map<String, Any?> = mapOf(
     "currency" to currency,
     "priceEstimate" to priceEstimate,
     "savedAt" to savedAt,
+    "zone" to zone,
 )
 
 /** `null` si al documento le falta algún dato obligatorio. */
@@ -155,5 +156,6 @@ internal fun DocumentSnapshot.toSavedEntity(): SavedEventEntity? = runCatching {
         currency = getString("currency"),
         priceEstimate = getString("priceEstimate"),
         savedAt = getLong("savedAt") ?: System.currentTimeMillis(),
+        zone = getString("zone"),
     )
 }.getOrNull()

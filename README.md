@@ -23,6 +23,7 @@ Proyecto académico.
 - **Mapa.** OpenStreetMap en tonos oscuros con un pin por evento (anillo naranja si está en curso).
 - **Ficha.** Hoja arrastrable con horario, precio, distancia, descripción, minimapa y botón *Cómo llegar* (Google Maps a pie).
 - **Guardados.** Se conservan en el dispositivo y se pueden ver sin conexión.
+- **Recordatorios.** Una notificación una hora antes de cada evento guardado, con la hora de la ciudad del evento (también tras reiniciar el teléfono).
 - **Sin conexión.** Las pestañas que necesitan red muestran un aviso con acceso directo a Guardados.
 - **Actualizar deslizando** hacia abajo en Inicio, y **"Quitar filtros"** cuando los filtros dejan la lista vacía.
 - **Entradas:** cada ficha indica cómo entrar: página de venta (Ticketmaster), búsqueda de entradas o *Entrada libre*.
