@@ -21,6 +21,7 @@ import com.citypulse.ui.about.AboutScreen
 import com.citypulse.ui.auth.AuthRoute as AuthScreenRoute
 import com.citypulse.ui.city.CityRoute
 import com.citypulse.ui.detail.DetailRoute
+import com.citypulse.ui.directions.DirectionsRoute
 import com.citypulse.ui.empty.LocationDeniedRoute
 import com.citypulse.ui.empty.OfflineScreen
 import com.citypulse.ui.home.HomeRoute
@@ -116,7 +117,13 @@ fun CityPulseNavHost(
                     onOpenEvent = { navController.navigate(DetailRoute(it)) },
                 )
             }
-            composable<DetailRoute> { DetailRoute(onBack = { navController.popBackStack() }) }
+            composable<DetailRoute> {
+                DetailRoute(
+                    onBack = { navController.popBackStack() },
+                    onOpenDirections = { navController.navigate(DirectionsRoute(it)) },
+                )
+            }
+            composable<DirectionsRoute> { DirectionsRoute(onBack = { navController.popBackStack() }) }
         }
 
         if (currentTab != null) {

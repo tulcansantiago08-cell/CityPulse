@@ -25,6 +25,8 @@ import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.LocationRepository
 import com.citypulse.domain.repository.SavedEventsRepository
 import com.citypulse.domain.repository.SurpriseRollsRepository
+import com.citypulse.domain.repository.RouteRepository
+import com.citypulse.data.remote.routing.OsrmRouteRepository
 import com.citypulse.domain.repository.UserPreferencesRepository
 import com.citypulse.domain.time.Clock
 import com.citypulse.domain.time.SystemClock
@@ -66,6 +68,9 @@ abstract class DataModule {
 
     @Binds
     abstract fun bindSurpriseRollsRepository(impl: DataStoreSurpriseRollsRepository): SurpriseRollsRepository
+
+    @Binds
+    abstract fun bindRouteRepository(impl: OsrmRouteRepository): RouteRepository
 
     companion object {
         @Provides
