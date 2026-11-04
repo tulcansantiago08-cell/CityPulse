@@ -109,7 +109,7 @@ La app funciona sin ella, pero solo mostrará el catálogo de Firestore.
    python3 scripts/seed_firestore.py
    ```
 
-   El script también borra de Firestore los eventos que ya no están en el archivo. Si las reglas de producción ya están publicadas (no permiten escribir), cámbialas un momento a `allow write: if true;` en `events`, ejecuta el script y vuelve a publicar [`firestore.rules`](firestore.rules).
+   El script también borra de Firestore los eventos de la lista `retired` del archivo. Si las reglas de producción ya están publicadas (no permiten escribir), cámbialas un momento a `allow write: if true;` en `events`, ejecuta el script y vuelve a publicar [`firestore.rules`](firestore.rules).
 
 5. Publica las reglas de [`firestore.rules`](firestore.rules) en Firestore → Reglas: el catálogo es de solo lectura y cada cuenta solo puede leer y cambiar sus propios guardados.
 6. Authentication → *Comenzar* → *Método de acceso* → activa **Correo electrónico/contraseña** (para la cuenta opcional).
