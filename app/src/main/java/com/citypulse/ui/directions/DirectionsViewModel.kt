@@ -18,6 +18,7 @@ import com.citypulse.domain.usecase.ARRIVED_METERS
 import com.citypulse.domain.usecase.REFRESH_OTHER_MODES_METERS
 import com.citypulse.domain.usecase.REROUTE_METERS
 import com.citypulse.domain.usecase.defaultTravelMode
+import com.citypulse.domain.usecase.directionsPlaceQuery
 import com.citypulse.domain.usecase.straightLineRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -35,6 +36,8 @@ data class Destination(
     val venue: String,
     val category: Category,
     val location: GeoPoint,
+    /** Cómo buscar el lugar en Google Maps; `null` si no se sabe la ciudad: se usan las coordenadas. */
+    val placeQuery: String? = null,
 )
 
 data class DirectionsUiState(
@@ -91,6 +94,11 @@ class DirectionsViewModel @Inject constructor(
                 it.copy(loading = false, destination = Destination(event.title, event.venue, event.category, event.location))
             }
             retryLocation()
+            // Después de empezar la ruta: resolver la ciudad puede tardar y no debe retrasarla.
+            val city = runCatching { location.cityAt(event.location) }.getOrNull()
+            _uiState.update { state ->
+                state.copy(destination = state.destination?.copy(placeQuery = directionsPlaceQuery(event.venue, city?.name)))
+            }
         }
     }
 
