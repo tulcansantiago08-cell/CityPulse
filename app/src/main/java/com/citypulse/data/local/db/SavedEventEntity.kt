@@ -32,9 +32,11 @@ data class SavedEventEntity(
     /** "Local" o "Ai" si el precio es estimado (ver [PriceEstimate]). */
     val priceEstimate: String? = null,
     val savedAt: Long,
+    /** Zona horaria de la ciudad del evento ("Europe/Madrid"), para avisar a la hora correcta. */
+    val zone: String? = null,
 )
 
-fun Event.toSavedEntity(savedAt: Long = System.currentTimeMillis()) = SavedEventEntity(
+fun Event.toSavedEntity(savedAt: Long = System.currentTimeMillis(), zone: String? = null) = SavedEventEntity(
     id = id,
     title = title,
     category = category.name,
@@ -54,6 +56,7 @@ fun Event.toSavedEntity(savedAt: Long = System.currentTimeMillis()) = SavedEvent
     currency = currency,
     priceEstimate = priceEstimate?.name,
     savedAt = savedAt,
+    zone = zone,
 )
 
 fun SavedEventEntity.toEvent() = Event(

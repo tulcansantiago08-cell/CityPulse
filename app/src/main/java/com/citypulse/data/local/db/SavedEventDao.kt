@@ -26,6 +26,9 @@ interface SavedEventDao {
     @Query("SELECT * FROM saved_events")
     suspend fun getAll(): List<SavedEventEntity>
 
+    @Query("SELECT * FROM saved_events WHERE id = :id LIMIT 1")
+    suspend fun get(id: String): SavedEventEntity?
+
     @Query("DELETE FROM saved_events")
     suspend fun deleteAll()
 }
