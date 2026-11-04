@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [SavedEventEntity::class, CachedEventEntity::class], version = 5, exportSchema = false)
+@Database(entities = [SavedEventEntity::class, CachedEventEntity::class], version = 5, exportSchema = true)
 abstract class CityPulseDatabase : RoomDatabase() {
     abstract fun savedEventDao(): SavedEventDao
     abstract fun cachedEventDao(): CachedEventDao
@@ -49,6 +49,7 @@ abstract class CityPulseDatabase : RoomDatabase() {
             }
         }
 
+        /** v5: si el precio es estimado (local o por la IA). */
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 for (table in listOf("saved_events", "cached_events")) {
@@ -58,5 +59,8 @@ abstract class CityPulseDatabase : RoomDatabase() {
                 db.execSQL("DELETE FROM cached_events")
             }
         }
+
+        /** Todas las migraciones, en orden. La app y los tests usan la misma lista. */
+        val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
     }
 }

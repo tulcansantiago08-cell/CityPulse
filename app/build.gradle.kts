@@ -54,6 +54,12 @@ android {
     }
 }
 
+// Room guarda el esquema de cada versión de la base de datos en app/schemas (se versiona en git),
+// para ver en cada cambio qué tablas cambiaron y escribir la migración correspondiente.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     // AndroidX
     implementation(libs.androidx.core.ktx)
@@ -112,6 +118,8 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
