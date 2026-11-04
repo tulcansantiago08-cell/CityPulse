@@ -7,16 +7,21 @@ import com.citypulse.domain.geo.distanceMeters
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.GeoPoint
-import com.citypulse.domain.model.WalkingRoute
+import com.citypulse.domain.model.NoRouteException
+import com.citypulse.domain.model.TravelMode
+import com.citypulse.domain.model.TravelRoute
 import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.LocationRepository
 import com.citypulse.domain.repository.RouteRepository
 import com.citypulse.domain.repository.SavedEventsRepository
 import com.citypulse.domain.usecase.ARRIVED_METERS
+import com.citypulse.domain.usecase.REFRESH_OTHER_MODES_METERS
 import com.citypulse.domain.usecase.REROUTE_METERS
+import com.citypulse.domain.usecase.defaultTravelMode
 import com.citypulse.domain.usecase.straightLineRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,16 +44,22 @@ data class DirectionsUiState(
     /** Posición del usuario en vivo; `null` sin permiso de ubicación o mientras se obtiene. */
     val user: GeoPoint? = null,
     val locationUnavailable: Boolean = false,
-    /** Ruta por las calles (o la línea recta si no se pudo calcular). */
-    val route: WalkingRoute? = null,
-    val calculating: Boolean = false,
+    val selectedMode: TravelMode = TravelMode.WALK,
+    /** Ruta de cada modo ya consultado (o la línea recta si no se pudo calcular). */
+    val routes: Map<TravelMode, TravelRoute> = emptyMap(),
+    val calculatingModes: Set<TravelMode> = emptySet(),
     /** Está a menos de [ARRIVED_METERS] del destino. */
     val arrived: Boolean = false,
-)
+) {
+    val route: TravelRoute? get() = routes[selectedMode]
+    val calculating: Boolean get() = selectedMode in calculatingModes
+}
 
 /**
- * Ruta a pie hasta un evento con la ubicación del usuario en vivo. La ruta se calcula al entrar
- * y se recalcula si el usuario se aleja más de [REROUTE_METERS] del punto de partida.
+ * Rutas hasta un evento desde la ubicación del usuario en vivo, sea cual sea la ciudad donde esté.
+ * El modo elegido se recalcula si el usuario se aleja más de [REROUTE_METERS] del punto de partida;
+ * los demás se piden para mostrar su tiempo y solo se actualizan al elegirlos o tras un cambio
+ * grande de posición: así no se sobrecarga el servidor de rutas mientras el usuario camina.
  */
 @HiltViewModel
 class DirectionsViewModel @Inject constructor(
@@ -64,8 +75,10 @@ class DirectionsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DirectionsUiState())
     val uiState: StateFlow<DirectionsUiState> = _uiState.asStateFlow()
 
-    /** Punto desde el que se calculó la ruta actual. */
-    private var routedFrom: GeoPoint? = null
+    /** Punto desde el que se calculó la ruta de cada modo. */
+    private val routedFrom = mutableMapOf<TravelMode, GeoPoint>()
+    private var locationJob: Job? = null
+    private var modeChosen = false
 
     init {
         viewModelScope.launch {
@@ -74,30 +87,81 @@ class DirectionsViewModel @Inject constructor(
                 _uiState.update { it.copy(loading = false) }
                 return@launch
             }
-            val destination = Destination(event.title, event.venue, event.category, event.location)
-            _uiState.update { it.copy(loading = false, destination = destination) }
-            location.observePreciseLocation().collect { user -> onLocation(user, destination.location) }
+            _uiState.update {
+                it.copy(loading = false, destination = Destination(event.title, event.venue, event.category, event.location))
+            }
+            retryLocation()
         }
+    }
+
+    /** Vuelve a escuchar la ubicación, p. ej. después de conceder el permiso. */
+    fun retryLocation() {
+        val target = _uiState.value.destination?.location ?: return
+        locationJob?.cancel()
+        locationJob = viewModelScope.launch {
+            location.observePreciseLocation().collect { user -> onLocation(user, target) }
+        }
+    }
+
+    fun selectMode(mode: TravelMode) {
+        modeChosen = true
+        _uiState.update { it.copy(selectedMode = mode) }
+        val state = _uiState.value
+        val user = state.user ?: return
+        val target = state.destination?.location ?: return
+        viewModelScope.launch { refresh(mode, user, target) }
     }
 
     private suspend fun findEvent(): Event? =
         events.getEvent(eventId) ?: savedEvents.observeSaved().first().firstOrNull { it.id == eventId }
 
-    private suspend fun onLocation(user: GeoPoint?, destination: GeoPoint) {
+    private fun onLocation(user: GeoPoint?, destination: GeoPoint) {
         if (user == null) {
             _uiState.update { it.copy(user = null, locationUnavailable = true) }
             return
         }
         _uiState.update {
-            it.copy(user = user, locationUnavailable = false, arrived = distanceMeters(user, destination) <= ARRIVED_METERS)
+            it.copy(
+                user = user,
+                locationUnavailable = false,
+                arrived = distanceMeters(user, destination) <= ARRIVED_METERS,
+                selectedMode = if (modeChosen || it.user != null) it.selectedMode else defaultTravelMode(user, destination),
+            )
         }
-        val from = routedFrom
-        // Si la última vez solo hubo línea recta (sin conexión), se vuelve a intentar en cada actualización.
-        val routeIsExact = _uiState.value.route?.exact == true
-        if (from != null && routeIsExact && distanceMeters(from, user) <= REROUTE_METERS) return
-        routedFrom = user
-        _uiState.update { it.copy(calculating = true, route = it.route ?: straightLineRoute(user, destination)) }
-        val route = routes.walkingRoute(user, destination).getOrElse { straightLineRoute(user, destination) }
-        _uiState.update { it.copy(route = route, calculating = false) }
+        viewModelScope.launch {
+            val selected = _uiState.value.selectedMode
+            refresh(selected, user, destination)
+            // Sin conexión no se insiste con los demás: se piden cuando el modo elegido vuelva a funcionar.
+            val failed = _uiState.value.routes[selected]?.takeIf { selected.routedInApp }
+            if (failed != null && !failed.exact && failed.reachable) return@launch
+            TravelMode.entries
+                .filter { mode -> mode != selected && routedFrom[mode]?.let { distanceMeters(it, user) > REFRESH_OTHER_MODES_METERS } != false }
+                .forEach { refresh(it, user, destination) }
+        }
+    }
+
+    private suspend fun refresh(mode: TravelMode, user: GeoPoint, destination: GeoPoint) {
+        if (!mode.routedInApp || mode in _uiState.value.calculatingModes || !isStale(mode, user)) return
+        routedFrom[mode] = user
+        _uiState.update {
+            it.copy(
+                calculatingModes = it.calculatingModes + mode,
+                routes = if (mode in it.routes) it.routes else it.routes + (mode to straightLineRoute(user, destination)),
+            )
+        }
+        val route = routes.route(user, destination, mode).getOrElse { error ->
+            straightLineRoute(user, destination, reachable = error !is NoRouteException)
+        }
+        _uiState.update { it.copy(routes = it.routes + (mode to route), calculatingModes = it.calculatingModes - mode) }
+        // Si el usuario se movió durante el cálculo, puede que no llegue otra actualización de posición.
+        val latest = _uiState.value.user
+        if (latest != null && latest != user && distanceMeters(user, latest) > REROUTE_METERS) refresh(mode, latest, destination)
+    }
+
+    /** Si la última vez solo hubo línea recta por falta de conexión, se vuelve a intentar. */
+    private fun isStale(mode: TravelMode, user: GeoPoint): Boolean {
+        val from = routedFrom[mode] ?: return true
+        val route = _uiState.value.routes[mode] ?: return true
+        return (!route.exact && route.reachable) || distanceMeters(from, user) > REROUTE_METERS
     }
 }

@@ -5,13 +5,17 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
- * Servidor de rutas OSRM de FOSSGIS con el perfil a pie (datos de OpenStreetMap).
- * Gratuito y sin clave; sus normas piden identificar la app y no pasar de una petición por segundo.
+ * Servidores de rutas OSRM de FOSSGIS, uno por perfil (datos de OpenStreetMap).
+ * Gratuitos y sin clave; sus normas piden identificar la app y no pasar de una petición por segundo.
  */
 interface OsrmApi {
-    /** [coordinates]: "lng,lat;lng,lat" (origen y destino). */
-    @GET("routed-foot/route/v1/foot/{coordinates}")
+    /**
+     * [server]: "routed-foot", "routed-bike" o "routed-car". [coordinates]: "lng,lat;lng,lat"
+     * (origen y destino). Cada servidor tiene un único perfil, que se llama "driving" en la URL.
+     */
+    @GET("{server}/route/v1/driving/{coordinates}")
     suspend fun route(
+        @Path("server") server: String,
         @Path("coordinates", encoded = true) coordinates: String,
         @Query("overview") overview: String = "full",
         @Query("geometries") geometries: String = "geojson",

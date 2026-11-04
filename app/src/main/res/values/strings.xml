@@ -183,12 +183,12 @@
     <string name="about_data_title">DE DÓNDE SALEN LOS DATOS</string>
     <string name="about_data_tm">Ticketmaster: conciertos, espectáculos y la venta de entradas.</string>
     <string name="about_data_catalog">Catálogo propio (Firebase): mercados, ferias y planes gratuitos. Son datos de demostración; los horarios y precios pueden no coincidir con la realidad.</string>
-    <string name="about_data_osm">Mapas © colaboradores de OpenStreetMap. Rutas a pie calculadas con OSRM (servidor de FOSSGIS).</string>
+    <string name="about_data_osm">Mapas © colaboradores de OpenStreetMap. Rutas a pie, en bici y en carro calculadas con OSRM (servidor de FOSSGIS).</string>
     <string name="about_data_images">Imágenes de ejemplo de Unsplash. Navegación por voz con Google Maps.</string>
     <string name="about_ai_title">INTELIGENCIA ARTIFICIAL</string>
     <string name="about_ai_body">La búsqueda, los resúmenes y las frases de Sorpresa usan Gemini de Google. La IA solo interpreta lo que escribes y redacta textos: los eventos siempre salen de los datos reales. Puede equivocarse; revisa la ficha antes de ir.</string>
     <string name="about_privacy_title">TUS DATOS</string>
-    <string name="about_privacy_body">Tu ubicación se usa en el teléfono para calcular distancias y no se guarda en ningún servidor; solo al abrir la ruta a pie se envía, junto con la del destino, al servidor de rutas de OSRM (FOSSGIS) para calcular el camino. Tus preferencias se quedan en el dispositivo. Tus guardados también, salvo que inicies sesión: entonces se copian en tu cuenta de Firebase (Google) junto con tu nombre y tu correo, para verlos en otros móviles. Puedes borrarlo todo en Tu cuenta → Eliminar cuenta. Lo que escribes en la búsqueda con IA y la información de los eventos que resumes se envían a Google para procesarlos.</string>
+    <string name="about_privacy_body">Tu ubicación se usa en el teléfono para calcular distancias y no se guarda en ningún servidor; solo al abrir la ruta hasta un evento se envía, junto con la del destino, al servidor de rutas de OSRM (FOSSGIS) para calcular el camino. Tus preferencias se quedan en el dispositivo. Tus guardados también, salvo que inicies sesión: entonces se copian en tu cuenta de Firebase (Google) junto con tu nombre y tu correo, para verlos en otros móviles. Puedes borrarlo todo en Tu cuenta → Eliminar cuenta. Lo que escribes en la búsqueda con IA y la información de los eventos que resumes se envían a Google para procesarlos.</string>
     <string name="about_osm_link">Licencia de OpenStreetMap</string>
     <string name="about_code_link">Código fuente en GitHub</string>
 
@@ -242,8 +242,19 @@
     <string name="reminder_title">%1$s empieza en 1 hora</string>
     <string name="reminder_body">A las %1$s en %2$s</string>
 
-    <!-- Ruta a pie -->
-    <string name="directions_summary">%1 min a pie · %2</string>
+    <!-- Cómo llegar -->
+    <string name="directions_summary">%1$s · %2$s</string>
+    <string name="directions_straight_summary">%1$s en línea recta</string>
+    <string name="directions_arrival">Llegas hacia las %1$s</string>
+    <string name="directions_arrival_no_traffic">Llegas hacia las %1$s · estimado, sin tráfico en tiempo real</string>
+    <string name="directions_no_road">No hay ruta por las calles desde donde estás hasta este lugar.</string>
+    <string name="directions_mode_walk">A pie</string>
+    <string name="directions_mode_bike">En bici</string>
+    <string name="directions_mode_car">En carro</string>
+    <string name="directions_mode_transit">Transporte público</string>
+    <string name="directions_transit_summary">Líneas y horarios en Google Maps</string>
+    <string name="directions_open_transit">Ver transporte en Google Maps</string>
+    <string name="directions_allow_location">Permitir ubicación</string>
     <string name="directions_locating">Buscando tu ubicación…</string>
     <string name="directions_no_location">Activa la ubicación para ver la ruta desde donde estás</string>
     <string name="directions_arrived">¡Has llegado!</string>
