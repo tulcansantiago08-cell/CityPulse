@@ -33,4 +33,5 @@ class RoomSavedEventsRepository @Inject constructor(
 
     override suspend fun isSaved(eventId: String): Boolean = dao.exists(eventId)
     override suspend fun clearLocal() = dao.deleteAll()
+    override suspend fun clearCloud() = cloud.deleteAll()
 }

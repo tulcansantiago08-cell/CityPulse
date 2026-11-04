@@ -245,7 +245,7 @@ private fun ModeTabs(mode: AuthMode, onModeChange: (AuthMode) -> Unit, modifier:
 }
 
 @Composable
-private fun AuthField(
+internal fun AuthField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -281,7 +281,7 @@ private fun AuthField(
 }
 
 @Composable
-private fun AuthFormError.message(): String = stringResource(
+internal fun AuthFormError.message(): String = stringResource(
     when (this) {
         AuthFormError.NameRequired -> R.string.auth_error_name
         AuthFormError.InvalidEmail -> R.string.auth_error_email

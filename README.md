@@ -24,7 +24,7 @@ Proyecto académico.
 - **Sin conexión.** Las pestañas que necesitan red muestran un aviso con acceso directo a Guardados.
 - **Actualizar deslizando** hacia abajo en Inicio, y **"Quitar filtros"** cuando los filtros dejan la lista vacía.
 - **Entradas:** cada ficha indica cómo entrar: página de venta (Ticketmaster), búsqueda de entradas o *Entrada libre*.
-- **Cuenta (opcional).** Registro e inicio de sesión con correo y contraseña, recuperación de contraseña y pantalla de perfil. Con sesión iniciada, los guardados se copian en la nube y aparecen en cualquier móvil con la misma cuenta; sin cuenta la app funciona igual.
+- **Cuenta (opcional).** Registro e inicio de sesión con correo y contraseña, recuperación de contraseña, pantalla de perfil y opción de eliminar la cuenta (borra también sus guardados en la nube y en el teléfono). Con sesión iniciada, los guardados se copian en la nube y aparecen en cualquier móvil con la misma cuenta; sin cuenta la app funciona igual.
 - **Acerca de:** créditos de las fuentes de datos, uso de la IA y privacidad.
 - **IA (Gemini).** Búsqueda en lenguaje natural ("algo gratis para esta noche"), resumen y traducción de la descripción en la ficha, y una frase que explica cada Sorpresa. La IA solo interpreta y redacta: los eventos siempre salen de los datos reales. Sin IA, la búsqueda entiende lo básico en el propio teléfono.
 

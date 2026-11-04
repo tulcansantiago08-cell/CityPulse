@@ -67,6 +67,12 @@ class FakeSaved : SavedEventsRepository {
     override suspend fun remove(eventId: String) = saved.update { it - eventId }
     override suspend fun isSaved(eventId: String) = eventId in saved.value
     override suspend fun clearLocal() = saved.update { emptyMap() }
+    var cloudCleared = false
+    var failCloud = false
+    override suspend fun clearCloud() {
+        if (failCloud) error("Sin conexión")
+        cloudCleared = true
+    }
 }
 
 class FakeRolls(today: LocalDate) : SurpriseRollsRepository {
@@ -102,4 +108,8 @@ class FakeAuth(var failWith: com.citypulse.domain.repository.AuthError? = null) 
     }
     override suspend fun sendPasswordReset(email: String) { check(); resetRequests += email }
     override suspend fun signOut() { user.value = null }
+    val reauthPasswords = mutableListOf<String>()
+    var deleted = false
+    override suspend fun reauthenticate(password: String) { check(); reauthPasswords += password }
+    override suspend fun deleteAccount() { check(); deleted = true; user.value = null }
 }

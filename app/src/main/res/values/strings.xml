@@ -188,7 +188,7 @@
     <string name="about_ai_title">INTELIGENCIA ARTIFICIAL</string>
     <string name="about_ai_body">La búsqueda, los resúmenes y las frases de Sorpresa usan Gemini de Google. La IA solo interpreta lo que escribes y redacta textos: los eventos siempre salen de los datos reales. Puede equivocarse; revisa la ficha antes de ir.</string>
     <string name="about_privacy_title">TUS DATOS</string>
-    <string name="about_privacy_body">Tu ubicación se usa en el teléfono para calcular distancias y no se guarda en ningún servidor. Tus preferencias se quedan en el dispositivo. Tus guardados también, salvo que inicies sesión: entonces se copian en tu cuenta de Firebase (Google) junto con tu nombre y tu correo, para verlos en otros móviles. Lo que escribes en la búsqueda con IA y la información de los eventos que resumes se envían a Google para procesarlos.</string>
+    <string name="about_privacy_body">Tu ubicación se usa en el teléfono para calcular distancias y no se guarda en ningún servidor. Tus preferencias se quedan en el dispositivo. Tus guardados también, salvo que inicies sesión: entonces se copian en tu cuenta de Firebase (Google) junto con tu nombre y tu correo, para verlos en otros móviles. Puedes borrarlo todo en Tu cuenta → Eliminar cuenta. Lo que escribes en la búsqueda con IA y la información de los eventos que resumes se envían a Google para procesarlos.</string>
     <string name="about_osm_link">Licencia de OpenStreetMap</string>
     <string name="about_code_link">Código fuente en GitHub</string>
 
@@ -229,6 +229,10 @@
     <string name="profile_synced">Tus guardados se sincronizan con tu cuenta</string>
     <string name="profile_sign_out">Cerrar sesión</string>
     <string name="profile_sign_out_title">¿Cerrar sesión?</string>
+    <string name="profile_delete">Eliminar cuenta</string>
+    <string name="profile_delete_title">¿Eliminar tu cuenta?</string>
+    <string name="profile_delete_body">Se borrarán tu cuenta y los eventos guardados en ella, también los de este teléfono. No se puede deshacer. Escribe tu contraseña para confirmar.</string>
+    <string name="profile_delete_confirm">Eliminar</string>
     <string name="profile_sign_out_body">Tus guardados seguirán en tu cuenta y se quitarán de este teléfono hasta que vuelvas a entrar.</string>
     <string name="saved_sign_in_hint">Inicia sesión para no perder tus guardados</string>
 </resources>

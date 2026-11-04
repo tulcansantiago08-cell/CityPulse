@@ -101,7 +101,7 @@ private val EmailRegex = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$")
 
 internal fun isValidEmail(email: String) = EmailRegex.matches(email)
 
-private fun AuthError.toFormError() = when (this) {
+internal fun AuthError.toFormError() = when (this) {
     AuthError.InvalidCredentials -> AuthFormError.InvalidCredentials
     AuthError.EmailInUse -> AuthFormError.EmailInUse
     AuthError.WeakPassword -> AuthFormError.WeakPassword

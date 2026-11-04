@@ -6,6 +6,7 @@ import com.citypulse.domain.repository.AuthException
 import com.citypulse.domain.repository.AuthRepository
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
@@ -59,6 +60,15 @@ class FirebaseAuthRepository @Inject constructor() : AuthRepository {
     }
 
     override suspend fun signOut() = auth.signOut()
+
+    override suspend fun reauthenticate(password: String): Unit = mapErrors {
+        val user = checkNotNull(auth.currentUser) { "No hay sesión iniciada" }
+        user.reauthenticate(EmailAuthProvider.getCredential(user.email.orEmpty(), password)).await()
+    }
+
+    override suspend fun deleteAccount(): Unit = mapErrors {
+        checkNotNull(auth.currentUser) { "No hay sesión iniciada" }.delete().await()
+    }
 
     private inline fun <T> mapErrors(block: () -> T): T = try {
         block()
