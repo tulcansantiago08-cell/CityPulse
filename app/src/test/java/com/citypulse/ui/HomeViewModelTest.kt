@@ -2,6 +2,7 @@ package com.citypulse.ui
 
 import app.cash.turbine.test
 import com.citypulse.data.fake.FakeEventRepository
+import com.citypulse.data.fake.SampleData
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.usecase.ObserveCityEvents
@@ -47,8 +48,11 @@ class HomeViewModelTest {
 
     @Test
     fun `en curso se calcula con la hora de la ciudad y no con la del telefono`() = runTest {
-        // 14:30 en Bogotá son las 21:30 en Madrid (octubre: UTC-5 frente a UTC+2).
-        val fromBogota = FixedClock(now.toLocalDate().atTime(14, 30), ZoneId.of("America/Bogota"))
+        // El mismo instante que las 21:30 de Madrid, visto desde un teléfono en Bogotá (14:30 o 15:30,
+        // según el horario de verano de Madrid). Se calcula para que el test valga todo el año.
+        val bogota = ZoneId.of("America/Bogota")
+        val bogotaTime = now.atZone(SampleData.Madrid.zone).withZoneSameInstant(bogota).toLocalDateTime()
+        val fromBogota = FixedClock(bogotaTime, bogota)
         val vm = HomeViewModel(
             ObserveCityEvents(prefs, events, FakeLocation()),
             events, prefs, saved, ToggleSavedEvent(events, saved), fromBogota,
