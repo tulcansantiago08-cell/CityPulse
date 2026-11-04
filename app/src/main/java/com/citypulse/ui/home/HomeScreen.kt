@@ -113,7 +113,11 @@ fun HomeRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val profile by profileViewModel.uiState.collectAsStateWithLifecycle()
     val askNotifications = rememberNotificationPermissionRequester()
+    val suggestedCity by viewModel.citySuggestion.collectAsStateWithLifecycle()
     HomeScreen(
+        suggestedCity = suggestedCity?.name,
+        onAcceptCity = viewModel::acceptCitySuggestion,
+        onDismissCity = viewModel::dismissCitySuggestion,
         state = state,
         onOpenEvent = onOpenEvent,
         onChangeCity = onChangeCity,
@@ -153,6 +157,9 @@ fun HomeScreen(
     onAccount: () -> Unit = {},
     accountInitial: String? = null,
     onClearFilters: () -> Unit = {},
+    suggestedCity: String? = null,
+    onAcceptCity: () -> Unit = {},
+    onDismissCity: () -> Unit = {},
 ) {
     val pullState = rememberPullToRefreshState()
     PullToRefreshBox(
@@ -175,6 +182,9 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 120.dp),
         ) {
             item { Header(state, onChangeCity, onAccount, accountInitial) }
+            suggestedCity?.let { city ->
+                item { CitySuggestionBanner(city, onAcceptCity, onDismissCity) }
+            }
             item { AskBar(onAsk) }
             item {
                 LazyRow(
@@ -265,6 +275,32 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+/** "Estás en Pasto": la ubicación no coincide con la ciudad elegida. */
+@Composable
+private fun CitySuggestionBanner(city: String, onAccept: () -> Unit, onDismiss: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 12.dp)
+            .background(CpColors.Surface, RoundedCornerShape(16.dp))
+            .padding(start = 16.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(stringResource(R.string.home_city_suggestion, city), color = Color.White, modifier = Modifier.weight(1f))
+        Text(
+            stringResource(R.string.home_city_suggestion_dismiss),
+            color = CpColors.TextTertiary,
+            modifier = Modifier.clickable(onClick = onDismiss).padding(10.dp),
+        )
+        Text(
+            stringResource(R.string.home_city_suggestion_accept),
+            color = CpColors.Cyan,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.clickable(onClick = onAccept).padding(10.dp),
+        )
     }
 }
 

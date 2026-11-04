@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.geo.distanceMeters
 import com.citypulse.domain.model.Category
+import com.citypulse.domain.model.City
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.model.NoRouteException
@@ -14,13 +15,16 @@ import com.citypulse.domain.repository.EventRepository
 import com.citypulse.domain.repository.LocationRepository
 import com.citypulse.domain.repository.RouteRepository
 import com.citypulse.domain.repository.SavedEventsRepository
+import com.citypulse.domain.repository.UserPreferencesRepository
 import com.citypulse.domain.usecase.ARRIVED_METERS
+import com.citypulse.domain.usecase.MAX_USER_DISTANCE_FROM_CITY_METERS
 import com.citypulse.domain.usecase.REFRESH_OTHER_MODES_METERS
 import com.citypulse.domain.usecase.REROUTE_METERS
 import com.citypulse.domain.usecase.defaultTravelMode
 import com.citypulse.domain.usecase.directionsPlaceQuery
 import com.citypulse.domain.usecase.straightLineRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,6 +50,14 @@ data class DirectionsUiState(
     val destination: Destination? = null,
     /** Posición del usuario en vivo; `null` sin permiso de ubicación o mientras se obtiene. */
     val user: GeoPoint? = null,
+    /** Punto de partida de la ruta: el usuario o, si está muy lejos, el centro de la ciudad del evento. */
+    val origin: GeoPoint? = null,
+    /** Ciudad cuyo centro es el punto de partida, porque el usuario está lejos; si no, `null`. */
+    val exploringCity: String? = null,
+    /** Cómo nombrar ese punto de partida en Google Maps: con coordenadas mostraría el negocio más cercano. */
+    val exploringOrigin: String? = null,
+    /** Zona horaria de la ciudad del evento, la misma de Inicio; `null` si no se conoce. */
+    val zone: ZoneId? = null,
     val locationUnavailable: Boolean = false,
     val selectedMode: TravelMode = TravelMode.WALK,
     /** Ruta de cada modo ya consultado (o la línea recta si no se pudo calcular). */
@@ -71,6 +83,7 @@ class DirectionsViewModel @Inject constructor(
     private val savedEvents: SavedEventsRepository,
     private val location: LocationRepository,
     private val routes: RouteRepository,
+    private val preferences: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val eventId: String = checkNotNull(savedStateHandle.get<String>("eventId"))
@@ -83,6 +96,10 @@ class DirectionsViewModel @Inject constructor(
     private var locationJob: Job? = null
     private var modeChosen = false
 
+    /** Ciudad del evento, para partir de su centro si el usuario está lejos. */
+    private var eventCity: City? = null
+    private var lastLocation: GeoPoint? = null
+
     init {
         viewModelScope.launch {
             val event = findEvent()
@@ -93,11 +110,19 @@ class DirectionsViewModel @Inject constructor(
             _uiState.update {
                 it.copy(loading = false, destination = Destination(event.title, event.venue, event.category, event.location))
             }
+            // Normalmente es la ciudad elegida, que se conoce al momento.
+            eventCity = preferences.preferences.first().city?.takeIf { it.isCityOf(event.location) }
+            _uiState.update { it.copy(zone = eventCity?.zone) }
             retryLocation()
             // Después de empezar la ruta: resolver la ciudad puede tardar y no debe retrasarla.
             val city = runCatching { location.cityAt(event.location) }.getOrNull()
             _uiState.update { state ->
                 state.copy(destination = state.destination?.copy(placeQuery = directionsPlaceQuery(event.venue, city?.name)))
+            }
+            if (eventCity == null && city?.isCityOf(event.location) == true) {
+                eventCity = city
+                _uiState.update { it.copy(zone = city.zone) }
+                lastLocation?.let { onLocation(it, event.location) }
             }
         }
     }
@@ -115,36 +140,47 @@ class DirectionsViewModel @Inject constructor(
         modeChosen = true
         _uiState.update { it.copy(selectedMode = mode) }
         val state = _uiState.value
-        val user = state.user ?: return
+        val origin = state.origin ?: return
         val target = state.destination?.location ?: return
-        viewModelScope.launch { refresh(mode, user, target) }
+        viewModelScope.launch { refresh(mode, origin, target) }
     }
+
+    /** Ciudad con centro cerca del evento. Una desconocida tiene su centro en el propio punto: no sirve de partida. */
+    private fun City.isCityOf(point: GeoPoint) =
+        distanceMeters(center, point).let { it > ARRIVED_METERS && it <= MAX_USER_DISTANCE_FROM_CITY_METERS }
 
     private suspend fun findEvent(): Event? =
         events.getEvent(eventId) ?: savedEvents.observeSaved().first().firstOrNull { it.id == eventId }
 
     private fun onLocation(user: GeoPoint?, destination: GeoPoint) {
+        lastLocation = user
         if (user == null) {
-            _uiState.update { it.copy(user = null, locationUnavailable = true) }
+            _uiState.update { it.copy(user = null, origin = null, exploringCity = null, exploringOrigin = null, locationUnavailable = true) }
             return
         }
+        val exploring = eventCity?.takeIf { distanceMeters(user, destination) > MAX_USER_DISTANCE_FROM_CITY_METERS }
+        val origin = exploring?.center ?: user
         _uiState.update {
             it.copy(
-                user = user,
+                // Lejos, el punto del usuario no se dibuja: el mapa tendría que abarcar medio mundo.
+                user = user.takeIf { exploring == null },
+                origin = origin,
+                exploringCity = exploring?.name,
+                exploringOrigin = exploring?.let { city -> listOf(city.name, city.country).filter(String::isNotBlank).joinToString(", ") },
                 locationUnavailable = false,
                 arrived = distanceMeters(user, destination) <= ARRIVED_METERS,
-                selectedMode = if (modeChosen || it.user != null) it.selectedMode else defaultTravelMode(user, destination),
+                selectedMode = if (modeChosen || it.origin != null) it.selectedMode else defaultTravelMode(origin, destination),
             )
         }
         viewModelScope.launch {
             val selected = _uiState.value.selectedMode
-            refresh(selected, user, destination)
+            refresh(selected, origin, destination)
             // Sin conexión no se insiste con los demás: se piden cuando el modo elegido vuelva a funcionar.
             val failed = _uiState.value.routes[selected]?.takeIf { selected.routedInApp }
             if (failed != null && !failed.exact && failed.reachable) return@launch
             TravelMode.entries
-                .filter { mode -> mode != selected && routedFrom[mode]?.let { distanceMeters(it, user) > REFRESH_OTHER_MODES_METERS } != false }
-                .forEach { refresh(it, user, destination) }
+                .filter { mode -> mode != selected && routedFrom[mode]?.let { distanceMeters(it, origin) > REFRESH_OTHER_MODES_METERS } != false }
+                .forEach { refresh(it, origin, destination) }
         }
     }
 
@@ -162,7 +198,7 @@ class DirectionsViewModel @Inject constructor(
         }
         _uiState.update { it.copy(routes = it.routes + (mode to route), calculatingModes = it.calculatingModes - mode) }
         // Si el usuario se movió durante el cálculo, puede que no llegue otra actualización de posición.
-        val latest = _uiState.value.user
+        val latest = _uiState.value.origin
         if (latest != null && latest != user && distanceMeters(user, latest) > REROUTE_METERS) refresh(mode, latest, destination)
     }
 

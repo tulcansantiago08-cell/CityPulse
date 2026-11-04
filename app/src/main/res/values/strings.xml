@@ -58,6 +58,9 @@
     <string name="price_up_to">Hasta %1$s</string>
     <string name="home_this_week">Esta semana</string>
     <string name="home_later">Más adelante</string>
+    <string name="home_city_suggestion">Estás en %1$s</string>
+    <string name="home_city_suggestion_accept">Cambiar</string>
+    <string name="home_city_suggestion_dismiss">Ahora no</string>
     <string name="home_nothing_live">Nada en curso con estos filtros.</string>
     <string name="home_nothing_this_week">No hay más eventos esta semana con estos filtros.</string>
     <string name="home_load_error_title">No pudimos cargar los eventos</string>
@@ -255,6 +258,8 @@
     <string name="directions_mode_transit">Transporte público</string>
     <string name="directions_transit_summary">Líneas y horarios en Google Maps</string>
     <string name="directions_open_transit">Ver transporte en Google Maps</string>
+    <string name="directions_exploring">Estás lejos de %1$s: ruta de ejemplo desde su centro.</string>
+    <string name="directions_open_route">Ver ruta en Google Maps</string>
     <string name="directions_allow_location">Permitir ubicación</string>
     <string name="directions_locating">Buscando tu ubicación…</string>
     <string name="directions_no_location">Activa la ubicación para ver la ruta desde donde estás</string>

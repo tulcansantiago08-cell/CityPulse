@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /** Si el usuario está a más de esta distancia de la ciudad elegida, se usa el centro de la ciudad. */
-private const val MAX_USER_DISTANCE_FROM_CITY_METERS = 50_000.0
+const val MAX_USER_DISTANCE_FROM_CITY_METERS = 50_000.0
 
 /**
  * Observa los eventos de la ciudad elegida, ya con la distancia a pie desde el usuario. La

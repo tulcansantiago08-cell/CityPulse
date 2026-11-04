@@ -13,10 +13,18 @@ import com.citypulse.domain.model.TravelMode
  * navegación y muestra las líneas y horarios. Sin la app de Google Maps se usa su web.
  *
  * Con [placeQuery] busca el lugar por su nombre, para que Maps lo muestre así; si no, usa las coordenadas.
+ * Con [originQuery] muestra la ruta desde ese lugar en vez de navegar desde la ubicación actual.
  */
-fun Context.openDirections(latitude: Double, longitude: Double, mode: TravelMode, placeQuery: String? = null) {
+fun Context.openDirections(
+    latitude: Double,
+    longitude: Double,
+    mode: TravelMode,
+    placeQuery: String? = null,
+    originQuery: String? = null,
+) {
     val destination = placeQuery?.let(Uri::encode) ?: "$latitude,$longitude"
-    val app = Intent(Intent.ACTION_VIEW, googleMapsAppUri(destination, mode)).setPackage(GOOGLE_MAPS_PACKAGE)
+    val from = originQuery?.let(Uri::encode)
+    val app = Intent(Intent.ACTION_VIEW, googleMapsAppUri(destination, mode, from)).setPackage(GOOGLE_MAPS_PACKAGE)
     try {
         startActivity(app)
         return
@@ -24,7 +32,7 @@ fun Context.openDirections(latitude: Double, longitude: Double, mode: TravelMode
         // Sin la app de Google Maps: se sigue con la web.
     }
     try {
-        startActivity(Intent(Intent.ACTION_VIEW, googleMapsWebDirectionsUri(destination, mode)))
+        startActivity(Intent(Intent.ACTION_VIEW, googleMapsWebDirectionsUri(destination, mode, from)))
     } catch (_: ActivityNotFoundException) {
         // Sin navegador ni app de mapas no hay nada que abrir.
     }
@@ -33,23 +41,27 @@ fun Context.openDirections(latitude: Double, longitude: Double, mode: TravelMode
 private const val GOOGLE_MAPS_PACKAGE = "com.google.android.apps.maps"
 
 /** `google.navigation` admite a pie (w), bici (b) y carro (d); el transporte público va por la ruta. */
-internal fun googleMapsAppUri(destination: String, mode: TravelMode) = when (mode) {
-    TravelMode.WALK -> "google.navigation:q=$destination&mode=w"
-    TravelMode.BIKE -> "google.navigation:q=$destination&mode=b"
-    TravelMode.CAR -> "google.navigation:q=$destination&mode=d"
-    TravelMode.TRANSIT -> "https://www.google.com/maps/dir/?api=1&destination=$destination&travelmode=transit"
+internal fun googleMapsAppUri(destination: String, mode: TravelMode, origin: String? = null) = when {
+    origin != null -> "https://www.google.com/maps/dir/?api=1&origin=$origin&destination=$destination&travelmode=${mode.googleMapsName}"
+    mode == TravelMode.WALK -> "google.navigation:q=$destination&mode=w"
+    mode == TravelMode.BIKE -> "google.navigation:q=$destination&mode=b"
+    mode == TravelMode.CAR -> "google.navigation:q=$destination&mode=d"
+    else -> "https://www.google.com/maps/dir/?api=1&destination=$destination&travelmode=transit"
 }.toUri()
 
-/** Ruta en la web de Google Maps, empezando a navegar si el navegador lo permite (hl=es: en español). */
-internal fun googleMapsWebDirectionsUri(destination: String, mode: TravelMode): Uri {
-    val travelMode = when (mode) {
+private val TravelMode.googleMapsName: String
+    get() = when (this) {
         TravelMode.WALK -> "walking"
         TravelMode.BIKE -> "bicycling"
         TravelMode.CAR -> "driving"
         TravelMode.TRANSIT -> "transit"
     }
-    val navigate = if (mode == TravelMode.TRANSIT) "" else "&dir_action=navigate"
-    return "https://www.google.com/maps/dir/?api=1&destination=$destination&travelmode=$travelMode$navigate&hl=es".toUri()
+
+/** Ruta en la web de Google Maps, empezando a navegar si el navegador lo permite (hl=es: en español). */
+internal fun googleMapsWebDirectionsUri(destination: String, mode: TravelMode, origin: String? = null): Uri {
+    val from = origin?.let { "&origin=$it" }.orEmpty()
+    val navigate = if (mode == TravelMode.TRANSIT || origin != null) "" else "&dir_action=navigate"
+    return "https://www.google.com/maps/dir/?api=1$from&destination=$destination&travelmode=${mode.googleMapsName}$navigate&hl=es".toUri()
 }
 
 /** Abre una web (p. ej. la página del evento con precios y entradas). */
