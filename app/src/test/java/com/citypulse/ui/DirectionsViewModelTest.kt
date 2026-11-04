@@ -154,6 +154,18 @@ class DirectionsViewModelTest {
     }
 
     @Test
+    fun `busca el lugar en Google Maps por su nombre y su ciudad`() = runTest {
+        val query = viewModel().uiState.value.destination?.placeQuery
+        assertEquals("${event.venue}, Madrid", query)
+    }
+
+    @Test
+    fun `sin ciudad no busca por nombre`() = runTest {
+        location.city = null
+        assertNull(viewModel().uiState.value.destination?.placeQuery)
+    }
+
+    @Test
     fun `al llegar al destino lo indica`() = runTest {
         val vm = viewModel()
         location.point.value = GeoPoint(taminango.latitude + 0.0001, taminango.longitude)
@@ -165,7 +177,8 @@ private class MovingLocation(start: GeoPoint?) : LocationRepository {
     val point = MutableStateFlow(start)
     override suspend fun currentLocation(): GeoPoint? = point.value
     override fun observeLocation(): Flow<GeoPoint?> = point
-    override suspend fun cityAt(point: GeoPoint): City = SampleData.Madrid
+    var city: City? = SampleData.Madrid
+    override suspend fun cityAt(point: GeoPoint): City? = city
     override suspend fun searchPlaces(query: String): List<City> = emptyList()
 }
 

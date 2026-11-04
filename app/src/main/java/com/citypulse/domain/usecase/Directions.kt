@@ -29,6 +29,17 @@ fun walkingMinutesAlongStreets(meters: Double): Int = max(1, ceil(meters / WALKI
 fun defaultTravelMode(from: GeoPoint, to: GeoPoint): TravelMode =
     if (distanceMeters(from, to) <= WALKABLE_METERS) TravelMode.WALK else TravelMode.CAR
 
+/**
+ * Texto con el que buscar el lugar en una app de mapas: "Museo Taminango, Pasto". Con solo las
+ * coordenadas, la app muestra el negocio más cercano, que puede no tener nada que ver. Se quitan las
+ * aclaraciones entre paréntesis, y sin ciudad se devuelve `null`: un nombre común podría llevar a otra.
+ */
+fun directionsPlaceQuery(venue: String, city: String?): String? {
+    val name = venue.replace(Regex("""\s*\([^)]*\)"""), "").trim()
+    if (name.isEmpty() || city.isNullOrBlank()) return null
+    return "$name, ${city.trim()}"
+}
+
 /** "25 min", "1 h 5 min" o "3 h". */
 fun formatTravelTime(minutes: Int): String {
     val hours = minutes / 60

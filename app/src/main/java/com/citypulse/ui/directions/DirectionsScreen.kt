@@ -104,7 +104,9 @@ fun DirectionsRoute(onBack: () -> Unit, viewModel: DirectionsViewModel = hiltVie
         onSelectMode = viewModel::selectMode,
         onRequestPermission = { permission.request(afterDenial = true) },
         onOpenGoogleMaps = {
-            state.destination?.location?.let { context.openDirections(it.latitude, it.longitude, state.selectedMode) }
+            state.destination?.let {
+                context.openDirections(it.location.latitude, it.location.longitude, state.selectedMode, it.placeQuery)
+            }
         },
     )
 }
