@@ -82,7 +82,7 @@ Kotlin · Jetpack Compose + Material 3 · Firebase AI Logic (Gemini) · Firebase
 ## Fuentes de datos
 
 - **Ticketmaster Discovery API**: conciertos y espectáculos alrededor del centro de la ciudad (15 km, próximos 7 días). La API ya no publica precios: la app los **estima** (Gemini, con una regla local por categoría y recinto como respaldo) y los muestra como «≈ 25 €» para no confundirlos con el precio real.
-- **Catálogo propio en Firestore**: eventos gratuitos, mercados y ferias que no aparecen en Ticketmaster. Cada entrada es **recurrente** (días de la semana + horario, como "domingos de 9 a 15 h") o de una fecha concreta, y la app genera sus fechas para los próximos 7 días. Incluye datos de ejemplo de **Madrid**, **Bogotá** y **Pasto**. Ticketmaster no tiene eventos en Colombia, así que allí la app depende del catálogo propio.
+- **Catálogo propio en Firestore**: eventos gratuitos, mercados y ferias que no aparecen en Ticketmaster. Cada entrada es **recurrente** (días de la semana + horario, como "domingos de 9 a 15 h") o de una fecha concreta, y la app genera sus fechas para los próximos 7 días. Incluye datos de ejemplo de **Madrid** y **Bogotá**, y de **Pasto** con lugares reales: posición exacta (la de su ficha en Google Maps, para que *Cómo llegar* lleve a la puerta) y horarios de apertura verificados en noviembre de 2026. Ticketmaster no tiene eventos en Colombia, así que allí la app depende del catálogo propio.
 
 ## Configuración
 
@@ -108,6 +108,8 @@ La app funciona sin ella, pero solo mostrará el catálogo de Firestore.
    ```bash
    python3 scripts/seed_firestore.py
    ```
+
+   El script también borra de Firestore los eventos que ya no están en el archivo. Si las reglas de producción ya están publicadas (no permiten escribir), cámbialas un momento a `allow write: if true;` en `events`, ejecuta el script y vuelve a publicar [`firestore.rules`](firestore.rules).
 
 5. Publica las reglas de [`firestore.rules`](firestore.rules) en Firestore → Reglas: el catálogo es de solo lectura y cada cuenta solo puede leer y cambiar sus propios guardados.
 6. Authentication → *Comenzar* → *Método de acceso* → activa **Correo electrónico/contraseña** (para la cuenta opcional).
