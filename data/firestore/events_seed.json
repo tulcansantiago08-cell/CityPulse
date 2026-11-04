@@ -1284,5 +1284,16 @@
       "description": "El parque grande del centro para caminar, trotar o jugar baloncesto y fútbol. Temprano se llena de gente haciendo deporte.",
       "imageUrl": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=720&q=70"
     }
+  ],
+  "retired": [
+    "pas-sanjuan",
+    "pas-cineclub",
+    "pas-hervidos",
+    "pas-barniz",
+    "pas-andina",
+    "pas-feria",
+    "pas-recreovia",
+    "pas-imperial",
+    "pas-udenar"
   ]
 }
