@@ -13,6 +13,7 @@ import com.citypulse.domain.repository.RouteRepository
 import com.citypulse.domain.testEvent
 import com.citypulse.ui.directions.DirectionsViewModel
 import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,10 +36,12 @@ class DirectionsViewModelTest {
     private val location = MovingLocation(plaza)
     private val routes = FakeRoutes()
     private val saved = FakeSaved()
+    private val prefs = FakePreferences()
+    private val pasto = City("Pasto", "Colombia", GeoPoint(1.2136, -77.2811), ZoneId.of("America/Bogota"), "CO")
 
     private suspend fun viewModel(): DirectionsViewModel {
         saved.save(event)
-        return DirectionsViewModel(SavedStateHandle(mapOf("eventId" to "tam")), FakeEventRepository(), saved, location, routes)
+        return DirectionsViewModel(SavedStateHandle(mapOf("eventId" to "tam")), FakeEventRepository(), saved, location, routes, prefs)
     }
 
     @Test
@@ -163,6 +166,49 @@ class DirectionsViewModelTest {
     fun `sin ciudad no busca por nombre`() = runTest {
         location.city = null
         assertNull(viewModel().uiState.value.destination?.placeQuery)
+    }
+
+    @Test
+    fun `lejos de la ciudad elegida la ruta parte de su centro y no dibuja al usuario`() = runTest {
+        prefs.setCity(pasto)
+        location.point.value = GeoPoint(40.4169, -3.7035) // Madrid
+        val state = viewModel().uiState.value
+        assertEquals("Pasto", state.exploringCity)
+        assertEquals(pasto.center, state.origin)
+        assertEquals("Pasto, Colombia", state.exploringOrigin)
+        assertEquals(pasto.zone, state.zone)
+        assertNull(state.user)
+        assertTrue(routes.requests.isNotEmpty())
+        assertTrue(routes.requests.all { it.first == pasto.center })
+    }
+
+    @Test
+    fun `sin elegir la ciudad del evento tambien parte del centro de esa ciudad`() = runTest {
+        location.city = pasto // prefs sigue en Madrid: un evento guardado de otro viaje
+        location.point.value = GeoPoint(40.4169, -3.7035)
+        val state = viewModel().uiState.value
+        assertEquals("Pasto", state.exploringCity)
+        assertEquals(pasto.center, routes.requests.last { it.third == state.selectedMode }.first)
+    }
+
+    @Test
+    fun `al llegar a la ciudad deja de explorar y parte del usuario`() = runTest {
+        prefs.setCity(pasto)
+        location.point.value = GeoPoint(40.4169, -3.7035)
+        val vm = viewModel()
+        location.point.value = plaza
+        val state = vm.uiState.value
+        assertNull(state.exploringCity)
+        assertEquals(plaza, state.user)
+        assertEquals(plaza, routes.requests.last { it.third == state.selectedMode }.first)
+    }
+
+    @Test
+    fun `en la ciudad no explora aunque sea la elegida`() = runTest {
+        prefs.setCity(pasto)
+        val state = viewModel().uiState.value
+        assertNull(state.exploringCity)
+        assertEquals(plaza, state.origin)
     }
 
     @Test

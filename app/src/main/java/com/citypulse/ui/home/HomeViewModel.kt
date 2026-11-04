@@ -3,6 +3,7 @@ package com.citypulse.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.citypulse.domain.model.Category
+import com.citypulse.domain.model.City
 import com.citypulse.domain.model.CityEvents
 import com.citypulse.domain.model.BudgetScale
 import com.citypulse.domain.model.RefreshState
@@ -16,6 +17,7 @@ import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.time.greetingFor
 import com.citypulse.domain.time.localIn
 import com.citypulse.domain.usecase.ObserveCityEvents
+import com.citypulse.domain.usecase.SuggestCityChange
 import com.citypulse.domain.usecase.ToggleSavedEvent
 import com.citypulse.domain.usecase.happeningNow
 import com.citypulse.domain.usecase.matches
@@ -75,6 +77,7 @@ private data class HomeInputs(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     observeCityEvents: ObserveCityEvents,
+    suggestCityChange: SuggestCityChange,
     private val events: EventRepository,
     private val preferences: UserPreferencesRepository,
     savedEvents: SavedEventsRepository,
@@ -83,6 +86,14 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val selectedCategory = MutableStateFlow<Category?>(null)
+
+    /** Sugerencias descartadas: no se vuelve a preguntar por la misma ciudad. */
+    private val dismissedSuggestions = MutableStateFlow(emptySet<String>())
+
+    /** Ciudad donde está el usuario si no es la elegida; `null` si no hay nada que sugerir. */
+    val citySuggestion: StateFlow<City?> = combine(suggestCityChange(), dismissedSuggestions) { city, dismissed ->
+        city?.takeIf { it.key !in dismissed }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** Paso del deslizador mientras se arrastra, antes de guardarlo. */
     private val budgetDraft = MutableStateFlow<Int?>(null)
@@ -129,6 +140,15 @@ class HomeViewModel @Inject constructor(
                 .count { !it.event.isFree && (it.event.priceMin == null || it.event.currency != scale.currency) },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
+
+    fun acceptCitySuggestion() {
+        val city = citySuggestion.value ?: return
+        viewModelScope.launch { preferences.setCity(city) }
+    }
+
+    fun dismissCitySuggestion() {
+        citySuggestion.value?.let { city -> dismissedSuggestions.value += city.key }
+    }
 
     fun selectCategory(category: Category?) {
         selectedCategory.value = category

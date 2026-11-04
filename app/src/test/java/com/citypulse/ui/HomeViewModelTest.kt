@@ -6,6 +6,7 @@ import com.citypulse.data.fake.SampleData
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.time.Greeting
 import com.citypulse.domain.usecase.ObserveCityEvents
+import com.citypulse.domain.usecase.SuggestCityChange
 import com.citypulse.domain.usecase.ToggleSavedEvent
 import com.citypulse.ui.home.HomeViewModel
 import kotlinx.coroutines.test.runTest
@@ -31,6 +32,7 @@ class HomeViewModelTest {
 
     private fun viewModel() = HomeViewModel(
         ObserveCityEvents(prefs, events, FakeLocation()),
+            SuggestCityChange(prefs, FakeLocation()),
         events, prefs, saved, ToggleSavedEvent(events, saved), FixedClock(now),
     )
 
@@ -55,6 +57,7 @@ class HomeViewModelTest {
         val fromBogota = FixedClock(bogotaTime, bogota)
         val vm = HomeViewModel(
             ObserveCityEvents(prefs, events, FakeLocation()),
+            SuggestCityChange(prefs, FakeLocation()),
             events, prefs, saved, ToggleSavedEvent(events, saved), fromBogota,
         )
         vm.uiState.test {

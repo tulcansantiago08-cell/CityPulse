@@ -75,6 +75,7 @@ import com.citypulse.ui.map.darkMapFilter
 import com.citypulse.ui.map.pinBitmap
 import com.citypulse.ui.map.userDotBitmap
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -105,7 +106,13 @@ fun DirectionsRoute(onBack: () -> Unit, viewModel: DirectionsViewModel = hiltVie
         onRequestPermission = { permission.request(afterDenial = true) },
         onOpenGoogleMaps = {
             state.destination?.let {
-                context.openDirections(it.location.latitude, it.location.longitude, state.selectedMode, it.placeQuery)
+                context.openDirections(
+                    it.location.latitude,
+                    it.location.longitude,
+                    state.selectedMode,
+                    it.placeQuery,
+                    originQuery = state.exploringOrigin,
+                )
             }
         },
     )
@@ -222,7 +229,11 @@ private fun RouteCard(
             }
             GradientButton(
                 stringResource(
-                    if (state.selectedMode == TravelMode.TRANSIT) R.string.directions_open_transit else R.string.directions_open_google_maps,
+                    when {
+                        state.selectedMode == TravelMode.TRANSIT -> R.string.directions_open_transit
+                        state.exploringCity != null -> R.string.directions_open_route
+                        else -> R.string.directions_open_google_maps
+                    },
                 ),
                 onClick = onOpenGoogleMaps,
                 icon = Icons.Rounded.Navigation,
@@ -279,11 +290,14 @@ private fun ModeTabContent(
 private fun RouteNote(state: DirectionsUiState): String? {
     val route = state.route
     return when {
-        route == null || state.arrived || state.calculating -> null
+        route == null || state.arrived -> null
+        state.exploringCity != null -> stringResource(R.string.directions_exploring, state.exploringCity)
+        state.calculating -> null
         !route.reachable -> stringResource(R.string.directions_no_road)
         !route.exact -> stringResource(R.string.directions_approximate)
         else -> {
-            val arrival = LocalTime.now().plusMinutes(route.minutes.toLong()).format(DateTimeFormatter.ofPattern("HH:mm"))
+            val now = LocalTime.now(state.zone ?: ZoneId.systemDefault())
+            val arrival = now.plusMinutes(route.minutes.toLong()).format(DateTimeFormatter.ofPattern("HH:mm"))
             stringResource(
                 if (state.selectedMode == TravelMode.CAR) R.string.directions_arrival_no_traffic else R.string.directions_arrival,
                 arrival,
