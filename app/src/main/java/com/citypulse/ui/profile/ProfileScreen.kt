@@ -19,26 +19,35 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.Logout
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.rounded.CloudDone
+import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,6 +64,8 @@ import com.citypulse.core.designsystem.theme.BrandGradient
 import com.citypulse.core.designsystem.theme.CityPulseTheme
 import com.citypulse.core.designsystem.theme.CpColors
 import com.citypulse.domain.model.UserAccount
+import com.citypulse.ui.auth.AuthField
+import com.citypulse.ui.auth.message
 
 @Composable
 fun ProfileRoute(
@@ -65,7 +76,18 @@ fun ProfileRoute(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    ProfileScreen(state, onBack, onSignIn, onSignUp, onAbout, viewModel::signOut)
+    val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
+    ProfileScreen(
+        state = state,
+        onBack = onBack,
+        onSignIn = onSignIn,
+        onSignUp = onSignUp,
+        onAbout = onAbout,
+        onSignOut = viewModel::signOut,
+        deleteState = deleteState,
+        onDeleteAccount = viewModel::deleteAccount,
+        onResetDelete = viewModel::resetDelete,
+    )
 }
 
 /** Cuenta del usuario: invita a iniciar sesión o muestra el perfil con la opción de cerrarla. */
@@ -78,8 +100,19 @@ fun ProfileScreen(
     onAbout: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
+    deleteState: DeleteAccountState = DeleteAccountState(),
+    onDeleteAccount: (password: String) -> Unit = {},
+    onResetDelete: () -> Unit = {},
 ) {
     var confirmSignOut by rememberSaveable { mutableStateOf(false) }
+    var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    // Al terminar de borrar, la pantalla pasa sola a "sin sesión": se cierra el diálogo.
+    LaunchedEffect(deleteState.done) {
+        if (deleteState.done) {
+            confirmDelete = false
+            onResetDelete()
+        }
+    }
     Column(
         modifier
             .fillMaxSize()
@@ -97,7 +130,12 @@ fun ProfileScreen(
         when {
             state.loading -> Unit
             account == null -> SignedOut(onSignIn, onSignUp)
-            else -> SignedIn(account, state.savedCount, onSignOut = { confirmSignOut = true })
+            else -> SignedIn(
+                account,
+                state.savedCount,
+                onSignOut = { confirmSignOut = true },
+                onDelete = { onResetDelete(); confirmDelete = true },
+            )
         }
 
         MenuRow(Icons.Rounded.Info, stringResource(R.string.about_open), onAbout, Modifier.padding(top = 12.dp))
@@ -121,6 +159,59 @@ fun ProfileScreen(
             textContentColor = CpColors.TextSecondary,
         )
     }
+
+    if (confirmDelete) {
+        DeleteAccountDialog(
+            state = deleteState,
+            onConfirm = onDeleteAccount,
+            onDismiss = { if (!deleteState.running) { confirmDelete = false; onResetDelete() } },
+        )
+    }
+}
+
+/** Pide la contraseña antes de borrar la cuenta: Firebase exige haber iniciado sesión hace poco. */
+@Composable
+private fun DeleteAccountDialog(state: DeleteAccountState, onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
+    var password by rememberSaveable { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.profile_delete_title)) },
+        text = {
+            Column {
+                Text(stringResource(R.string.profile_delete_body))
+                Box(Modifier.padding(top = 16.dp)) {
+                    AuthField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = stringResource(R.string.auth_password),
+                        icon = Icons.Rounded.Lock,
+                        contentType = ContentType.Password,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                        onImeAction = { onConfirm(password) },
+                        visualTransformation = PasswordVisualTransformation(),
+                    )
+                }
+                state.error?.let {
+                    Text(it.message(), fontSize = 13.sp, color = CpColors.LiveSoft, modifier = Modifier.padding(top = 10.dp, start = 4.dp))
+                }
+            }
+        },
+        confirmButton = {
+            if (state.running) {
+                CircularProgressIndicator(color = CpColors.LiveSoft, strokeWidth = 2.dp, modifier = Modifier.padding(12.dp).size(20.dp))
+            } else {
+                TextButton(onClick = { onConfirm(password) }) {
+                    Text(stringResource(R.string.profile_delete_confirm), color = CpColors.LiveSoft)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !state.running) { Text(stringResource(R.string.action_cancel), color = Color.White) }
+        },
+        containerColor = CpColors.Surface,
+        titleContentColor = Color.White,
+        textContentColor = CpColors.TextSecondary,
+    )
 }
 
 @Composable
@@ -152,7 +243,7 @@ private fun SignedOut(onSignIn: () -> Unit, onSignUp: () -> Unit) {
 }
 
 @Composable
-private fun SignedIn(account: UserAccount, savedCount: Int, onSignOut: () -> Unit) {
+private fun SignedIn(account: UserAccount, savedCount: Int, onSignOut: () -> Unit, onDelete: () -> Unit) {
     Column(Modifier.padding(top = 28.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.size(88.dp).background(BrandGradient, CircleShape), contentAlignment = Alignment.Center) {
             Text(account.initial, fontSize = 36.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
@@ -174,6 +265,7 @@ private fun SignedIn(account: UserAccount, savedCount: Int, onSignOut: () -> Uni
         }
     }
     MenuRow(Icons.AutoMirrored.Rounded.Logout, stringResource(R.string.profile_sign_out), onSignOut, Modifier.padding(top = 12.dp), tint = CpColors.LiveSoft)
+    MenuRow(Icons.Rounded.DeleteForever, stringResource(R.string.profile_delete), onDelete, Modifier.padding(top = 12.dp), tint = CpColors.LiveSoft)
 }
 
 @Composable

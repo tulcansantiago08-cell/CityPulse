@@ -20,4 +20,10 @@ interface AuthRepository {
     suspend fun signUp(name: String, email: String, password: String)
     suspend fun sendPasswordReset(email: String)
     suspend fun signOut()
+
+    /** Confirma la contraseña de la cuenta actual; Firebase la exige antes de borrarla. */
+    suspend fun reauthenticate(password: String)
+
+    /** Borra la cuenta actual de Firebase y cierra la sesión. Llamar después de [reauthenticate]. */
+    suspend fun deleteAccount()
 }

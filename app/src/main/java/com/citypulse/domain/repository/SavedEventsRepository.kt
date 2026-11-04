@@ -16,4 +16,7 @@ interface SavedEventsRepository {
 
     /** Borra la copia del teléfono (al cerrar sesión); la de la cuenta se conserva. */
     suspend fun clearLocal()
+
+    /** Borra la copia de la cuenta (al eliminarla). Falla si no hay conexión con el servidor. */
+    suspend fun clearCloud()
 }

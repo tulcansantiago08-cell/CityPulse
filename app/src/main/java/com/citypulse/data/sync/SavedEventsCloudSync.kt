@@ -4,11 +4,13 @@ import android.util.Log
 import com.citypulse.data.local.db.SavedEventDao
 import com.citypulse.data.local.db.SavedEventEntity
 import com.citypulse.domain.repository.AuthRepository
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.Source
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * Copia los guardados en `users/{uid}/saved/{eventId}` de Firestore mientras hay sesión iniciada.
@@ -60,6 +63,19 @@ class SavedEventsCloudSync @Inject constructor(
             .addOnFailureListener { Log.w(TAG, "No se pudo borrar $eventId", it) }
     }
 
+    /**
+     * Borra todos los guardados de la cuenta actual en Firestore. Lee del servidor (no de la caché)
+     * para no dejar documentos sin borrar; sin conexión lanza una excepción.
+     */
+    suspend fun deleteAll() {
+        val id = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val documents = collection(id).get(Source.SERVER).await().documents
+        // Un lote de Firestore admite como máximo 500 operaciones.
+        documents.chunked(BATCH_LIMIT).forEach { chunk ->
+            firestore.runBatch { batch -> chunk.forEach { batch.delete(it.reference) } }.await()
+        }
+    }
+
     private suspend fun mirror(uid: String) {
         var merged = false
         snapshots(uid).collect { snapshot ->
@@ -92,6 +108,7 @@ class SavedEventsCloudSync @Inject constructor(
 
     private companion object {
         const val TAG = "CityPulseSync"
+        const val BATCH_LIMIT = 450
     }
 }
 
