@@ -34,9 +34,13 @@ data class CatalogEntry(
     val priceMin: Double? = null,
     val currency: String? = null,
 ) {
-    /** Ocurrencias de la entrada entre [from] y los [days] días siguientes. */
-    fun occurrences(from: LocalDate, days: Int = 7): List<Event> =
-        (0 until days).map { from.plusDays(it.toLong()) }
+    /**
+     * Ocurrencias de la entrada: las recurrentes en los [days] días siguientes a [from] y las de
+     * fecha concreta en los [datedDays] siguientes (un concierto se anuncia con antelación; repetir
+     * un lugar abierto a diario durante un mes no aporta nada).
+     */
+    fun occurrences(from: LocalDate, days: Int = 7, datedDays: Int = days): List<Event> =
+        (0 until if (date != null) datedDays else days).map { from.plusDays(it.toLong()) }
             .filter { day -> if (date != null) day == date else day.dayOfWeek.value in weekdays }
             .map { day -> toEvent(day) }
 

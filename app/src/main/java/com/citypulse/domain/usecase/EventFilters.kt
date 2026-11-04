@@ -14,6 +14,9 @@ import kotlin.math.roundToInt
 /** Un evento que empieza dentro de este margen ya se muestra en "Pasando ahora". */
 const val STARTING_SOON_MINUTES = 60L
 
+/** Hasta dónde se anuncian los eventos de fecha concreta del catálogo. */
+const val UPCOMING_HORIZON_DAYS = 30L
+
 fun List<Event>.withDistanceFrom(origin: GeoPoint): List<NearbyEvent> = map { event ->
     val meters = distanceMeters(origin, event.location)
     NearbyEvent(event, meters.roundToInt(), walkingMinutes(meters))
@@ -48,6 +51,12 @@ fun List<NearbyEvent>.upcomingThisWeek(now: LocalDateTime): List<NearbyEvent> {
     return filter { it.event.start.isAfter(soon) && it.event.start.isBefore(limit) }
         .nextOccurrences()
         .filter { (it.event.title.lowercase().trim() to it.event.venue.lowercase().trim()) !in happening }
+}
+
+/** Eventos con fecha más allá de "Esta semana", por fecha. */
+fun List<NearbyEvent>.upcomingLater(now: LocalDateTime): List<NearbyEvent> {
+    val from = now.toLocalDate().plusDays(7).atStartOfDay()
+    return filter { !it.event.start.isBefore(from) }.nextOccurrences()
 }
 
 /**

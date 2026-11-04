@@ -243,6 +243,27 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp),
                 )
             }
+            if (state.later.isNotEmpty() && !state.loading) {
+                item {
+                    Text(
+                        stringResource(R.string.home_later),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 12.dp),
+                    )
+                }
+                items(state.later, key = { it.id }) { event ->
+                    EventRowCard(
+                        whenLabel = event.whenLabel,
+                        title = event.title,
+                        subtitle = "${event.venue} · ${event.priceLabel}",
+                        imageUrl = event.imageUrl,
+                        fallback = event.fallback,
+                        onClick = { onOpenEvent(event.id) },
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp),
+                    )
+                }
+            }
         }
     }
 }

@@ -57,6 +57,7 @@
     </plurals>
     <string name="price_up_to">Hasta %1$s</string>
     <string name="home_this_week">Esta semana</string>
+    <string name="home_later">Más adelante</string>
     <string name="home_nothing_live">Nada en curso con estos filtros.</string>
     <string name="home_nothing_this_week">No hay más eventos esta semana con estos filtros.</string>
     <string name="home_load_error_title">No pudimos cargar los eventos</string>

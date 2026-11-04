@@ -1283,7 +1283,8 @@
       "free": true,
       "description": "El parque grande del centro para caminar, trotar o jugar baloncesto y fútbol. Temprano se llena de gente haciendo deporte.",
       "imageUrl": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=720&q=70"
-    }
+    },
+    {"id": "pas-cepeda-2026", "city": "Pasto", "title": "Andrés Cepeda en concierto", "category": "Music", "venue": "Centro de Eventos Andino", "area": "Unicentro", "lat": 1.2163094, "lng": -77.2884871, "date": "2026-11-21", "startTime": "20:00", "endTime": "23:00", "price": "Desde 160.000 COP", "priceMin": 160000, "currency": "COP", "free": false, "description": "Concierto de Andrés Cepeda. Puertas a las 7:00 p. m. y comienzo a las 8:00 p. m. Solo mayores de 18 años, con silla numerada. Precios con servicio: General 160.000, Platea Trasera 205.800, Platea Delantera 285.700 y VIP 400.000 COP. La hora de fin no está confirmada.", "imageUrl": "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?auto=format&fit=crop&w=720&q=70", "url": "https://tuboleta.com/es/eventos/andres-cepeda-pasto"}
   ],
   "retired": [
     "pas-sanjuan",
