@@ -1,5 +1,7 @@
 # CityPulse
 
+[![Tests](https://github.com/tulcansantiago08-cell/CityPulse/actions/workflows/tests.yml/badge.svg)](https://github.com/tulcansantiago08-cell/CityPulse/actions/workflows/tests.yml)
+
 Aplicación Android para viajeros que muestra **lo que está pasando ahora** en la ciudad: conciertos, mercados, ferias y actividades culturales, priorizando lo que queda cerca a pie y la hora del día.
 
 Proyecto académico.
@@ -129,6 +131,8 @@ El mapa usa las teselas estándar de OpenStreetMap con osmdroid, oscurecidas con
 ./gradlew test                          # tests unitarios (dominio, datos y ViewModels)
 ./gradlew connectedDebugAndroidTest     # tests de interfaz (con emulador o móvil conectado)
 ```
+
+Los tests unitarios también se ejecutan en GitHub Actions en cada push a `main` y en cada pull request ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)).
 
 ## Decisiones y limitaciones
 
