@@ -78,15 +78,25 @@ class AndroidLocationRepository @Inject constructor(
 
     override fun observeLocation(): Flow<GeoPoint?> = sharedLocation
 
+    override fun observePreciseLocation(): Flow<GeoPoint?> = locationUpdates(
+        priority = Priority.PRIORITY_HIGH_ACCURACY,
+        intervalMs = NAVIGATION_INTERVAL_MS,
+        minDistanceMeters = NAVIGATION_MIN_DISTANCE_METERS,
+    )
+
     @SuppressLint("MissingPermission") // Se comprueba en hasPermission().
-    private fun locationUpdates(): Flow<GeoPoint?> = callbackFlow {
+    private fun locationUpdates(
+        priority: Int = Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+        intervalMs: Long = UPDATE_INTERVAL_MS,
+        minDistanceMeters: Float = MIN_UPDATE_DISTANCE_METERS,
+    ): Flow<GeoPoint?> = callbackFlow {
         send(currentLocation())
         if (!hasPermission()) {
             awaitClose()
             return@callbackFlow
         }
-        val request = LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, UPDATE_INTERVAL_MS)
-            .setMinUpdateDistanceMeters(MIN_UPDATE_DISTANCE_METERS)
+        val request = LocationRequest.Builder(priority, intervalMs)
+            .setMinUpdateDistanceMeters(minDistanceMeters)
             .build()
         val callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
@@ -208,5 +218,9 @@ class AndroidLocationRepository @Inject constructor(
         const val MAX_PLACE_RESULTS = 5
         const val UPDATE_INTERVAL_MS = 60_000L
         const val MIN_UPDATE_DISTANCE_METERS = 50f
+
+        /** Siguiendo una ruta a pie: cada 3 s o 5 m. */
+        const val NAVIGATION_INTERVAL_MS = 3_000L
+        const val NAVIGATION_MIN_DISTANCE_METERS = 5f
     }
 }

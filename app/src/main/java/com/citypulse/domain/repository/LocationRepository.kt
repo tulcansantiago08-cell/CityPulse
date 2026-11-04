@@ -15,6 +15,12 @@ interface LocationRepository {
      */
     fun observeLocation(): Flow<GeoPoint?> = flow { emit(currentLocation()) }
 
+    /**
+     * Como [observeLocation] pero con GPS y cada pocos segundos, para seguir una ruta a pie.
+     * Gasta más batería: solo mientras se muestra la ruta.
+     */
+    fun observePreciseLocation(): Flow<GeoPoint?> = observeLocation()
+
     /** Ciudad correspondiente a una coordenada, si se puede resolver. */
     suspend fun cityAt(point: GeoPoint): City?
 

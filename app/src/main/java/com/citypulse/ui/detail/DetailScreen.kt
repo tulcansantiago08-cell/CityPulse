@@ -86,7 +86,6 @@ import com.citypulse.domain.model.GeoPoint
 import com.citypulse.domain.usecase.withDistanceFrom
 import com.citypulse.ui.common.EventUi
 import com.citypulse.ui.common.openUrl
-import com.citypulse.ui.common.openWalkingDirections
 import com.citypulse.ui.common.rememberNotificationPermissionRequester
 import com.citypulse.ui.common.shareMessage
 import com.citypulse.ui.common.shareText
@@ -97,7 +96,11 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 @Composable
-fun DetailRoute(onBack: () -> Unit, viewModel: DetailViewModel = hiltViewModel()) {
+fun DetailRoute(
+    onBack: () -> Unit,
+    onOpenDirections: (eventId: String) -> Unit = {},
+    viewModel: DetailViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val askNotifications = rememberNotificationPermissionRequester()
@@ -111,7 +114,8 @@ fun DetailRoute(onBack: () -> Unit, viewModel: DetailViewModel = hiltViewModel()
             viewModel.toggleSaved()
         },
         onShare = { state.event?.let { context.shareText(it.shareMessage()) } },
-        onDirections = { state.event?.let { context.openWalkingDirections(it.latitude, it.longitude) } },
+        // Ruta dentro de la app (con la ubicación en vivo); desde ahí se puede seguir en Google Maps.
+        onDirections = { state.event?.let { onOpenDirections(it.id) } },
         onOpenEventPage = { state.event?.url?.let(context::openUrl) },
         onOpenTickets = { state.event?.ticketsUrl?.let(context::openUrl) },
         onSummarize = viewModel::summarize,
