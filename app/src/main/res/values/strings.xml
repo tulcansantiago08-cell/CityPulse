@@ -188,7 +188,7 @@
     <string name="about_ai_title">INTELIGENCIA ARTIFICIAL</string>
     <string name="about_ai_body">La búsqueda, los resúmenes y las frases de Sorpresa usan Gemini de Google. La IA solo interpreta lo que escribes y redacta textos: los eventos siempre salen de los datos reales. Puede equivocarse; revisa la ficha antes de ir.</string>
     <string name="about_privacy_title">TUS DATOS</string>
-    <string name="about_privacy_body">Tu ubicación se usa en el teléfono para calcular distancias y no se guarda en ningún servidor. Tus guardados y preferencias se quedan en el dispositivo. Lo que escribes en la búsqueda con IA y la información de los eventos que resumes se envían a Google para procesarlos.</string>
+    <string name="about_privacy_body">Tu ubicación se usa en el teléfono para calcular distancias y no se guarda en ningún servidor. Tus preferencias se quedan en el dispositivo. Tus guardados también, salvo que inicies sesión: entonces se copian en tu cuenta de Firebase (Google) junto con tu nombre y tu correo, para verlos en otros móviles. Lo que escribes en la búsqueda con IA y la información de los eventos que resumes se envían a Google para procesarlos.</string>
     <string name="about_osm_link">Licencia de OpenStreetMap</string>
     <string name="about_code_link">Código fuente en GitHub</string>
 
