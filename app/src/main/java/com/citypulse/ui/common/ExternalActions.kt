@@ -5,16 +5,38 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.net.toUri
 
-/** Abre Google Maps (app o web) con la ruta a pie hasta el evento. */
+/**
+ * Empieza la navegación a pie de Google Maps hasta el evento, desde la ubicación actual y sin pasos
+ * intermedios (no hay que buscar el destino ni pulsar "Iniciar").
+ *
+ * Con la app de Google Maps instalada usa su enlace de navegación (`google.navigation:`, modo a
+ * pie). Sin ella abre la web de Maps pidiendo también que empiece a navegar (`dir_action=navigate`).
+ */
 fun Context.openWalkingDirections(latitude: Double, longitude: Double) {
-    // hl=es: la versión web de Google Maps en español. La app de Maps usa el idioma del teléfono.
-    val uri = "https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude&travelmode=walking&hl=es".toUri()
+    val navigation = Intent(Intent.ACTION_VIEW, googleMapsNavigationUri(latitude, longitude))
+        .setPackage(GOOGLE_MAPS_PACKAGE)
     try {
-        startActivity(Intent(Intent.ACTION_VIEW, uri))
+        startActivity(navigation)
+        return
+    } catch (_: ActivityNotFoundException) {
+        // Sin la app de Google Maps: se sigue con la web.
+    }
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, googleMapsWebDirectionsUri(latitude, longitude)))
     } catch (_: ActivityNotFoundException) {
         // Sin navegador ni app de mapas no hay nada que abrir.
     }
 }
+
+private const val GOOGLE_MAPS_PACKAGE = "com.google.android.apps.maps"
+
+/** Navegación paso a paso en la app de Google Maps; `mode=w` es a pie. */
+internal fun googleMapsNavigationUri(latitude: Double, longitude: Double) =
+    "google.navigation:q=$latitude,$longitude&mode=w".toUri()
+
+/** Ruta a pie en la web de Google Maps, empezando a navegar si el navegador lo permite (hl=es: en español). */
+internal fun googleMapsWebDirectionsUri(latitude: Double, longitude: Double) =
+    "https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude&travelmode=walking&dir_action=navigate&hl=es".toUri()
 
 /** Abre una web (p. ej. la página del evento con precios y entradas). */
 fun Context.openUrl(url: String) {
