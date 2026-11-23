@@ -1,5 +1,6 @@
 package com.citypulse.ui.profile
 
+import com.citypulse.ui.language.LanguageRow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -138,6 +139,8 @@ fun ProfileScreen(
             )
         }
 
+        // Idioma: español (predeterminado) o inglés, para toda la app.
+        LanguageRow(Modifier.padding(top = 12.dp))
         MenuRow(Icons.Rounded.Info, stringResource(R.string.about_open), onAbout, Modifier.padding(top = 12.dp))
     }
 

@@ -1,5 +1,6 @@
 package com.citypulse.ui.onboarding
 
+import com.citypulse.ui.language.LanguageSwitchButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -128,6 +129,8 @@ fun OnboardingScreen(
                 color = CpColors.TextSecondary,
                 modifier = Modifier.padding(top = 12.dp),
             )
+            // Cambiar de idioma antes de empezar: el botón muestra el otro idioma.
+            LanguageSwitchButton(Modifier.padding(top = 4.dp))
             Spacer(Modifier.weight(1f))
             GradientButton(
                 text = stringResource(if (resolving) R.string.onboarding_locating else R.string.action_enable_location),

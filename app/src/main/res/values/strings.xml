@@ -268,4 +268,11 @@
     <string name="directions_open_google_maps">Navegar con Google Maps</string>
     <string name="directions_center_me">Centrar en mi ubicación</string>
     <string name="directions_attribution">Rutas: OSRM (FOSSGIS) · Mapa © colaboradores de OpenStreetMap</string>
+
+    <!-- Idioma -->
+    <string name="language_title">Idioma</string>
+    <!-- El botón muestra el otro idioma, escrito en ese idioma. -->
+    <string name="language_switch">English</string>
+    <string name="language_es" translatable="false">Español</string>
+    <string name="language_en" translatable="false">English</string>
 </resources>

@@ -48,6 +48,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    // Solo español e inglés: las librerías traen textos en ~80 idiomas que la app no usa. Como el
+    // idioma se cambia dentro de la app, el paquete trae siempre los dos (sin división por idioma).
+    androidResources {
+        localeFilters += listOf("es", "en")
+    }
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
     buildFeatures {
         compose = true
         buildConfig = true

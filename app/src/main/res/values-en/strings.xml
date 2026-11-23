@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English. Spanish (values/) is the default language. -->
+<resources>
+    <string name="app_name">CityPulse</string>
+
+    <!-- Common -->
+    <string name="action_retry">Retry</string>
+    <string name="action_back">Back</string>
+    <string name="action_enable_location">Turn on location</string>
+    <string name="action_choose_city_manually">Choose city manually</string>
+    <string name="action_see_saved">See saved</string>
+    <string name="action_directions">Directions</string>
+    <string name="action_tickets">Tickets</string>
+    <string name="tickets_free">Free entry</string>
+    <string name="action_share">Share</string>
+    <string name="action_save_event">Save event</string>
+    <string name="action_unsave_event">Remove from saved</string>
+    <string name="badge_live">LIVE</string>
+    <string name="badge_free">FREE</string>
+    <string name="loading">Loading</string>
+    <string name="walk_minutes_unit">min</string>
+    <string name="toggle_on">On</string>
+    <string name="toggle_off">Off</string>
+
+    <!-- Navigation bar -->
+    <string name="nav_home">Home</string>
+    <string name="nav_now">Now</string>
+    <string name="nav_surprise">Surprise</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_saved">Saved</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_badge">LIVE · NEAR YOU</string>
+    <string name="onboarding_title">WHAT\'S HAPPENING,\nRIGHT NOW</string>
+    <string name="onboarding_body">Concerts, markets, fairs and culture a few minutes\' walk from where you are.</string>
+    <string name="onboarding_locating">Finding your city…</string>
+
+    <!-- Home -->
+    <string name="home_greeting_morning">Good morning</string>
+    <string name="home_greeting_afternoon">Good afternoon</string>
+    <string name="home_greeting_evening">Good evening</string>
+    <string name="home_change_city">Change city</string>
+    <string name="home_search_city">Search city</string>
+    <string name="home_happening_now">Happening now</string>
+    <string name="home_free_only">Free only</string>
+    <string name="home_clear_filters">Clear filters</string>
+    <string name="budget_title">Maximum budget</string>
+    <string name="budget_free">Free</string>
+    <string name="budget_free_only">Free only</string>
+    <string name="budget_unlimited">No limit</string>
+    <string name="budget_none">No events this week within this budget</string>
+    <plurals name="budget_without_price">
+        <item quantity="one">One more without a published price: you\'ll see it with “No limit”</item>
+        <item quantity="other">%d more without a published price: you\'ll see them with “No limit”</item>
+    </plurals>
+    <plurals name="budget_results">
+        <item quantity="one">%d event this week within this budget</item>
+        <item quantity="other">%d events this week within this budget</item>
+    </plurals>
+    <string name="price_up_to">Up to %1$s</string>
+    <string name="home_this_week">This week</string>
+    <string name="home_later">Later on</string>
+    <string name="home_city_suggestion">You\'re in %1$s</string>
+    <string name="home_city_suggestion_accept">Switch</string>
+    <string name="home_city_suggestion_dismiss">Not now</string>
+    <string name="home_nothing_live">Nothing live with these filters.</string>
+    <string name="home_nothing_this_week">No more events this week with these filters.</string>
+    <string name="home_load_error_title">We couldn\'t load the events</string>
+    <string name="home_load_error_body">It may be a temporary problem with the service.</string>
+
+    <!-- I'm here now -->
+    <string name="now_overline">I\'M HERE NOW</string>
+    <string name="now_title">Near you</string>
+    <string name="now_location_user">Your location, %1$s</string>
+    <string name="now_location_center">Center of %1$s</string>
+    <string name="now_walking_radius">Walking radius</string>
+    <string name="now_radius_value">%1$d min</string>
+    <plurals name="now_count">
+        <item quantity="one">%1$d event within %2$d min · sorted by distance</item>
+        <item quantity="other">%1$d events within %2$d min · sorted by distance</item>
+    </plurals>
+    <string name="now_empty_title">Nothing within %1$d min</string>
+    <string name="now_empty_body">Try another time of day or widen the radius.</string>
+    <string name="now_widen">Widen to 30 min</string>
+
+    <!-- Surprise -->
+    <string name="surprise_tag">SURPRISE</string>
+    <string name="surprise_roll">Roll %1$d of %2$d</string>
+    <string name="surprise_reroll">Another · %1$d</string>
+    <string name="surprise_no_rolls">No rolls left</string>
+    <string name="surprise_go">I\'m going!</string>
+    <string name="surprise_empty_no_rolls_title">No rolls left today</string>
+    <plurals name="surprise_empty_no_rolls_body">
+        <item quantity="one">You already used today\'s surprise. You\'ll get new ones tomorrow.</item>
+        <item quantity="other">You already used your %1$d surprises today. You\'ll get new ones tomorrow.</item>
+    </plurals>
+    <string name="surprise_empty_title">Nothing within 30 min</string>
+    <string name="surprise_empty_body">There are no events nearby about to start right now. Try again later.</string>
+    <string name="surprise_see_nearby">See nearby events</string>
+    <string name="surprise_go_home">Go to Home</string>
+
+    <!-- Event detail -->
+    <string name="detail_unavailable_title">Event not available</string>
+    <string name="detail_unavailable_body">It may have already ended or been removed.</string>
+    <string name="detail_toggle_sheet">Expand or collapse details</string>
+    <string name="detail_schedule">Schedule</string>
+    <string name="detail_price">Price</string>
+    <string name="detail_price_estimated">Approx. price</string>
+    <string name="detail_price_estimated_ai">Approx. price (AI)</string>
+    <string name="detail_walk">On foot</string>
+
+    <!-- City -->
+    <string name="city_title">Choose city</string>
+    <string name="city_search_hint">Search any city or place</string>
+    <string name="city_use_location">Use my current location</string>
+    <string name="city_use_location_hint">Detects the city automatically</string>
+    <string name="city_location_error">We couldn\'t detect your location</string>
+    <string name="city_location_denied">No location permission: search your city by name</string>
+    <string name="city_popular">POPULAR CITIES</string>
+    <string name="city_results">RESULTS</string>
+    <string name="city_not_found">We couldn\'t find “%1$s”. Try another name or the nearest city.</string>
+    <string name="city_searching">Searching places…</string>
+    <string name="city_current">Current city</string>
+
+    <!-- Map -->
+    <plurals name="map_count">
+        <item quantity="one">%1$s · %2$d event nearby</item>
+        <item quantity="other">%1$s · %2$d events nearby</item>
+    </plurals>
+    <string name="map_attribution">© OpenStreetMap contributors</string>
+    <string name="map_walk_venue">%1$d min walk · %2$s</string>
+
+    <!-- Saved -->
+    <string name="saved_title">Saved</string>
+    <plurals name="saved_count">
+        <item quantity="one">%d event available offline</item>
+        <item quantity="other">%d events available offline</item>
+    </plurals>
+    <string name="saved_empty_title">Nothing saved yet</string>
+    <string name="saved_empty_body">Tap the heart on any event to keep it handy.</string>
+    <string name="saved_past">ALREADY PAST</string>
+    <string name="saved_clear_past">Remove past ones</string>
+    <string name="saved_ended">Ended</string>
+
+    <!-- Empty states -->
+    <string name="empty_location_title">No access to your location</string>
+    <string name="empty_location_body">We need to know where you are to show you events a few minutes\' walk away.</string>
+    <string name="empty_offline_title">Offline</string>
+    <string name="empty_offline_body">We can\'t load what\'s happening now. Your saved events are still available offline.</string>
+
+    <!-- AI search -->
+    <string name="ai_ask_hint">Ask CityPulse…</string>
+    <string name="ai_search_overline">AI SEARCH</string>
+    <string name="ai_search_title">What are you in the mood for?</string>
+    <string name="ai_search_body">Write it the way you\'d say it: the AI turns it into filters over the real events in %1$s.</string>
+    <string name="ai_search_send">Search</string>
+    <string name="ai_thinking">Thinking…</string>
+    <string name="ai_refining">Refining the search with AI…</string>
+    <string name="ai_understood">I understood:</string>
+    <string name="ai_understood_nothing">I found no specific filters; here\'s everything coming up.</string>
+    <string name="ai_fallback">The AI isn\'t available right now: basic search.</string>
+    <string name="ai_quota">Today\'s free AI is used up: basic search. It\'ll be available again tomorrow.</string>
+    <string name="ai_refined">✨ Refined with AI</string>
+    <string name="ai_quota_short">Today\'s free AI is used up. Try again tomorrow.</string>
+    <string name="ai_no_results">No event matches that. Try saying it another way or removing a filter.</string>
+    <plurals name="ai_results_count">
+        <item quantity="one">%d event</item>
+        <item quantity="other">%d events</item>
+    </plurals>
+    <string name="ai_suggestion_1">Something free tonight</string>
+    <string name="ai_suggestion_2">Live music within 15 minutes</string>
+    <string name="ai_suggestion_3">A market on the weekend</string>
+    <string name="ai_suggestion_4">Cheap cultural plan tomorrow morning</string>
+    <string name="ai_chip_free">Free</string>
+    <string name="ai_chip_max_price">Up to %1$s</string>
+    <string name="ai_chip_today">Today</string>
+    <string name="ai_chip_live">Live</string>
+    <string name="ai_chip_walk">≤ %1$d min walk</string>
+    <string name="ai_summarize">Summarize and translate with AI</string>
+    <string name="ai_summarizing">Summarizing…</string>
+    <string name="ai_summary_title">AI summary</string>
+    <string name="ai_disclaimer">AI-generated from the description; it may contain mistakes.</string>
+    <string name="ai_unavailable_retry">The AI isn\'t available right now. Tap to retry.</string>
+
+    <!-- About -->
+    <string name="about_open">About CityPulse</string>
+    <string name="about_version">Version %1$s · Academic project</string>
+    <string name="about_intro">CityPulse shows you what\'s happening right now in the city: concerts, markets, fairs and culture a few minutes\' walk from where you are.</string>
+    <string name="about_data_title">WHERE THE DATA COMES FROM</string>
+    <string name="about_data_tm">Ticketmaster: concerts, shows and ticket sales.</string>
+    <string name="about_data_catalog">Our own catalog (Firebase): markets, fairs and free plans. It\'s demo data; times and prices may not match reality.</string>
+    <string name="about_data_osm">Maps © OpenStreetMap contributors. Walking, cycling and driving routes computed with OSRM (FOSSGIS server).</string>
+    <string name="about_data_images">Sample images from Unsplash. Voice navigation with Google Maps.</string>
+    <string name="about_ai_title">ARTIFICIAL INTELLIGENCE</string>
+    <string name="about_ai_body">Search, summaries and Surprise sentences use Google\'s Gemini. The AI only interprets what you write and drafts text: events always come from real data. It can be wrong; check the event details before going.</string>
+    <string name="about_privacy_title">YOUR DATA</string>
+    <string name="about_privacy_body">Your location is used on the phone to calculate distances and isn\'t stored on any server; only when you open the route to an event is it sent, together with the destination, to the OSRM routing server (FOSSGIS) to compute the path. Your preferences stay on the device. So do your saved events, unless you sign in: then they\'re copied to your Firebase (Google) account along with your name and email, so you can see them on other phones. You can delete everything in Your account → Delete account. What you type in the AI search and the information of the events you summarize is sent to Google to be processed.</string>
+    <string name="about_osm_link">OpenStreetMap license</string>
+    <string name="about_code_link">Source code on GitHub</string>
+
+    <!-- Account -->
+    <string name="action_cancel">Cancel</string>
+    <string name="account_open">Your account</string>
+    <string name="auth_title_sign_in">Welcome back</string>
+    <string name="auth_title_sign_up">Create your account</string>
+    <string name="auth_subtitle">The account is optional: it keeps your saved events safe.</string>
+    <string name="auth_tab_sign_in">Sign in</string>
+    <string name="auth_tab_sign_up">Create account</string>
+    <string name="auth_name">Name</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_password_hint">At least %d characters.</string>
+    <string name="auth_show_password">Show password</string>
+    <string name="auth_hide_password">Hide password</string>
+    <string name="auth_submit_sign_in">Sign in</string>
+    <string name="auth_submit_sign_up">Create account</string>
+    <string name="auth_forgot_password">Forgot your password?</string>
+    <string name="auth_reset_sent">We sent an email to %s to choose a new password.</string>
+    <string name="auth_benefit">With your account, the events you save are copied to the cloud and show up on any phone where you sign in.</string>
+    <string name="auth_error_name">Enter your name.</string>
+    <string name="auth_error_email">Enter a valid email.</string>
+    <string name="auth_error_short_password">The password must have at least %d characters.</string>
+    <string name="auth_error_credentials">The email or password is incorrect.</string>
+    <string name="auth_error_email_in_use">An account with that email already exists. Try signing in.</string>
+    <string name="auth_error_too_many">Too many attempts. Wait a few minutes and try again.</string>
+    <string name="auth_error_network">No connection. Check your internet and try again.</string>
+    <string name="auth_error_unknown">It couldn\'t be completed. Try again.</string>
+    <string name="profile_title">Your account</string>
+    <string name="profile_signed_out_title">Save your plans in the cloud</string>
+    <string name="profile_signed_out_body">Sign in so you don\'t lose your saved events if you change phones. You can keep using CityPulse without an account.</string>
+    <plurals name="profile_saved_count">
+        <item quantity="one">%d saved event</item>
+        <item quantity="other">%d saved events</item>
+    </plurals>
+    <string name="profile_synced">Your saved events sync with your account</string>
+    <string name="profile_sign_out">Sign out</string>
+    <string name="profile_sign_out_title">Sign out?</string>
+    <string name="profile_delete">Delete account</string>
+    <string name="profile_delete_title">Delete your account?</string>
+    <string name="profile_delete_body">Your account and the events saved in it will be deleted, including the ones on this phone. This can\'t be undone. Enter your password to confirm.</string>
+    <string name="profile_delete_confirm">Delete</string>
+    <string name="profile_sign_out_body">Your saved events will stay in your account and be removed from this phone until you sign in again.</string>
+    <string name="saved_sign_in_hint">Sign in so you don\'t lose your saved events</string>
+
+    <!-- Reminders -->
+    <string name="reminder_channel_name">Event reminders</string>
+    <string name="reminder_channel_description">A heads-up one hour before the events you saved.</string>
+    <string name="reminder_title">%1$s starts in 1 hour</string>
+    <string name="reminder_body">At %1$s in %2$s</string>
+
+    <!-- Directions -->
+    <string name="directions_summary">%1$s · %2$s</string>
+    <string name="directions_straight_summary">%1$s in a straight line</string>
+    <string name="directions_arrival">You\'ll arrive around %1$s</string>
+    <string name="directions_arrival_no_traffic">You\'ll arrive around %1$s · estimate, without live traffic</string>
+    <string name="directions_no_road">There\'s no street route from where you are to this place.</string>
+    <string name="directions_mode_walk">Walk</string>
+    <string name="directions_mode_bike">Bike</string>
+    <string name="directions_mode_car">Car</string>
+    <string name="directions_mode_transit">Public transport</string>
+    <string name="directions_transit_summary">Lines and times in Google Maps</string>
+    <string name="directions_open_transit">See transit in Google Maps</string>
+    <string name="directions_exploring">You\'re far from %1$s: sample route from its center.</string>
+    <string name="directions_open_route">See route in Google Maps</string>
+    <string name="directions_allow_location">Allow location</string>
+    <string name="directions_locating">Finding your location…</string>
+    <string name="directions_no_location">Turn on location to see the route from where you are</string>
+    <string name="directions_arrived">You\'ve arrived!</string>
+    <string name="directions_approximate">No connection with the routing service: showing the straight line.</string>
+    <string name="directions_open_google_maps">Navigate with Google Maps</string>
+    <string name="directions_center_me">Center on my location</string>
+    <string name="directions_attribution">Routes: OSRM (FOSSGIS) · Map © OpenStreetMap contributors</string>
+
+    <!-- Language -->
+    <string name="language_title">Language</string>
+    <string name="language_switch">Español</string>
+</resources>

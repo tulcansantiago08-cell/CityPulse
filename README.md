@@ -16,6 +16,7 @@ Proyecto académico.
 
 ## Funcionalidades
 
+- **Español e inglés.** La app está en español aunque el teléfono esté en otro idioma; en **Tu cuenta → Idioma** (o con el botón 🌐 de la bienvenida) se cambia a inglés al instante. En Android 13+ usa el idioma por app del sistema (también los recordatorios, y aparece en los ajustes del teléfono). Fechas, precios, distancias y categorías siguen el idioma; la búsqueda sin IA entiende inglés ("something free tonight") y los resúmenes y frases de la IA se redactan en el idioma elegido. Los títulos de los eventos se muestran como los publica su fuente.
 - **Cualquier lugar del mundo.** La ciudad sale del GPS o se busca por nombre (lista de ciudades populares más búsqueda de cualquier lugar con el Geocoder). La moneda, la zona horaria, el presupuesto, los precios estimados y el catálogo propio se adaptan al lugar. Las distancias a pie se actualizan mientras el usuario se mueve.
 - **Inicio.** Saludo según la hora, filtro por categoría (stories), deslizador de *Presupuesto máximo* (de *Gratis* a *Sin límite*, en la moneda de la ciudad, con el número de eventos que caben), interruptor *Solo gratis*, carrusel *Pasando ahora* (en curso o empieza en menos de 1 h) y lista *Esta semana*.
 - **Estoy aquí ahora.** Eventos de la franja elegida (mañana, tarde o noche) a menos de *N* minutos a pie (5–30), ordenados por cercanía.

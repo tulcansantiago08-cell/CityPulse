@@ -1,5 +1,6 @@
 package com.citypulse.data.ai
 
+import com.citypulse.domain.i18n.AppLocale
 import android.util.Log
 import com.citypulse.domain.model.BudgetScale
 import com.citypulse.domain.model.Category
@@ -213,33 +214,36 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
     }.onFailure { Log.w(TAG, "interpret", it) }
 
     override suspend fun summarize(event: Event) = runCatching {
-        summaries[event.id] ?: run {
+        // El resumen va en el idioma de la app; cada idioma tiene su propia copia en caché.
+        val key = "${event.id}|${AppLocale.language.tag}"
+        summaries[key] ?: run {
             val prompt = """
-                Resume en español, en 2 o 3 frases claras y sin inventar datos, este evento para un viajero.
+                Resume en ${languageName()}, en 2 o 3 frases claras y sin inventar datos, este evento para un viajero.
                 Si el texto está en otro idioma, tradúcelo. No repitas el horario ni el precio.
                 Título: ${event.title}
                 Lugar: ${event.venue}, ${event.area}
                 Categoría: ${event.category.label}
                 Descripción: ${event.description}
             """.trimIndent()
-            generate(textModels, prompt, SUMMARY_TIMEOUT_MS).also { summaries[event.id] = it }
+            generate(textModels, prompt, SUMMARY_TIMEOUT_MS).also { summaries[key] = it }
         }
     }.onFailure { Log.w(TAG, "summarize", it) }
 
     override suspend fun explainSurprise(event: NearbyEvent, now: LocalDateTime) = runCatching {
-        explanations[event.event.id]?.let { return@runCatching it }
+        val key = "${event.event.id}|${AppLocale.language.tag}"
+        explanations[key]?.let { return@runCatching it }
         val e = event.event
         val timing = when {
             e.isLive(now) -> "ya está en curso"
             else -> "empieza a las ${e.start.format(DateTimeFormatter.ofPattern("HH:mm"))}"
         }
         val prompt = """
-            Escribe UNA frase corta (máximo 20 palabras), cercana y en español, que anime a ir a este plan.
+            Escribe UNA frase corta (máximo 20 palabras), cercana y en ${languageName()}, que anime a ir a este plan.
             Usa solo estos datos, sin inventar nada: "${e.title}" (${e.category.label}) en ${e.venue};
             está a ${event.walkMinutes} minutos a pie; $timing; ${if (e.isFree) "es gratis" else "precio: ${e.price ?: "en la web del evento"}"}.
             Ahora son las ${now.format(DateTimeFormatter.ofPattern("HH:mm"))}. Sin comillas ni emojis.
         """.trimIndent()
-        generate(textModels, prompt, EXPLAIN_TIMEOUT_MS).trim('"').also { explanations[event.event.id] = it }
+        generate(textModels, prompt, EXPLAIN_TIMEOUT_MS).trim('"').also { explanations[key] = it }
     }.onFailure { Log.w(TAG, "explainSurprise", it) }
 
     override suspend fun estimatePrices(events: List<Event>, cityName: String, currency: String) = runCatching {
@@ -266,3 +270,6 @@ class GeminiEventAssistant @Inject constructor() : EventAssistant {
 
 /** Lo que se considera "barato" en una moneda: el tercer paso del presupuesto (≈ 10 €). */
 private fun cheapIn(currency: String): Long = (BudgetScale.forCurrency(currency).maxFor(2) ?: 10.0).toLong()
+
+/** Idioma en el que la IA redacta resúmenes y frases: el de la app. */
+private fun languageName(): String = if (AppLocale.isEnglish) "inglés" else "español"

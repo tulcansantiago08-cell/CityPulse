@@ -1,6 +1,9 @@
 package com.citypulse
 
+import android.content.Context
 import android.os.Bundle
+import com.citypulse.domain.i18n.AppLocale
+import com.citypulse.ui.language.LanguageManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.viewModels
@@ -22,8 +25,14 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageManager.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Al volver a crearse tras un cambio de idioma, fechas y precios siguen al nuevo.
+        AppLocale.language = LanguageManager.current(this)
         // La app siempre es oscura: iconos claros en las barras del sistema.
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),

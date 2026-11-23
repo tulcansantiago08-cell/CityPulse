@@ -177,7 +177,7 @@ private fun SlotSelector(selected: TimeSlot, onSelect: (TimeSlot) -> Unit, modif
             ) {
                 Icon(slot.icon, null, tint = Color.White, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text(slot.label, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color.White)
+                Text(slot.displayLabel, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color.White)
             }
         }
     }

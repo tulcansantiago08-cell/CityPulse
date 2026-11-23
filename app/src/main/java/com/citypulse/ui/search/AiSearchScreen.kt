@@ -250,11 +250,11 @@ private fun Understood(state: AiSearchUiState) {
 
 @Composable
 private fun SearchIntent.labels(currency: String): List<String> = buildList {
-    categories.forEach { add(it.label) }
+    categories.forEach { add(it.displayLabel) }
     if (freeOnly) add(stringResource(R.string.ai_chip_free))
     maxPrice?.let { add(stringResource(R.string.ai_chip_max_price, formatMoney(it, currency))) }
     if (todayOnly) add(stringResource(R.string.ai_chip_today))
-    timeSlot?.let { add(it.label) }
+    timeSlot?.let { add(it.displayLabel) }
     if (liveNow) add(stringResource(R.string.ai_chip_live))
     maxWalkMinutes?.let { add(stringResource(R.string.ai_chip_walk, it)) }
     keywords.forEach { add("“$it”") }

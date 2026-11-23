@@ -1,5 +1,6 @@
 package com.citypulse.ui.common
 
+import com.citypulse.domain.i18n.AppLocale
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -57,11 +58,11 @@ private val TravelMode.googleMapsName: String
         TravelMode.TRANSIT -> "transit"
     }
 
-/** Ruta en la web de Google Maps, empezando a navegar si el navegador lo permite (hl=es: en español). */
+/** Ruta en la web de Google Maps, empezando a navegar si el navegador lo permite (hl: en el idioma de la app). */
 internal fun googleMapsWebDirectionsUri(destination: String, mode: TravelMode, origin: String? = null): Uri {
     val from = origin?.let { "&origin=$it" }.orEmpty()
     val navigate = if (mode == TravelMode.TRANSIT || origin != null) "" else "&dir_action=navigate"
-    return "https://www.google.com/maps/dir/?api=1$from&destination=$destination&travelmode=${mode.googleMapsName}$navigate&hl=es".toUri()
+    return "https://www.google.com/maps/dir/?api=1$from&destination=$destination&travelmode=${mode.googleMapsName}$navigate&hl=${AppLocale.language.tag}".toUri()
 }
 
 /** Abre una web (p. ej. la página del evento con precios y entradas). */

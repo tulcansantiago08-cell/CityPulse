@@ -191,7 +191,7 @@ fun HomeScreen(
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
-                    items(CategoryOptions, key = { it.label }) { option ->
+                    items(CategoryOptions, key = { it.category?.name ?: "all" }) { option ->
                         CategoryStory(
                             label = option.label,
                             icon = option.icon,

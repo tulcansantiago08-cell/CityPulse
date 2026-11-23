@@ -1,6 +1,8 @@
 package com.citypulse.ui.common
 
 import androidx.compose.ui.graphics.Color
+import com.citypulse.domain.i18n.AppLocale
+import com.citypulse.domain.i18n.tr
 import com.citypulse.domain.model.Category
 import com.citypulse.domain.model.Event
 import com.citypulse.domain.model.NearbyEvent
@@ -58,39 +60,58 @@ private val HourFormat = DateTimeFormatter.ofPattern("HH:mm")
 private val SpanishDays = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
 private val SpanishDaysLong = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
 private val SpanishMonths = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+private val EnglishDays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+private val EnglishDaysLong = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+private val EnglishMonths = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+/** Nombres de días y meses en el idioma de la app. */
+private val days get() = if (AppLocale.isEnglish) EnglishDays else SpanishDays
+private val daysLong get() = if (AppLocale.isEnglish) EnglishDaysLong else SpanishDaysLong
+private val months get() = if (AppLocale.isEnglish) EnglishMonths else SpanishMonths
 
 fun LocalDateTime.hourLabel(): String = format(HourFormat)
 
 /** "Hoy", "Mañana" o "Mié 14". */
 fun LocalDate.dayLabel(today: LocalDate): String = when (this) {
-    today -> "Hoy"
-    today.plusDays(1) -> "Mañana"
-    else -> "${SpanishDays[dayOfWeek.value - 1]} $dayOfMonth"
+    today -> tr("Hoy", "Today")
+    today.plusDays(1) -> tr("Mañana", "Tomorrow")
+    else -> "${days[dayOfWeek.value - 1]} $dayOfMonth"
 }
 
 /** Línea de fecha de la pantalla de inicio: "Martes 13 oct · 21:04". */
 fun LocalDateTime.dateLine(): String =
-    "${SpanishDaysLong[dayOfWeek.value - 1]} $dayOfMonth ${SpanishMonths[monthValue - 1]} · ${hourLabel()}"
+    if (AppLocale.isEnglish) {
+        "${daysLong[dayOfWeek.value - 1]}, ${months[monthValue - 1]} $dayOfMonth · ${hourLabel()}"
+    } else {
+        "${daysLong[dayOfWeek.value - 1]} $dayOfMonth ${months[monthValue - 1]} · ${hourLabel()}"
+    }
+
+/** Fecha absoluta para compartir: "martes 20 oct · 21:00" / "Tuesday, Oct 20 · 21:00". */
+private fun LocalDateTime.absoluteLabel(): String = if (AppLocale.isEnglish) {
+    "${daysLong[dayOfWeek.value - 1]}, ${months[monthValue - 1]} $dayOfMonth · ${hourLabel()}"
+} else {
+    "${daysLong[dayOfWeek.value - 1].lowercase()} $dayOfMonth ${months[monthValue - 1]} · ${hourLabel()}"
+}
 
 /** Importe redondo con su moneda: "10 €", "20.000 COP". */
 fun formatMoney(amount: Double, currency: String): String =
-    NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-ES")).apply {
+    NumberFormat.getCurrencyInstance(AppLocale.current).apply {
         runCatching { this.currency = Currency.getInstance(currency) }
         maximumFractionDigits = 0
     }.format(amount)
 
 fun distanceLabel(meters: Int, walkMinutes: Int): String {
-    val km = String.format(Locale.forLanguageTag("es-ES"), "%.1f", meters / 1000.0)
-    return "$km km · $walkMinutes min a pie"
+    val km = String.format(AppLocale.current, "%.1f", meters / 1000.0)
+    return "$km km · $walkMinutes " + tr("min a pie", "min walk")
 }
 
 fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
     val live = event.isLive(now)
-    val overline = if (live) "hasta ${event.end.hourLabel()}" else "empieza ${event.start.hourLabel()}"
+    val overline = if (live) tr("hasta ", "until ") + event.end.hourLabel() else tr("empieza ", "starts ") + event.start.hourLabel()
     return EventUi(
         id = event.id,
         title = event.title,
-        categoryLabel = event.category.label,
+        categoryLabel = event.category.displayLabel,
         venue = event.venue,
         area = event.area,
         imageUrl = event.imageUrl,
@@ -106,9 +127,9 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
             else -> ticketSearchUrl(event)
         },
         walkMinutes = walkMinutes,
-        overline = "${event.category.label} · $overline",
+        overline = "${event.category.displayLabel} · $overline",
         whenLabel = "${event.start.toLocalDate().dayLabel(now.toLocalDate())} · ${event.start.hourLabel()}",
-        absoluteWhen = "${SpanishDaysLong[event.start.dayOfWeek.value - 1].lowercase()} ${event.start.dayOfMonth} ${SpanishMonths[event.start.monthValue - 1]} · ${event.start.hourLabel()}",
+        absoluteWhen = event.start.absoluteLabel(),
         ended = event.hasEnded(now),
         timeRange = "${event.start.hourLabel()}–${event.end.hourLabel()}",
         distanceLabel = distanceLabel(distanceMeters, walkMinutes),
@@ -121,19 +142,19 @@ fun NearbyEvent.toUi(now: LocalDateTime): EventUi {
 
 /** Búsqueda web del evento en su lugar, para eventos de pago sin página de venta propia. */
 private fun ticketSearchUrl(event: Event): String {
-    val query = URLEncoder.encode("${event.title} ${event.venue} ${event.area} entradas", Charsets.UTF_8.name())
-    return "https://www.google.com/search?q=$query&hl=es"
+    val query = URLEncoder.encode("${event.title} ${event.venue} ${event.area} " + tr("entradas", "tickets"), Charsets.UTF_8.name())
+    return "https://www.google.com/search?q=$query&hl=${AppLocale.language.tag}"
 }
 
 private fun priceLabel(event: Event): String = when {
-    event.isFree -> "Gratis"
+    event.isFree -> tr("Gratis", "Free")
     event.price != null -> event.price
     // Precio estimado por la IA o por la regla local: se marca con "≈" para no confundirlo con el real.
     event.priceEstimate != null && event.priceMin != null -> "≈ " + formatMoney(event.priceMin, event.currency ?: "EUR")
     // Ticketmaster no siempre da el precio en la API, pero sí en la página del evento.
-    event.url != null -> "Ver precio"
+    event.url != null -> tr("Ver precio", "See price")
     // Lugares del catálogo sin tarifa fija: se paga en el sitio.
-    else -> "En taquilla"
+    else -> tr("En taquilla", "At the door")
 }
 
 /** Degradado de respaldo por categoría mientras carga la imagen (tonos del prototipo). */
