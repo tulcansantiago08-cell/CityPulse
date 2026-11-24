@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CityPulse · Demo | Santiago Rivas</title>
+<meta name="description" content="La app para viajeros que muestra lo que está pasando ahora en la ciudad: conciertos, mercados, ferias y cultura, empezando por lo que queda cerca a pie.">
+<meta property="og:title" content="CityPulse · Demo"><meta property="og:description" content="La app para viajeros que muestra lo que está pasando ahora en la ciudad: conciertos, mercados, ferias y cultura, empezando por lo que queda cerca a pie."><meta property="og:image" content="assets/og.jpg">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>:root{--accent:#ff7a2e;--accent2:#ff2d75}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0c;--fg:#f4f1ea;--muted:#9a978f;--line:rgba(244,241,234,.12);--card:#121215}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(1120px,92vw);margin:0 auto}
+nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:rgba(10,10,12,.7);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:64px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700;letter-spacing:-.02em}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 18px var(--accent)}
+.navlinks{display:flex;gap:22px;font-size:14px;color:var(--muted)}
+.navlinks a:hover{color:var(--fg)}
+.hero{position:relative;padding:90px 0 70px;overflow:hidden}
+.glow{position:absolute;inset:-20% -10% auto auto;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,var(--accent) 0%,transparent 62%);opacity:.28;filter:blur(40px);pointer-events:none}
+.glow.two{inset:auto auto -40% -20%;background:radial-gradient(circle,var(--accent2) 0%,transparent 60%);opacity:.18}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center}
+.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid color-mix(in srgb,var(--accent) 60%,transparent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;border-radius:99px}
+h1{font-size:clamp(52px,8vw,104px);line-height:.95;letter-spacing:-.055em;margin:22px 0 18px}
+.lead{font-size:clamp(18px,2vw,21px);color:#cfcbc2;max-width:520px}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.btn{display:inline-flex;align-items:center;gap:10px;border-radius:99px;padding:14px 22px;font-weight:600;font-size:15px;transition:transform .15s,background .15s,border-color .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.primary{background:var(--fg);color:var(--bg)}
+.btn.ghost{border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--fg)}
+.btn svg{width:18px;height:18px}
+.meta{display:flex;gap:26px;margin-top:34px;color:var(--muted);font-size:13px}
+.meta b{display:block;color:var(--fg);font-size:22px;letter-spacing:-.02em}
+section{padding:80px 0;border-top:1px solid var(--line)}
+.kicker{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:clamp(34px,4.6vw,56px);letter-spacing:-.045em;line-height:1.02;margin:12px 0 14px}
+.sub{color:var(--muted);max-width:620px;margin-bottom:40px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);transform:translateY(-3px)}
+.card .ic{font-size:26px;margin-bottom:14px}
+.card h3{font-size:18px;letter-spacing:-.02em;margin-bottom:6px}
+.card p{color:var(--muted);font-size:14.5px}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{border:1px solid var(--line);border-radius:99px;padding:9px 16px;font-size:14px}
+.chip:hover{background:var(--fg);color:var(--bg)}
+.gallery{display:flex;gap:26px;overflow-x:auto;padding:10px 4px 30px;scroll-snap-type:x mandatory;scrollbar-width:thin}
+.gallery figure{flex:none;scroll-snap-align:center;text-align:center}
+.gallery figcaption{margin-top:14px;font-size:14px;color:var(--muted)}
+.phone{width:230px;border-radius:38px;padding:9px;background:#151518;border:2px solid #34343c;box-shadow:0 30px 60px -20px rgba(0,0,0,.8)}
+.phone img{display:block;width:100%;border-radius:30px}
+.watch{width:220px;height:220px;border-radius:50%;padding:12px;background:#111;border:6px solid #5a5d66;box-shadow:0 0 0 2px #222,0 30px 60px -20px rgba(0,0,0,.8)}
+.watch img{width:100%;height:100%;border-radius:50%;display:block}
+.download{display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:center;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,#0f0f12),#0f0f12 60%);border:1px solid var(--line);border-radius:26px;padding:44px}
+.steps{counter-reset:s;list-style:none;display:grid;gap:12px}
+.steps li{counter-increment:s;display:flex;gap:14px;align-items:flex-start;color:#d6d2c9;font-size:15px}
+.steps code{background:#0a0a0c;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:13px}.steps li:before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#0a0a0c;font-weight:700;font-size:13px}
+footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer a{color:var(--fg)}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
+.reveal.in{opacity:1;transform:none}
+@media (max-width:860px){.hero .wrap,.download{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.navlinks{display:none}.download{padding:28px}}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}*{transition:none!important;animation:none!important}}
+.stack{position:relative;height:560px}.stack .phone{position:absolute;top:30px;width:240px}.stack .p1{left:4%;transform:rotate(-8deg)}.stack .p3{right:4%;transform:rotate(8deg)}.stack .p2{left:50%;top:0;transform:translateX(-50%);width:262px;z-index:2}#rot{transition:opacity .4s}@media(max-width:860px){.stack{height:520px}.stack .p1,.stack .p3{display:none}}</style></head>
+<body>
+<nav><div class="wrap"><a class="brand" href="#"><span class="dot"></span>CityPulse</a>
+<div class="navlinks"><a href="#demo">Demo</a><a href="#funciones">Funciones</a><a href="#tecnologias">Tecnologías</a><a href="#descargar">Descargar</a></div>
+<a class="btn ghost" style="padding:9px 16px;font-size:13px" href="https://santiago-rivas-portafolio.vercel.app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>Portafolio</a></div></nav>
+<header class="hero"><div class="glow"></div><div class="glow two"></div><div class="wrap">
+<div><span class="pill">Android · Kotlin · Jetpack Compose</span><h1>CityPulse</h1><p class="lead">La app para viajeros que muestra lo que está pasando ahora en la ciudad: conciertos, mercados, ferias y cultura, empezando por lo que queda cerca a pie.</p>
+<div class="ctas"><a class="btn primary" href="https://github.com/tulcansantiago08-cell/CityPulse/releases/download/v0.1.0/CityPulse.apk" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Descargar APK</a><a class="btn ghost" href="https://github.com/tulcansantiago08-cell/CityPulse" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>Ver código</a></div>
+<div class="meta"><div><b>6</b>pantallas principales</div><div><b>ES · EN</b>dos idiomas</div><div><b>IA</b>con Gemini</div></div></div>
+<div><div class="stack"><div class="phone p1"><img src="assets/05-mapa.png" alt="Mapa"></div><div class="phone p3"><img src="assets/06-ficha.png" alt="Ficha"></div><div class="phone p2"><img id="rot" src="assets/02-inicio.png" alt="Inicio"></div></div></div></div></header>
+
+<section id="demo"><div class="wrap"><div class="kicker">Pantallas</div><h2>Recorre la app</h2><p class="sub">Capturas reales de la app en un teléfono Android. Desliza para ver todas.</p>
+<div class="gallery"><figure><div class="phone"><img src="assets/01-onboarding.png" alt="Bienvenida" loading="lazy"></div><figcaption>Bienvenida</figcaption></figure><figure><div class="phone"><img src="assets/02-inicio.png" alt="Inicio" loading="lazy"></div><figcaption>Inicio</figcaption></figure><figure><div class="phone"><img src="assets/03-ahora.png" alt="Estoy aquí ahora" loading="lazy"></div><figcaption>Estoy aquí ahora</figcaption></figure><figure><div class="phone"><img src="assets/04-sorpresa.png" alt="Sorpresa" loading="lazy"></div><figcaption>Sorpresa</figcaption></figure><figure><div class="phone"><img src="assets/05-mapa.png" alt="Mapa" loading="lazy"></div><figcaption>Mapa</figcaption></figure><figure><div class="phone"><img src="assets/06-ficha.png" alt="Ficha del evento" loading="lazy"></div><figcaption>Ficha del evento</figcaption></figure></div></div></section>
+<section id="funciones"><div class="wrap"><div class="kicker">Funciones</div><h2>Todo lo que hace</h2><p class="sub">Pensada para quien llega a una ciudad y quiere saber qué hacer en este momento, sin buscar en diez páginas.</p><div class="grid"><div class="card reveal"><div class="ic">📍</div><h3>Estoy aquí ahora</h3><p>Eventos de la mañana, tarde o noche a menos de N minutos a pie, ordenados por cercanía.</p></div><div class="card reveal"><div class="ic">🎲</div><h3>Sorpresa</h3><p>Un evento al azar que está pasando o empieza en las próximas 3 horas, a menos de 30 minutos.</p></div><div class="card reveal"><div class="ic">🗺️</div><h3>Mapa y rutas</h3><p>Mapa oscuro de OpenStreetMap y rutas a pie, en bici o en carro, con tu ubicación en vivo.</p></div><div class="card reveal"><div class="ic">💸</div><h3>Presupuesto</h3><p>Deslizador de presupuesto en la moneda de la ciudad e interruptor Solo gratis.</p></div><div class="card reveal"><div class="ic">🔔</div><h3>Recordatorios</h3><p>Aviso una hora antes de cada evento guardado, con la hora de la ciudad del evento.</p></div><div class="card reveal"><div class="ic">✨</div><h3>IA con Gemini</h3><p>Búsqueda en lenguaje natural, resúmenes y traducción de descripciones.</p></div><div class="card reveal"><div class="ic">🌍</div><h3>Cualquier ciudad</h3><p>La ciudad sale del GPS o se busca por nombre; moneda y zona horaria se adaptan.</p></div><div class="card reveal"><div class="ic">📶</div><h3>Sin conexión</h3><p>Los eventos guardados se ven sin internet y la app avisa qué pestañas necesitan red.</p></div><div class="card reveal"><div class="ic">👤</div><h3>Cuenta opcional</h3><p>Con sesión iniciada, tus guardados se sincronizan en la nube entre teléfonos.</p></div></div></div></section>
+<section id="tecnologias"><div class="wrap"><div class="kicker">Tecnologías</div><h2>Cómo está construida</h2><p class="sub">Arquitectura MVVM por capas, con las fuentes de datos inyectadas con Hilt y pruebas automáticas en GitHub Actions.</p><div class="chips"><span class="chip">Kotlin</span><span class="chip">Jetpack Compose</span><span class="chip">Material 3</span><span class="chip">Hilt</span><span class="chip">Room</span><span class="chip">DataStore</span><span class="chip">Retrofit</span><span class="chip">Firebase Auth</span><span class="chip">Firestore</span><span class="chip">Firebase AI Logic (Gemini)</span><span class="chip">OpenStreetMap</span><span class="chip">OSRM</span><span class="chip">Ticketmaster API</span><span class="chip">GitHub Actions</span></div></div></section>
+<section id="descargar"><div class="wrap"><div class="download reveal"><div><div class="kicker">Descargar</div><h2>Pruébala en tu Android</h2><p class="sub" style="margin-bottom:24px">Versión 0.1.0. El archivo pesa unos 33 MB.</p><div class="ctas" style="margin-top:0"><a class="btn primary" href="https://github.com/tulcansantiago08-cell/CityPulse/releases/download/v0.1.0/CityPulse.apk" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Descargar APK</a></div></div>
+<ol class="steps"><li><span>Descarga el APK en tu teléfono Android.</span></li><li><span>Ábrelo y, si el teléfono lo pide, permite instalar apps de esta fuente.</span></li><li><span>Abre CityPulse, elige tu ciudad o usa el GPS, y explora.</span></li></ol></div></div></section>
+<footer><div class="wrap"><span>CityPulse · Proyecto de <a href="https://santiago-rivas-portafolio.vercel.app">Santiago Rivas</a>, Ingeniería de Software · UCC</span><span><a href="https://github.com/tulcansantiago08-cell/CityPulse" target="_blank" rel="noopener">GitHub</a></span></div></footer>
+<script>
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script><script>const r=document.getElementById('rot'),L=['02-inicio','03-ahora','04-sorpresa','01-onboarding'];let i=0;setInterval(()=>{i=(i+1)%L.length;r.style.opacity=0;setTimeout(()=>{r.src='assets/'+L[i]+'.png';r.style.opacity=1},400)},2600)</script>
+</body></html>
